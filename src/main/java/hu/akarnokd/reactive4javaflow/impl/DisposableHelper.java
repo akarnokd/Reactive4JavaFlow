@@ -26,6 +26,7 @@ public enum DisposableHelper implements AutoDisposable {
         for (;;) {
             AutoDisposable a = field.get();
             if (a == DISPOSED) {
+                d.close();
                 return false;
             }
             if (field.compareAndSet(a, d)) {

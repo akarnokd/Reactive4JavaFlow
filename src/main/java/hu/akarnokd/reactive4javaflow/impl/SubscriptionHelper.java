@@ -28,9 +28,27 @@ public enum SubscriptionHelper implements Flow.Subscription {
         for (;;) {
             Flow.Subscription a = field.get();
             if (a == CANCELLED) {
+                if (d != null) {
+                    d.cancel();
+                }
                 return false;
             }
             if (field.compareAndSet(a, d)) {
+                return true;
+            }
+        }
+    }
+
+    public static boolean replace(Object target, VarHandle upstream, Flow.Subscription d) {
+        for (;;) {
+            Object a = upstream.getAcquire(target);
+            if (a == CANCELLED) {
+                if (d != null) {
+                    d.cancel();
+                }
+                return false;
+            }
+            if (upstream.compareAndSet(target, a, d)) {
                 return true;
             }
         }
@@ -48,6 +66,24 @@ public enum SubscriptionHelper implements Flow.Subscription {
             }
         }
         return false;
+    }
+
+    public static boolean cancel(Object target, VarHandle upstream) {
+        Flow.Subscription a = (Flow.Subscription)upstream.getAcquire(target);
+        if (a != CANCELLED) {
+            a = (Flow.Subscription)upstream.getAndSet(target, CANCELLED);
+            if (a != CANCELLED) {
+                if (a != null) {
+                    a.cancel();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isCancelled(Object target, VarHandle upstream) {
+        return upstream.getAcquire(target) == CANCELLED;
     }
 
     /**
@@ -89,6 +125,33 @@ public enum SubscriptionHelper implements Flow.Subscription {
             long b = addCap(a, n);
             if (requested.compareAndSet(a, b)) {
                 return a;
+            }
+        }
+    }
+
+    public static boolean deferredReplace(Object target, VarHandle upstream, VarHandle requested, Flow.Subscription s) {
+        if (replace(target, upstream, s)) {
+            long n = (long)requested.getAndSet(target, 0L);
+            if (n != 0L) {
+                s.request(n);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public static void deferredRequest(Object target, VarHandle upstream, VarHandle requested, long n) {
+        Flow.Subscription a = (Flow.Subscription)upstream.getAcquire(target);
+        if (a != null) {
+            a.request(n);
+        } else {
+            addRequested(target, requested, n);
+            a = (Flow.Subscription)upstream.getAcquire(target);
+            if (a != null) {
+                n = (long)requested.getAndSet(target, 0L);
+                if (n != 0L) {
+                    a.request(n);
+                }
             }
         }
     }

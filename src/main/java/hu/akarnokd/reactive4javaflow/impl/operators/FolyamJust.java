@@ -22,11 +22,11 @@ import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class OpJust<T> extends Folyam<T> implements FusedStaticSource<T> {
+public final class FolyamJust<T> extends Folyam<T> implements FusedStaticSource<T> {
 
     final T value;
 
-    public OpJust(T value) {
+    public FolyamJust(T value) {
         this.value = value;
     }
 

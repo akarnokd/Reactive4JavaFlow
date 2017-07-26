@@ -21,6 +21,7 @@ import hu.akarnokd.reactive4javaflow.functionals.CheckedRunnable;
 import hu.akarnokd.reactive4javaflow.impl.FunctionalHelper;
 import hu.akarnokd.reactive4javaflow.impl.StrictSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.operators.FolyamJust;
 
 import java.util.Objects;
 import java.util.concurrent.Flow;
@@ -32,7 +33,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     public final void subscribe(Flow.Subscriber<? super T> s) {
         Objects.requireNonNull(s, "s == null");
         if (s instanceof FolyamSubscriber) {
-            subscribe((FolyamSubscriber<T>)s);
+            subscribe((FolyamSubscriber<? super T>)s);
         } else {
             subscribe(new StrictSubscriber<T>(s));
         }
@@ -61,5 +62,37 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         LambdaSubscriber<T> consumer = new LambdaSubscriber<>(onNext, onError, onComplete, FunctionalHelper.REQUEST_UNBOUNDED);
         subscribe(consumer);
         return consumer;
+    }
+
+    public final TestConsumer<T> test() {
+        TestConsumer<T> tc = new TestConsumer<>();
+        subscribe(tc);
+        return tc;
+    }
+
+    public final TestConsumer<T> test(long initialRequest) {
+        TestConsumer<T> tc = new TestConsumer<>(initialRequest);
+        subscribe(tc);
+        return tc;
+    }
+
+    public final TestConsumer<T> test(long initialRequest, boolean cancelled, int fusionMode) {
+        TestConsumer<T> tc = new TestConsumer<>(initialRequest);
+        if (cancelled) {
+            tc.close();
+        }
+        tc.requestFusionMode(fusionMode);
+        subscribe(tc);
+        return tc;
+    }
+
+    public final <E extends Flow.Subscriber<? super T>> E subscribeWith(E s) {
+        subscribe(s);
+        return s;
+    }
+
+    public final Folyam<T> just(T item) {
+        Objects.requireNonNull(item, "item == null");
+        return FolyamPlugins.onAssembly(new FolyamJust<>(item));
     }
 }
