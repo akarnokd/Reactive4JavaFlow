@@ -46,6 +46,8 @@ apply plugin: 'osgi'
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+//    testCompile 'org.reactivestreams:reactive-streams-tck:1.0.0'
+//    testCompile group: 'org.testng', name: 'testng', version: '6.9.10'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -103,6 +105,18 @@ plugins.withType(EclipsePlugin) {
 
 javadoc {
     failOnError = false
+
+    exclude "**/impl/**"
+    exclude "**/test/**"
+    exclude "**/perf/**"
+    options {
+        windowTitle = "Reactive4JavaFlow Javadoc ${project.version}"
+    }
+    // Clear the following options to make the docs consistent with the old format
+    options.addStringOption('top').value = ''
+    options.addStringOption('doctitle').value = ''
+    options.addStringOption('header').value = ''
+    options.links("http://download.java.net/java/jdk9/docs/api")
 }
 
 test {

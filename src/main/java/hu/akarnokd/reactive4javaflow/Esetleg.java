@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
@@ -27,7 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.Flow;
 import java.util.function.Function;
 
-public abstract class Folyam<T> implements Flow.Publisher<T> {
+public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     @Override
     public final void subscribe(Flow.Subscriber<? super T> s) {
@@ -50,11 +49,11 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     protected abstract void subscribeActual(FolyamSubscriber<? super T> s);
 
-    public final <R> R to(Function<? super Folyam<T>, R> converter) {
+    public final <R> R to(Function<? super Esetleg<T>, R> converter) {
         return converter.apply(this);
     }
 
-    public final <R> Folyam<R> compose(Function<? super Folyam<T>, ? extends Folyam<R>> composer) {
+    public final <R> Esetleg<R> compose(Function<? super Esetleg<T>, ? extends Esetleg<R>> composer) {
         return to(composer);
     }
 
