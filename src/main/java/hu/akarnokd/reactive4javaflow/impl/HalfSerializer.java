@@ -17,10 +17,10 @@
 package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
 import java.lang.invoke.VarHandle;
+import java.util.concurrent.Flow;
 
 public final class HalfSerializer {
 
@@ -28,7 +28,7 @@ public final class HalfSerializer {
         throw new IllegalStateException("No instances!");
     }
 
-    public static <T> void onNext(FolyamSubscriber<T> actual, Object target, VarHandle WIP, VarHandle ERRORS, T item) {
+    public static <T> void onNext(Flow.Subscriber<T> actual, Object target, VarHandle WIP, VarHandle ERRORS, T item) {
         if ((int)WIP.getAcquire(target) == 0 && WIP.compareAndSet(target, 0, 1)) {
             actual.onNext(item);
             if (!WIP.compareAndSet(target, 1, 0)) {
@@ -58,7 +58,7 @@ public final class HalfSerializer {
         return false;
     }
 
-    public static void onError(FolyamSubscriber<?> actual, Object target, VarHandle WIP, VarHandle ERRORS, Throwable t) {
+    public static void onError(Flow.Subscriber<?> actual, Object target, VarHandle WIP, VarHandle ERRORS, Throwable t) {
         if (ExceptionHelper.addThrowable(target, ERRORS, t)) {
             if ((int) WIP.getAndAdd(target, 1) == 0) {
                 Throwable ex = ExceptionHelper.terminate(target, ERRORS);
@@ -69,7 +69,7 @@ public final class HalfSerializer {
         FolyamPlugins.onError(t);
     }
 
-    public static void onComplete(FolyamSubscriber<?> actual, Object target, VarHandle WIP, VarHandle ERRORS) {
+    public static void onComplete(Flow.Subscriber<?> actual, Object target, VarHandle WIP, VarHandle ERRORS) {
         if ((int) WIP.getAndAdd(target, 1) == 0) {
             Throwable ex = ExceptionHelper.terminate(target, ERRORS);
             if (ex == null) {

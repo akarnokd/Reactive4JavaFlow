@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.functionals;
+package hu.akarnokd.reactive4javaflow;
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+public final class SchedulerServices {
 
-    void accept(T t) throws Throwable;
+    private SchedulerServices() {
+        throw new IllegalStateException("No instances!");
+    }
 }

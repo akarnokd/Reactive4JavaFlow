@@ -17,11 +17,36 @@ package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.concurrent.Flow;
 
-public final class StrictSubscriber<T> implements FolyamSubscriber<T> {
+public final class StrictSubscriber<T> implements FolyamSubscriber<T>, Flow.Subscription {
 
     final Flow.Subscriber<? super T> actual;
+
+    Flow.Subscription upstream;
+    static final VarHandle UPSTREAM;
+
+    long requested;
+    static final VarHandle REQUESTED;
+
+    Throwable error;
+    static final VarHandle ERROR;
+
+    int wip;
+    static final VarHandle WIP;
+
+    static {
+        try {
+            UPSTREAM = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "upstream", Flow.Subscription.class);
+            REQUESTED = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "requested", Long.TYPE);
+            ERROR = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "error", Throwable.class);
+            WIP = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "wip", Integer.TYPE);
+        } catch (Throwable ex) {
+            throw new InternalError(ex);
+        }
+    }
 
     public StrictSubscriber(Flow.Subscriber<? super T> actual) {
         this.actual = actual;
@@ -29,21 +54,37 @@ public final class StrictSubscriber<T> implements FolyamSubscriber<T> {
 
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
-        // TODO implement
+        actual.onSubscribe(this);
+        SubscriptionHelper.deferredReplace(this, UPSTREAM, REQUESTED, subscription);
     }
 
     @Override
     public void onNext(T item) {
-        // TODO implement
+        HalfSerializer.onNext(actual, this, WIP, ERROR, item);
     }
 
     @Override
     public void onError(Throwable throwable) {
-        // TODO implement
+        HalfSerializer.onError(actual, this, WIP, ERROR, throwable);
     }
 
     @Override
     public void onComplete() {
-        // TODO implement
+        HalfSerializer.onComplete(actual, this, WIP, ERROR);
+    }
+
+    @Override
+    public void request(long n) {
+        if (n <= 0L) {
+            cancel();
+            onError(new IllegalArgumentException("§3.9 violated: positive request amount required"));
+        } else {
+            SubscriptionHelper.deferredRequest(this, UPSTREAM, REQUESTED, n);
+        }
+    }
+
+    @Override
+    public void cancel() {
+        SubscriptionHelper.cancel(this, UPSTREAM);
     }
 }

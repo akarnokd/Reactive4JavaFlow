@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.functionals;
 
 @FunctionalInterface
-public interface CheckedConsumer<T> {
+public interface CheckedPredicate<T> {
 
-    void accept(T t) throws Throwable;
+    boolean test(T t) throws Throwable;
 }

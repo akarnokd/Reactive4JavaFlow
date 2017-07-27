@@ -50,6 +50,12 @@ dependencies {
 //    testCompile group: 'org.testng', name: 'testng', version: '6.9.10'
 }
 
+[compileJava, compileTestJava]*.options*.compilerArgs << "-parameters"
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters";
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource

@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.functionals;
+package hu.akarnokd.reactive4javaflow;
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+public interface FolyamEmitter<T> extends Emitter<T> {
 
-    void accept(T t) throws Throwable;
+    boolean tryOnError(Throwable ex);
+
+    boolean isCancelled();
+
+    void setResource(AutoCloseable resource);
+
+    long requested();
 }

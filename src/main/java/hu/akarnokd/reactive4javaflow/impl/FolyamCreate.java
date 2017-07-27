@@ -14,10 +14,24 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.functionals;
+package hu.akarnokd.reactive4javaflow.impl;
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
 
-    void accept(T t) throws Throwable;
+public final class FolyamCreate<T> extends Folyam<T> {
+
+    final CheckedConsumer<? super FolyamEmitter<T>> onSubscribe;
+
+    final BackpressureMode mode;
+
+    public FolyamCreate(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureMode mode) {
+        this.onSubscribe = onSubscribe;
+        this.mode = mode;
+    }
+
+    @Override
+    protected void subscribeActual(FolyamSubscriber<? super T> s) {
+        // TODO implement
+    }
 }

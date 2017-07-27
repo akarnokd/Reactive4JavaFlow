@@ -15,9 +15,7 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
-import hu.akarnokd.reactive4javaflow.functionals.CheckedRunnable;
+import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.FunctionalHelper;
 import hu.akarnokd.reactive4javaflow.impl.StrictSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaSubscriber;
@@ -94,5 +92,17 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     public final Folyam<T> just(T item) {
         Objects.requireNonNull(item, "item == null");
         return FolyamPlugins.onAssembly(new FolyamJust<>(item));
+    }
+
+    public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second) {
+        return sequenceEqual(first, second, Objects::equals);
+    }
+
+    public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second, CheckedBiPredicate<? super T, ? super T> isEqual) {
+        Objects.requireNonNull(first, "first == null");
+        Objects.requireNonNull(second, "second == null");
+        Objects.requireNonNull(isEqual, "isEqual == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 }

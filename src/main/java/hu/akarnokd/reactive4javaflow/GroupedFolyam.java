@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package hu.akarnokd.reactive4javaflow;
 
-package hu.akarnokd.reactive4javaflow.functionals;
+public abstract class GroupedFolyam<K, V> extends Folyam<V> {
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+    public abstract K getKey();
 
-    void accept(T t) throws Throwable;
 }

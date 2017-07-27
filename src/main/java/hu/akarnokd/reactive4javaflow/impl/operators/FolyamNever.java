@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.functionals;
+package hu.akarnokd.reactive4javaflow.impl.operators;
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-    void accept(T t) throws Throwable;
+public final class FolyamNever extends Folyam<Object> {
+
+    public static final FolyamNever INSTANCE = new FolyamNever();
+
+    @Override
+    protected void subscribeActual(FolyamSubscriber<? super Object> s) {
+        s.onSubscribe(EmptySubscription.INSTANCE);
+    }
+
 }

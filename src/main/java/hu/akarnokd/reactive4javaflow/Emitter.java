@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package hu.akarnokd.reactive4javaflow;
 
-package hu.akarnokd.reactive4javaflow.functionals;
+public interface Emitter<T> {
 
-@FunctionalInterface
-public interface CheckedConsumer<T> {
+    void onNext(T item);
 
-    void accept(T t) throws Throwable;
+    void onError(Throwable ex);
+
+    void onComplete();
 }

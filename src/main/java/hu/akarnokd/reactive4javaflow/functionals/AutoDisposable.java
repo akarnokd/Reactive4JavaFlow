@@ -16,6 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow.functionals;
 
+@FunctionalInterface
 public interface AutoDisposable extends AutoCloseable {
 
     @Override

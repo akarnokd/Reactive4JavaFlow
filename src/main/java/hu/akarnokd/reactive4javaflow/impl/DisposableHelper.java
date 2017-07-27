@@ -17,6 +17,7 @@ package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 
+import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicReference;
 
 public enum DisposableHelper implements AutoDisposable {
@@ -47,6 +48,37 @@ public enum DisposableHelper implements AutoDisposable {
             }
         }
         return false;
+    }
+
+    public static boolean dispose(Object target, VarHandle FIELD) {
+        AutoDisposable a = (AutoDisposable)FIELD.getAcquire(target);
+        if (a != DISPOSED) {
+            a = (AutoDisposable)FIELD.getAndSet(target, DISPOSED);
+            if (a != DISPOSED) {
+                if (a != null) {
+                    a.close();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean replace(Object target, VarHandle FIELD, AutoDisposable d) {
+        for (;;) {
+            AutoDisposable a = (AutoDisposable)FIELD.get(target);
+            if (a == DISPOSED) {
+                d.close();
+                return false;
+            }
+            if (FIELD.compareAndSet(target, a, d)) {
+                return true;
+            }
+        }
+    }
+
+    public static boolean isDisposed(Object target, VarHandle FIELD) {
+        return FIELD.getAcquire(target) == DISPOSED;
     }
 
     @Override

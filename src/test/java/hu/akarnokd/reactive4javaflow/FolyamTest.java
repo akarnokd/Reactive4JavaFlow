@@ -24,6 +24,9 @@ import org.junit.*;
 public class FolyamTest {
 
     @Test
-    public void normalInteger() {
+    public void helloWorld() {
+        Folyam.just("Hello World!")
+                .test()
+                .assertResult("Hello World!");
     }
 }

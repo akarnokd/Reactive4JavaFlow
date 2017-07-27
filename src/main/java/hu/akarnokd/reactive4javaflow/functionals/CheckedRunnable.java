@@ -15,6 +15,7 @@
  */
 package hu.akarnokd.reactive4javaflow.functionals;
 
+@FunctionalInterface
 public interface CheckedRunnable {
 
     void run() throws Throwable;
