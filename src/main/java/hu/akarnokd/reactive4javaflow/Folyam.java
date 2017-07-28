@@ -39,7 +39,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final void subscribe(FolyamSubscriber<? super T> s) {
-        s = Objects.requireNonNull(FolyamPlugins.onSubscribe(this, s), "The plugin returned a null value");
+        s = Objects.requireNonNull(FolyamPlugins.onSubscribe(this, s), "The plugin onSubscribe handler returned a null value");
         try {
             subscribeActual(s);
         } catch (Throwable ex) {
@@ -797,6 +797,16 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    public final Folyam<T> valve(Flow.Publisher<Boolean> openClose) {
+        return valve(openClose, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final Folyam<T> valve(Flow.Publisher<Boolean> openClose, int prefetch) {
+        Objects.requireNonNull(openClose, "mapper == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
     // async-introducing operators
 
     public final Folyam<T> subscribeOn(SchedulerService executor) {
@@ -826,15 +836,15 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<T> spanout(long time, TimeUnit unit, SchedulerService executor) {
-        Objects.requireNonNull(unit, "unit == null");
-        Objects.requireNonNull(executor, "executor == null");
+    public final Folyam<T> delay(CheckedFunction<? super T, ? extends Flow.Publisher<?>> delaySelector) {
+        Objects.requireNonNull(delaySelector, "delaySelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<T> delay(CheckedFunction<? super T, ? extends Flow.Publisher<?>> delaySelector) {
-        Objects.requireNonNull(delaySelector, "delaySelector == null");
+    public final Folyam<T> spanout(long time, TimeUnit unit, SchedulerService executor) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
@@ -1352,6 +1362,21 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    // parallel
+
+    public final ParallelFolyam<T> parallel() {
+        return parallel(Runtime.getRuntime().availableProcessors(), FolyamPlugins.defaultBufferSize());
+    }
+
+    public final ParallelFolyam<T> parallel(int parallelism) {
+        return parallel(parallelism, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final ParallelFolyam<T> parallel(int parallelism, int prefetch) {
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
     // type-specific operators
 
     public static Folyam<Integer> characters(CharSequence source) {
@@ -1360,52 +1385,38 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static <T extends Comparable<? super T>> Folyam<T> min(Flow.Publisher<T> source) {
-        Objects.requireNonNull(source, "source == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public static <T> Folyam<T> min(Flow.Publisher<T> source, Comparator<? super T> comparator) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<T> min(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static <T extends Comparable<? super T>> Folyam<T> max(Flow.Publisher<T> source) {
-        Objects.requireNonNull(source, "source == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public static <T> Folyam<T> max(Flow.Publisher<T> source, Comparator<? super T> comparator) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<T> max(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static Folyam<Integer> sumInt(Flow.Publisher<? extends Number> source) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
+        Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static Folyam<Long> sumLong(Flow.Publisher<? extends Number> source) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<Long> sumLong(CheckedFunction<? super T, ? extends Number> valueSelector) {
+        Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static Folyam<Float> sumFloat(Flow.Publisher<? extends Number> source) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<Float> sumFloat(CheckedFunction<? super T, ? extends Number> valueSelector) {
+        Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static Folyam<Double> sumDouble(Flow.Publisher<? extends Number> source) {
-        Objects.requireNonNull(source, "source == null");
+    public final Folyam<Double> sumDouble(CheckedFunction<? super T, ? extends Number> valueSelector) {
+        Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }

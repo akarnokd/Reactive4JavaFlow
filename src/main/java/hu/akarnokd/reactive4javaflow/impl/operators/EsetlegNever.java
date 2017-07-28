@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl;
+package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-public final class FolyamCreate<T> extends Folyam<T> {
+public final class EsetlegNever extends Esetleg<Object> {
 
-    final CheckedConsumer<? super FolyamEmitter<T>> onSubscribe;
-
-    final BackpressureMode mode;
-
-    public FolyamCreate(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureMode mode) {
-        this.onSubscribe = onSubscribe;
-        this.mode = mode;
-    }
+    public static final EsetlegNever INSTANCE = new EsetlegNever();
 
     @Override
-    protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        // TODO implement
+    protected void subscribeActual(FolyamSubscriber<? super Object> s) {
+        s.onSubscribe(EmptySubscription.INSTANCE);
     }
+
 }

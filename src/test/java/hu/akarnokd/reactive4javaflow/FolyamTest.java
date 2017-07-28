@@ -16,9 +16,11 @@
 
 package hu.akarnokd.reactive4javaflow;
 
-import java.io.IOException;
+import org.junit.Test;
 
-import org.junit.*;
+import java.lang.reflect.*;
+
+import static org.junit.Assert.*;
 
 
 public class FolyamTest {
@@ -28,5 +30,49 @@ public class FolyamTest {
         Folyam.just("Hello World!")
                 .test()
                 .assertResult("Hello World!");
+    }
+
+    void method(int paramName) {
+        // deliberately empty
+    }
+
+    @Test
+    public void javacParametersEnabled() throws Exception {
+        assertEquals("Please enable saving parameter names via the -parameters javac argument",
+                "paramName",
+                getClass()
+                .getDeclaredMethod("method", Integer.TYPE)
+                .getParameters()[0].getName());
+    }
+
+    void checkFinalMethods(Class<?> clazz) {
+        for (Method m : clazz.getMethods()) {
+
+            if ((m.getModifiers() & (Modifier.STATIC | Modifier.ABSTRACT)) == 0
+                    && m.getDeclaringClass() == clazz) {
+                assertTrue(m.toString(), (m.getModifiers() & Modifier.FINAL) != 0);
+            }
+
+        }
+    }
+
+    @Test
+    public void folyamFinalMethods() {
+        checkFinalMethods(Folyam.class);
+    }
+
+    @Test
+    public void esetlegFinalMethods() {
+        checkFinalMethods(Esetleg.class);
+    }
+
+    @Test
+    public void parallelFolyamFinalMethods() {
+        checkFinalMethods(ParallelFolyam.class);
+    }
+
+    @Test
+    public void connectableFolyamFinalMethods() {
+        checkFinalMethods(ConnectableFolyam.class);
     }
 }
