@@ -679,6 +679,11 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    public final Folyam<T> hide() {
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
     // mappers of inner flows
 
     public final <R> Folyam<R> concatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {

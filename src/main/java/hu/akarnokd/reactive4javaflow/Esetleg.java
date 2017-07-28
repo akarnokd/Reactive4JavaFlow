@@ -359,6 +359,11 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return Esetleg.sequenceEqual(this, other);
     }
 
+    public final Folyam<T> hide() {
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
     // mappers of inner flows
 
     public final <R> Esetleg<R> flatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {

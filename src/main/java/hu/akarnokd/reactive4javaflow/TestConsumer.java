@@ -104,6 +104,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
                             if (v == null) {
                                 completions++;
+                                cdl.countDown();
                                 return;
                             }
                             items.add(v);
@@ -134,7 +135,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
             UPSTREAM.compareAndSet(this, null, MissingSubscription.MISSING);
             errors.add(new IllegalStateException("onSubscribe was not called before onNext"));
         }
-        if (actualFusionMode != 0) {
+        if (actualFusionMode > 0) {
             if (actualFusionMode == FusedSubscription.SYNC) {
                 close();
                 errors.add(new IllegalStateException("Should not call onNext in SYNC mode."));
@@ -349,6 +350,27 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         assertValues(expected);
         assertError(errorClass);
         assertNotComplete();
+        return this;
+    }
+
+    public final TestConsumer<T> assertEmpty() {
+        assertOnSubscribe();
+        assertValues();
+        assertNoErrors();
+        assertNotComplete();
+        return this;
+    }
+
+    public final TestConsumer<T> awaitCount(int expected, long delayStep, long delayTotal) {
+        long start = System.currentTimeMillis();
+        while (items.size() < expected && cdl.getCount() != 0 && start + delayTotal > System.currentTimeMillis()) {
+            try {
+                Thread.sleep(delayStep);
+            } catch (InterruptedException ex) {
+                close();
+                break;
+            }
+        }
         return this;
     }
 
