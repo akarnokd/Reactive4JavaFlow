@@ -17,6 +17,7 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
+import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.*;
@@ -29,6 +30,12 @@ public final class TestHelper {
 
     @SafeVarargs
     public static <T> void assertResult(Flow.Publisher<T> source, T... values) {
+        assertResultInternal(source, values);
+        assertResultInternal(FolyamPlugins.onAssembly(new FolyamHide<>(source)), values);
+    }
+
+    @SafeVarargs
+    static <T> void assertResultInternal(Flow.Publisher<T> source, T... values) {
         TestConsumer<T> ts;
 
         // test normal consumption

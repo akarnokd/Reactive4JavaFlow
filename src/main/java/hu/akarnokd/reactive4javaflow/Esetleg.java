@@ -17,7 +17,7 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.LambdaSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 
 import java.util.*;
@@ -359,9 +359,8 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return Esetleg.sequenceEqual(this, other);
     }
 
-    public final Folyam<T> hide() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Esetleg<T> hide() {
+        return FolyamPlugins.onAssembly(new EsetlegHide<>(this));
     }
 
     // mappers of inner flows

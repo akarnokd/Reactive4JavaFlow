@@ -53,6 +53,7 @@ public final class FolyamPlugins {
 
     public static void onError(Throwable ex) {
         // TODO implement
+        ex.printStackTrace();
     }
 
     public static void handleFatal(Throwable ex) {

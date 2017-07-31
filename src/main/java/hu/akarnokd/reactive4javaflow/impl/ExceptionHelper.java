@@ -55,6 +55,9 @@ public final class ExceptionHelper {
             } else {
                 b = new CompositeThrowable(a, t);
             }
+            if (ERRORS.compareAndSet(target, a, b)) {
+                return true;
+            }
         }
     }
 

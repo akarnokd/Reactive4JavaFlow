@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package hu.akarnokd.reactive4javaflow;
 
-import hu.akarnokd.reactive4javaflow.functionals.CheckedBiFunction;
+package hu.akarnokd.reactive4javaflow.impl.operators;
 
-public enum ParallelFailureHandling implements CheckedBiFunction<Long, Throwable, ParallelFailureHandling> {
-    ERROR,
-    COMPLETE,
-    RETRY,
-    SKIP
-    ;
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.fused.FusedDynamicSource;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
+
+public final class FolyamError<T> extends Folyam<T> implements FusedDynamicSource<T> {
+
+    final Throwable error;
+
+    public FolyamError(Throwable error) {
+        this.error = error;
+    }
 
     @Override
-    public ParallelFailureHandling apply(Long aLong, Throwable throwable) throws Throwable {
-        return this;
+    protected void subscribeActual(FolyamSubscriber<? super T> s) {
+        EmptySubscription.error(s, error);
+    }
+
+    @Override
+    public T value() throws Throwable {
+        throw error;
     }
 }

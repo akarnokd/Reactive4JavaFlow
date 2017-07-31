@@ -18,12 +18,12 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.LambdaSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Function;
+import java.util.function.*;
 import java.util.stream.*;
 
 public abstract class Folyam<T> implements Flow.Publisher<T> {
@@ -126,14 +126,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> error(Throwable error) {
         Objects.requireNonNull(error, "error == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamError<>(error));
     }
 
     public static <T> Folyam<T> error(Callable<? extends Throwable> errorSupplier) {
         Objects.requireNonNull(errorSupplier, "errorSupplier == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamErrorCallable<>(errorSupplier));
     }
 
     public static Folyam<Integer> range(int start, int count) {
@@ -530,8 +528,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> map(CheckedFunction<? super T, ? extends R> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamMap<>(this, mapper));
     }
 
     public final <R> Folyam<R> mapOptional(CheckedFunction<? super T, ? extends Optional<? extends R>> mapper) {
@@ -561,10 +558,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<T> filter(CheckedPredicate<? super T> filter) {
-        Objects.requireNonNull(filter, "filter == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> filter(CheckedPredicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate == null");
+        return FolyamPlugins.onAssembly(new FolyamFilter<>(this, predicate));
     }
 
     public final Folyam<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter) {
@@ -710,8 +706,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> hide() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamHide<>(this));
     }
 
     // mappers of inner flows
@@ -722,8 +717,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> concatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatMap<>(this, mapper, prefetch, false));
     }
 
     public final <R> Folyam<R> concatMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -732,8 +726,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> concatMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatMap<>(this, mapper, prefetch, true));
     }
 
     public final <R> Folyam<R> flatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -1231,6 +1224,24 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final <U, C extends Collection<? super T>> Folyam<C> buffer(Flow.Publisher<U> start, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end, Callable<C> collectionSupplier) {
         Objects.requireNonNull(start, "start == null");
         Objects.requireNonNull(end, "end == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    public final Folyam<List<T>> bufferWhile(Predicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    public final Folyam<List<T>> bufferUntil(Predicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    public final Folyam<List<T>> bufferSplit(Predicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }

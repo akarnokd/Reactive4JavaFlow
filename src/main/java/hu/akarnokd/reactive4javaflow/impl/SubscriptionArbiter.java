@@ -16,8 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package hu.akarnokd.reactive4javaflow;
+package hu.akarnokd.reactive4javaflow.impl.opeators;
 
-import hu.akarnokd.reactive4javaflow.functionals.CheckedBiFunction;
+import hu.akarnokd.reactive4javaflow.Folyam;
+import org.junit.Test;
 
-public enum ParallelFailureHandling implements CheckedBiFunction<Long, Throwable, ParallelFailureHandling> {
-    ERROR,
-    COMPLETE,
-    RETRY,
-    SKIP
-    ;
+public class FolyamNever {
 
-    @Override
-    public ParallelFailureHandling apply(Long aLong, Throwable throwable) throws Throwable {
-        return this;
+    @Test
+    public void normal() {
+        Folyam.never()
+                .test()
+                .assertOnSubscribe()
+                .assertEmpty()
+                .awaitCount(1, 1, 100)
+                .assertEmpty();
     }
 }

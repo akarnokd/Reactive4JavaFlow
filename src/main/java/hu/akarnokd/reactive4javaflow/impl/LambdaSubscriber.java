@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl.consumers;
+package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
