@@ -24,7 +24,7 @@ import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 public abstract class Folyam<T> implements Flow.Publisher<T> {
 
@@ -137,8 +137,29 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public static Folyam<Integer> range(int start, int count) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        if (count == 0) {
+            return empty();
+        }
+        if (count == 1) {
+            return just(start);
+        }
+        if ((long)start + count - 1 > Integer.MAX_VALUE) {
+            throw new IndexOutOfBoundsException("start + count overflow");
+        }
+        return FolyamPlugins.onAssembly(new FolyamRange(start, start + count));
+    }
+
+    public static Folyam<Long> rangeLong(long start, long count) {
+        if (count == 0L) {
+            return empty();
+        }
+        if (count == 1L) {
+            return just(start);
+        }
+        if (start > 0 && start + (count - 1) < 0L) {
+            throw new IndexOutOfBoundsException("start + count overflow");
+        }
+        return FolyamPlugins.onAssembly(new FolyamRangeLong(start, start + count));
     }
 
     public static <T> Folyam<T> create(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureMode mode) {
@@ -202,8 +223,17 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         if (c == 0) {
             return empty();
         }
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamArray(items, 0, c));
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> fromArrayRange(int start, int end, T... items) {
+        Objects.requireNonNull(items, "items == null");
+        int c = items.length;
+        if (start < 0 || end < 0 || start > end || start > c || end > c) {
+            throw new IndexOutOfBoundsException("start: " + start + ", end: " + end + ", length: " + c);
+        }
+        return FolyamPlugins.onAssembly(new FolyamArray(items, start, end));
     }
 
     public static <T> Folyam<T> fromCallable(Callable<? extends T> call) {
@@ -1107,8 +1137,19 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    public final Esetleg<T> elementAt(long index) {
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
     public final <C> Esetleg<C> collect(Callable<? extends C> collectionSupplier, CheckedBiConsumer<C, ? super T> collector) {
         Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
+        Objects.requireNonNull(collector, "collector == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    public final <A, R> Esetleg<R> collectWith(Collector<T, A, R> collector) {
         Objects.requireNonNull(collector, "collector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");

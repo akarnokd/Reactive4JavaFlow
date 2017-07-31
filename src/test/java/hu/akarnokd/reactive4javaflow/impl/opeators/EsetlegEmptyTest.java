@@ -18,9 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.opeators;
 import hu.akarnokd.reactive4javaflow.*;
 import org.junit.Test;
 
-public class FolyamJustTest {
+public class EsetlegEmptyTest {
     @Test
     public void standard() {
-        TestHelper.assertResult(Folyam.just(1), 1);
+        TestHelper.assertResult(Esetleg.empty());
     }
 }

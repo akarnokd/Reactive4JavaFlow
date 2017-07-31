@@ -19,7 +19,7 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
 public enum SubscriptionHelper implements Flow.Subscription {
     CANCELLED;
@@ -119,6 +119,19 @@ public enum SubscriptionHelper implements Flow.Subscription {
     public static long addRequested(Object target, VarHandle requested, long n) {
         for (;;) {
             long a = (long)requested.getAcquire(target);
+            if (a == Long.MAX_VALUE) {
+                return Long.MAX_VALUE;
+            }
+            long b = addCap(a, n);
+            if (requested.compareAndSet(target, a, b)) {
+                return a;
+            }
+        }
+    }
+
+    public static long addRequested(AtomicLong requested, long n) {
+        for (;;) {
+            long a = (long)requested.getAcquire();
             if (a == Long.MAX_VALUE) {
                 return Long.MAX_VALUE;
             }
