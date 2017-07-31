@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl.operators;
+package hu.akarnokd.reactive4javaflow.impl.opeators;
 
-import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
+import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.TestHelper;
+import org.junit.Test;
 
-public final class FolyamCreate<T> extends Folyam<T> {
+public class FolyamRepeatItemTest {
 
-    final CheckedConsumer<? super FolyamEmitter<T>> onSubscribe;
-
-    final BackpressureHandling mode;
-
-    public FolyamCreate(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureHandling mode) {
-        this.onSubscribe = onSubscribe;
-        this.mode = mode;
+    @Test
+    public void standard() {
+        TestHelper.assertResult(Folyam
+                .repeatItem(1)
+                .take(3),
+                1, 1, 1);
     }
 
-    @Override
-    protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        // TODO implement
+    @Test
+    public void standardConditional() {
+        TestHelper.assertResult(Folyam
+                        .repeatItem(1)
+                        .filter(v -> true)
+                        .take(3),
+                1, 1, 1);
     }
 }

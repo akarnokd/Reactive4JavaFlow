@@ -25,4 +25,6 @@ public interface FolyamEmitter<T> extends Emitter<T> {
     void setResource(AutoCloseable resource);
 
     long requested();
+
+    FolyamEmitter<T> serialized();
 }

@@ -15,7 +15,7 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
-public enum BackpressureMode {
+public enum BackpressureHandling {
     MISSING,
     ERROR,
     BUFFER,

@@ -15,13 +15,18 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
-import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
+import hu.akarnokd.reactive4javaflow.fused.FusedDynamicSource;
+import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
+import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Flow;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -143,6 +148,7 @@ public final class TestHelper {
         // -------------------------
 
         if (source instanceof FusedDynamicSource) {
+            @SuppressWarnings("unchecked")
             FusedDynamicSource<T> f = (FusedDynamicSource<T>) source;
 
             T v;
@@ -214,6 +220,13 @@ public final class TestHelper {
                             if (!fs.isEmpty()) {
                                 ts1.onError(new IndexOutOfBoundsException("Elements not cleared"));
                             }
+                            try {
+                                if (fs.poll() != null) {
+                                    ts1.onError(new IndexOutOfBoundsException("poll() returned new elements"));
+                                }
+                            } catch (Throwable ex) {
+                                ts1.onError(ex);
+                            }
                             return;
                         }
                         if (m == FusedSubscription.ASYNC) {
@@ -243,6 +256,13 @@ public final class TestHelper {
                         fs.clear();
                         if (!fs.isEmpty()) {
                             ts1.onError(new IndexOutOfBoundsException("Elements not cleared"));
+                        }
+                        try {
+                            if (fs.poll() != null) {
+                                ts1.onError(new IndexOutOfBoundsException("poll() returned new elements"));
+                            }
+                        } catch (Throwable ex) {
+                            ts1.onError(ex);
                         }
                     } else {
                         ts1.onNext(item);
@@ -276,6 +296,7 @@ public final class TestHelper {
                     upstream = subscription;
                     ts2.onSubscribe(new BooleanSubscription());
                     if (subscription instanceof FusedSubscription) {
+                        @SuppressWarnings("unchecked")
                         FusedSubscription<T> fs = (FusedSubscription<T>) subscription;
 
                         int m = fs.requestFusion(FusedSubscription.ANY);
@@ -296,6 +317,13 @@ public final class TestHelper {
                             fs.clear();
                             if (!fs.isEmpty()) {
                                 ts2.onError(new IndexOutOfBoundsException("Elements not cleared"));
+                            }
+                            try {
+                                if (fs.poll() != null) {
+                                    ts2.onError(new IndexOutOfBoundsException("poll() returned new elements"));
+                                }
+                            } catch (Throwable ex) {
+                                ts2.onError(ex);
                             }
                             return;
                         }
@@ -326,6 +354,13 @@ public final class TestHelper {
                         fs.clear();
                         if (!fs.isEmpty()) {
                             ts2.onError(new IndexOutOfBoundsException("Elements not cleared"));
+                        }
+                        try {
+                            if (fs.poll() != null) {
+                                ts2.onError(new IndexOutOfBoundsException("poll() returned new elements"));
+                            }
+                        } catch (Throwable ex) {
+                            ts2.onError(ex);
                         }
                     } else {
                         ts2.onNext(item);
@@ -676,6 +711,34 @@ public final class TestHelper {
         for (Enum<?> a : o) {
             assertNotNull(a.name());
             assertTrue(a.ordinal() >= 0);
+        }
+    }
+
+    public static void assertError(List<Throwable> list, int index, Class<? extends Throwable> errorClazz) {
+        Throwable ex = list.get(index);
+        if (!errorClazz.isInstance(ex)) {
+            throw new AssertionError("Wrong error: " + ex, ex);
+        }
+    }
+
+    public static void assertError(List<Throwable> list, int index, Class<? extends Throwable> errorClazz, String message) {
+        Throwable ex = list.get(index);
+        if (!errorClazz.isInstance(ex)) {
+            throw new AssertionError("Wrong error: " + ex, ex);
+        }
+        if (!Objects.equals(message, ex.getMessage())) {
+            throw new AssertionError("Messages differ. Expected: " + message + ", actual: " + ex.getMessage());
+        }
+    }
+
+    public static void withErrorTracking(CheckedConsumer<List<Throwable>> test) {
+        List<Throwable> errors = trackErrors();
+        try {
+            test.accept(errors);
+        } catch (Throwable ex) {
+            throw new AssertionError(ex);
+        } finally {
+            FolyamPlugins.setOnError(null);
         }
     }
 }

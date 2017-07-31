@@ -28,13 +28,14 @@ import java.util.stream.*;
 
 public abstract class Folyam<T> implements Flow.Publisher<T> {
 
+    @SuppressWarnings("unchecked")
     @Override
     public final void subscribe(Flow.Subscriber<? super T> s) {
         Objects.requireNonNull(s, "s == null");
         if (s instanceof FolyamSubscriber) {
             subscribe((FolyamSubscriber<? super T>)s);
         } else {
-            subscribe(new StrictSubscriber<T>(s));
+            subscribe(new StrictSubscriber<>(s));
         }
     }
 
@@ -75,9 +76,14 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return consumer;
     }
 
+    @SuppressWarnings("unchecked")
     public final void safeSubscribe(Flow.Subscriber<? super T> s) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(s, "s == null");
+        if (s instanceof FolyamSubscriber) {
+            subscribe(new SafeFolyamSubscriber<>((FolyamSubscriber<? super T>)s));
+        } else {
+            subscribe(new SafeFolyamSubscriber<>(new StrictSubscriber<>(s)));
+        }
     }
 
     public final TestConsumer<T> test() {
@@ -116,10 +122,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamJust<>(item));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Folyam<T> empty() {
         return FolyamPlugins.onAssembly((Folyam<T>) FolyamEmpty.INSTANCE);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Folyam<T> never() {
         return FolyamPlugins.onAssembly((Folyam<T>) FolyamNever.INSTANCE);
     }
@@ -160,7 +168,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamRangeLong(start, start + count));
     }
 
-    public static <T> Folyam<T> create(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureMode mode) {
+    public static <T> Folyam<T> create(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe, BackpressureHandling mode) {
         Objects.requireNonNull(onSubscribe, "onSubscribe == null");
         Objects.requireNonNull(mode, "mode == null");
         return FolyamPlugins.onAssembly(new FolyamCreate<>(onSubscribe, mode));
@@ -168,14 +176,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> repeatItem(T item) {
         Objects.requireNonNull(item, "item == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRepeatItem<>(item));
     }
 
     public static <T> Folyam<T> repeatCallable(Callable<? extends T> callable) {
         Objects.requireNonNull(callable, "callable == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRepeatCallable<>(callable));
     }
 
     public static <T> Folyam<T> generate(CheckedConsumer<Emitter<T>> generator) {
@@ -221,7 +227,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         if (c == 0) {
             return empty();
         }
-        return FolyamPlugins.onAssembly(new FolyamArray(items, 0, c));
+        return FolyamPlugins.onAssembly(new FolyamArray<>(items, 0, c));
     }
 
     @SafeVarargs
@@ -231,7 +237,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         if (start < 0 || end < 0 || start > end || start > c || end > c) {
             throw new IndexOutOfBoundsException("start: " + start + ", end: " + end + ", length: " + c);
         }
-        return FolyamPlugins.onAssembly(new FolyamArray(items, start, end));
+        return FolyamPlugins.onAssembly(new FolyamArray<>(items, start, end));
     }
 
     public static <T> Folyam<T> fromCallable(Callable<? extends T> call) {

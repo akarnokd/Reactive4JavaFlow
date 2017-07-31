@@ -58,6 +58,14 @@ public interface SchedulerService {
         return unit.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
+    default void start() {
+        // default no op
+    }
+
+    default void shutdown() {
+        // default no op
+    }
+
     interface Worker extends AutoDisposable {
 
         default AutoDisposable schedule(Runnable task) {

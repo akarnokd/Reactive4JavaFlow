@@ -16,9 +16,14 @@
 
 package hu.akarnokd.reactive4javaflow;
 
+import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -78,6 +83,106 @@ public class FolyamTest {
 
     @Test
     public void backpressureModeEnum() {
-        TestHelper.checkEnum(BackpressureMode.class);
+        TestHelper.checkEnum(BackpressureHandling.class);
+    }
+
+    @Test
+    public void compose() {
+        Folyam.range(1, 5)
+                .compose(f -> f.map(g -> g + 1))
+                .test()
+                .assertResult(2, 3, 4, 5, 6);
+    }
+
+    @Test
+    public void subscribe0() {
+        Folyam.range(1, 5)
+                .subscribe();
+    }
+
+    @Test
+    public void subscribe0Error() {
+        TestHelper.withErrorTracking(errors -> {
+            Folyam.error(new IOException("failure"))
+                    .subscribe();
+
+            TestHelper.assertError(errors, 0, IOException.class, "failure");
+        });
+    }
+
+    @Test
+    public void subscribe1() {
+        List<Integer> items = new ArrayList<>();
+        Folyam.range(1, 5)
+                .subscribe(items::add);
+
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5), items);
+    }
+
+    @Test
+    public void subscribe1Error() {
+        TestHelper.withErrorTracking(errors -> {
+            List<Integer> items = new ArrayList<>();
+            Folyam.<Integer>error(new IOException("failure"))
+                    .subscribe(items::add);
+
+            TestHelper.assertError(errors, 0, IOException.class, "failure");
+        });
+    }
+
+    @Test
+    public void subscribe2() {
+        List<Integer> items = new ArrayList<>();
+        Folyam.range(1, 5)
+                .subscribe(items::add, e -> items.add(100));
+
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5), items);
+    }
+
+    @Test
+    public void subscribe3() {
+        List<Integer> items = new ArrayList<>();
+        Folyam.range(1, 5)
+                .subscribe(items::add, e -> items.add(100), () -> items.add(200));
+
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5, 200), items);
+    }
+
+    @Test
+    public void subscribeWith() {
+        Folyam.range(1, 5)
+                .subscribeWith(new TestConsumer<>())
+                .assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void folyamCrash() {
+        TestHelper.withErrorTracking(errors -> {
+            new Folyam<Integer>() {
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new BooleanSubscription());
+                    throw new IllegalArgumentException("failure");
+                }
+            }
+            .test()
+            .assertEmpty()
+            ;
+            TestHelper.assertError(errors, 0, IllegalArgumentException.class, "failure");
+        });
+    }
+
+    @Test
+    public void runTestNoCancel() {
+        Folyam.just(1)
+                .test(1, false, 0)
+                .assertResult(1);
+    }
+
+    @Test
+    public void runTestCancel() {
+        Folyam.just(1)
+                .test(1, true, 0)
+                .assertEmpty();
     }
 }

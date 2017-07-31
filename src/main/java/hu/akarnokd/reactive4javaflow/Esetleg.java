@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
+    @SuppressWarnings("unchecked")
     @Override
     public final void subscribe(Flow.Subscriber<? super T> s) {
         Objects.requireNonNull(s, "s == null");
@@ -84,9 +85,14 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return tc;
     }
 
+    @SuppressWarnings("unchecked")
     public final void safeSubscribe(Flow.Subscriber<? super T> s) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(s, "s == null");
+        if (s instanceof FolyamSubscriber) {
+            subscribe((FolyamSubscriber<? super T>)s);
+        } else {
+            subscribe(new SafeFolyamSubscriber<>(new StrictSubscriber<>(s)));
+        }
     }
 
     public final <E extends Flow.Subscriber<? super T>> E subscribeWith(E s) {

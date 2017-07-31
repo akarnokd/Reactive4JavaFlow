@@ -16,49 +16,42 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.FolyamPlugins;
+import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
+import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 
+import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class FolyamArray<T> extends Folyam<T> {
+public final class FolyamRepeatCallable<T> extends Folyam<T> {
 
-    final T[] array;
+    final Callable<? extends T> item;
 
-    final int start;
-
-    final int end;
-
-    public FolyamArray(T[] array, int start, int end) {
-        this.array = array;
-        this.start = start;
-        this.end = end;
+    public FolyamRepeatCallable(Callable<? extends T> item) {
+        this.item = item;
     }
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
         if (s instanceof ConditionalSubscriber) {
-            s.onSubscribe(new ArrayConditionalSubscription<>((ConditionalSubscriber<? super T>)s, array, start, end));
+            s.onSubscribe(new RepeatCallableConditionalSubscription<>((ConditionalSubscriber<? super T>)s, item));
         } else {
-            s.onSubscribe(new ArraySubscription<>(s, array, start, end));
+            s.onSubscribe(new RepeatCallableSubscription<>(s, item));
         }
     }
 
-    static abstract class AbstractArraySubscription<T> extends AtomicLong implements FusedSubscription<T> {
+    static abstract class AbstractRepeatCallableSubscription<T> extends AtomicLong implements FusedSubscription<T> {
 
-        final T[] array;
-
-        final int end;
-
-        int index;
+        Callable<? extends T> item;
 
         volatile boolean cancelled;
 
-        AbstractArraySubscription(T[] array, int start, int end) {
-            this.array = array;
-            this.index = start;
-            this.end = end;
+        AbstractRepeatCallableSubscription(Callable<? extends T> item) {
+            this.item = item;
         }
 
         @Override
@@ -68,26 +61,21 @@ public final class FolyamArray<T> extends Folyam<T> {
 
         @Override
         public final T poll() throws Throwable {
-            int idx = index;
-            if (idx == end) {
+            Callable<? extends T> item = this.item;
+            if (item == null) {
                 return null;
             }
-            index = idx + 1;
-            T v = array[idx];
-            if (v == null) {
-                throw new NullPointerException("Item " + idx + " is null");
-            }
-            return v;
+            return Objects.requireNonNull(item.call(), "The callable returned a null item");
         }
 
         @Override
         public final boolean isEmpty() {
-            return index == end;
+            return item == null;
         }
 
         @Override
         public final void clear() {
-            index = end;
+            item = null;
         }
 
         @Override
@@ -111,71 +99,65 @@ public final class FolyamArray<T> extends Folyam<T> {
         abstract void slowPath(long n);
     }
 
-    static final class ArraySubscription<T> extends AbstractArraySubscription<T> {
+    static final class RepeatCallableSubscription<T> extends AbstractRepeatCallableSubscription<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        ArraySubscription(FolyamSubscriber<? super T> actual, T[] array, int start, int end) {
-            super(array, start, end);
+        RepeatCallableSubscription(FolyamSubscriber<? super T> actual, Callable<? extends T> item) {
+            super(item);
             this.actual = actual;
         }
 
         @Override
         void fastPath() {
             FolyamSubscriber<? super T> a = actual;
-            T[] items = array;
-            int e = end;
-            for (int i = index; i != e; i++) {
+            Callable<? extends T> item = this.item;
+            for (;;) {
                 if (cancelled) {
                     return;
                 }
-                T v = items[i];
-                if (v == null) {
-                    a.onError(new NullPointerException("Item " + i + " is null"));
+
+                T v;
+
+                try {
+                    v = Objects.requireNonNull(item.call(), "The callable returned a null item.");
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    a.onError(ex);
                     return;
                 }
                 a.onNext(v);
-            }
-            if (!cancelled) {
-                a.onComplete();
             }
         }
 
         @Override
         void slowPath(long n) {
             FolyamSubscriber<? super T> a = actual;
-            T[] items = array;
-            int idx = index;
+            Callable<? extends T> item = this.item;
             long e = 0L;
-            int f = end;
             for (;;) {
 
-                while (idx != f && e != n) {
+                while (e != n) {
                     if (cancelled) {
                         return;
                     }
 
-                    T v = items[idx];
-                    if (v == null) {
-                        a.onError(new NullPointerException("Item " + idx + " is null"));
+                    T v;
+
+                    try {
+                        v = Objects.requireNonNull(item.call(), "The callable returned a null item.");
+                    } catch (Throwable ex) {
+                        FolyamPlugins.handleFatal(ex);
+                        a.onError(ex);
                         return;
                     }
                     a.onNext(v);
 
-                    idx++;
                     e++;
-                }
-
-                if (idx == f) {
-                    if (!cancelled) {
-                        a.onComplete();
-                    }
-                    return;
                 }
 
                 n = getAcquire();
                 if (e == n) {
-                    index = idx;
                     n = addAndGet(-e);
                     if (n == 0L) {
                         break;
@@ -186,72 +168,65 @@ public final class FolyamArray<T> extends Folyam<T> {
         }
     }
 
-    static final class ArrayConditionalSubscription<T> extends AbstractArraySubscription<T> {
+    static final class RepeatCallableConditionalSubscription<T> extends AbstractRepeatCallableSubscription<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        ArrayConditionalSubscription(ConditionalSubscriber<? super T> actual, T[] array, int start, int end) {
-            super(array, start, end);
+        RepeatCallableConditionalSubscription(ConditionalSubscriber<? super T> actual, Callable<? extends T> item) {
+            super(item);
             this.actual = actual;
         }
 
         @Override
         void fastPath() {
             ConditionalSubscriber<? super T> a = actual;
-            T[] items = array;
-            int e = end;
-            for (int i = index; i != e; i++) {
+            Callable<? extends T> item = this.item;
+            for (;;) {
                 if (cancelled) {
                     return;
                 }
-                T v = items[i];
-                if (v == null) {
-                    a.onError(new NullPointerException("Item " + i + " is null"));
+                T v;
+
+                try {
+                    v = Objects.requireNonNull(item.call(), "The callable returned a null item.");
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    a.onError(ex);
                     return;
                 }
                 a.tryOnNext(v);
-            }
-            if (!cancelled) {
-                a.onComplete();
             }
         }
 
         @Override
         void slowPath(long n) {
             ConditionalSubscriber<? super T> a = actual;
-            T[] items = array;
-            int idx = index;
             long e = 0L;
-            int f = end;
-            for (; ; ) {
+            Callable<? extends T> item = this.item;
+            for (;;) {
 
-                while (idx != f && e != n) {
+                while (e != n) {
                     if (cancelled) {
                         return;
                     }
 
-                    T v = items[idx];
-                    if (v == null) {
-                        a.onError(new NullPointerException("Item " + idx + " is null"));
+                    T v;
+
+                    try {
+                        v = Objects.requireNonNull(item.call(), "The callable returned a null item.");
+                    } catch (Throwable ex) {
+                        FolyamPlugins.handleFatal(ex);
+                        a.onError(ex);
                         return;
                     }
 
                     if (a.tryOnNext(v)) {
                         e++;
                     }
-                    idx++;
-                }
-
-                if (idx == f) {
-                    if (!cancelled) {
-                        a.onComplete();
-                    }
-                    return;
                 }
 
                 n = getAcquire();
                 if (e == n) {
-                    index = idx;
                     n = addAndGet(-e);
                     if (n == 0L) {
                         break;
