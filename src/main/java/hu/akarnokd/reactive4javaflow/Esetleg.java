@@ -17,7 +17,9 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.LambdaSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaConsumer;
+import hu.akarnokd.reactive4javaflow.impl.consumers.SafeFolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.consumers.StrictSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 
 import java.util.*;
@@ -58,7 +60,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete) {
-        LambdaSubscriber<T> consumer = new LambdaSubscriber<>(onNext, onError, onComplete, FunctionalHelper.REQUEST_UNBOUNDED);
+        LambdaConsumer<T> consumer = new LambdaConsumer<>(onNext, onError, onComplete, FunctionalHelper.REQUEST_UNBOUNDED);
         subscribe(consumer);
         return consumer;
     }

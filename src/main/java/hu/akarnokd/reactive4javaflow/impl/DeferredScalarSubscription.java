@@ -65,8 +65,9 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
 
     @Override
     public final void clear() {
-        setRelease(FUSED_CONSUMED);
-        value = null;
+        if (compareAndSet(FUSED_READY, FUSED_CONSUMED)) {
+            value = null;
+        }
     }
 
     @Override
@@ -120,18 +121,22 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
                 this.value = value;
                 setRelease(FUSED_READY);
                 actual.onNext(null);
-                actual.onComplete();
+                if (getAcquire() != CANCELLED) {
+                    actual.onComplete();
+                }
             }
             break;
         }
     }
 
+    /*
     public final void complete() {
         if (getAcquire() != CANCELLED) {
             setRelease(CANCELLED);
             actual.onComplete();
         }
     }
+    */
 
     public final void error(Throwable ex) {
         if (getAcquire() != CANCELLED) {

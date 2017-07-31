@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.LambdaSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 
 import java.util.*;
@@ -71,7 +71,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete) {
-        LambdaSubscriber<T> consumer = new LambdaSubscriber<>(onNext, onError, onComplete, FunctionalHelper.REQUEST_UNBOUNDED);
+        LambdaConsumer<T> consumer = new LambdaConsumer<>(onNext, onError, onComplete, FunctionalHelper.REQUEST_UNBOUNDED);
         subscribe(consumer);
         return consumer;
     }
@@ -240,10 +240,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamArray<>(items, start, end));
     }
 
-    public static <T> Folyam<T> fromCallable(Callable<? extends T> call) {
-        Objects.requireNonNull(call, "call == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public static <T> Folyam<T> fromCallable(Callable<? extends T> callable) {
+        Objects.requireNonNull(callable, "callable == null");
+        return FolyamPlugins.onAssembly(new FolyamCallable<>(callable));
     }
 
     public static <T> Folyam<T> fromCompletionStage(CompletionStage<? extends T> stage) {
@@ -1490,33 +1489,58 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     // -----------------------------------------------------------------------------------
 
     public final Optional<T> blockingFirst() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingFirstConsumer<T> c = new BlockingFirstConsumer<>();
+        subscribe(c);
+        return Optional.ofNullable(c.blockingGet());
+    }
+
+    public final Optional<T> blockingFirst(long timeout, TimeUnit unit) {
+        BlockingFirstConsumer<T> c = new BlockingFirstConsumer<>();
+        subscribe(c);
+        return Optional.ofNullable(c.blockingGet(timeout, unit));
     }
 
     public final T blockingFirst(T defaultItem) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingFirstConsumer<T> c = new BlockingFirstConsumer<>();
+        subscribe(c);
+        T v = c.blockingGet();
+        return v != null ? v : defaultItem;
     }
 
     public final Optional<T> blockingLast() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLastConsumer<T> c = new BlockingLastConsumer<>();
+        subscribe(c);
+        return Optional.ofNullable(c.blockingGet());
+    }
+
+    public final Optional<T> blockingLast(long timeout, TimeUnit unit) {
+        BlockingLastConsumer<T> c = new BlockingLastConsumer<>();
+        subscribe(c);
+        return Optional.ofNullable(c.blockingGet(timeout, unit));
     }
 
     public final T blockingLast(T defaultItem) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLastConsumer<T> c = new BlockingLastConsumer<>();
+        subscribe(c);
+        T v = c.blockingGet();
+        return v != null ? v : defaultItem;
     }
 
     public final T blockingSingle() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingSingleConsumer<T> c = new BlockingSingleConsumer<>();
+        subscribe(c);
+        T v = c.blockingGet();
+        if (v == null) {
+            throw new NoSuchElementException();
+        }
+        return v;
     }
 
     public final T blockingSingle(T defaultItem) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingSingleConsumer<T> c = new BlockingSingleConsumer<>();
+        subscribe(c);
+        T v = c.blockingGet();
+        return v != null ? v : defaultItem;
     }
 
     public final void blockingSubscribe() {

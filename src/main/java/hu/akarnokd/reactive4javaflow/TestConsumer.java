@@ -184,7 +184,9 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
             UPSTREAM.compareAndSet(this, null, MissingSubscription.MISSING);
             errors.add(new IllegalStateException("onSubscribe was not called before onComplete"));
         }
-        completions++;
+        if (++completions > 1) {
+            errors.add(new IllegalStateException("onComplete called again: " + completions));
+        }
         cdl.countDown();
     }
 

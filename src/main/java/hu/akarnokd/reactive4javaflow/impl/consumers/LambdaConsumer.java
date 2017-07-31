@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl;
+package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
@@ -26,7 +26,7 @@ import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicReference;
 
-public final class LambdaSubscriber<T> extends AtomicReference<Flow.Subscription> implements FolyamSubscriber<T>, AutoDisposable {
+public final class LambdaConsumer<T> extends AtomicReference<Flow.Subscription> implements FolyamSubscriber<T>, AutoDisposable {
 
     final CheckedConsumer<? super T> onNext;
 
@@ -38,7 +38,7 @@ public final class LambdaSubscriber<T> extends AtomicReference<Flow.Subscription
 
     boolean done;
 
-    public LambdaSubscriber(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete, CheckedConsumer<? super Flow.Subscription> onSubscribe) {
+    public LambdaConsumer(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete, CheckedConsumer<? super Flow.Subscription> onSubscribe) {
         this.onNext = onNext;
         this.onError = onError;
         this.onComplete = onComplete;
