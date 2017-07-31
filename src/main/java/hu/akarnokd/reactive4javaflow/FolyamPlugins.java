@@ -16,8 +16,23 @@
 package hu.akarnokd.reactive4javaflow;
 
 import java.util.concurrent.Flow;
+import java.util.function.*;
 
 public final class FolyamPlugins {
+
+    static volatile Consumer<? super Throwable> onError;
+
+    static volatile BiFunction<? super Folyam, ? super FolyamSubscriber, ? extends FolyamSubscriber> folyamOnSubscribe;
+
+    static volatile BiFunction<? super Esetleg, ? super FolyamSubscriber, ? extends FolyamSubscriber> esetlegOnSubscribe;
+
+    static volatile BiFunction<? super ParallelFolyam, ? super FolyamSubscriber, ? extends FolyamSubscriber> parallelOnSubscribe;
+
+    static volatile Function<? super Folyam, ? extends Folyam> folyamOnAssembly;
+
+    static volatile Function<? super Esetleg, ? extends Esetleg> esetlegOnAssembly;
+
+    static volatile Function<? super ParallelFolyam, ? extends ParallelFolyam> parallelOnAssembly;
 
     private FolyamPlugins() {
         throw new IllegalStateException("No instances!");
@@ -40,20 +55,48 @@ public final class FolyamPlugins {
     }
 
     public static <T> Folyam<T> onAssembly(Folyam<T> upstream) {
-        return upstream; // TODO make customizable
+        Function<? super Folyam, ? extends Folyam> h = folyamOnAssembly;
+        if (h != null) {
+            return h.apply(upstream);
+        }
+        return upstream;
     }
 
     public static <T> Esetleg<T> onAssembly(Esetleg<T> upstream) {
-        return upstream; // TODO make customizable
+        Function<? super Esetleg, ? extends Esetleg> h = esetlegOnAssembly;
+        if (h != null) {
+            return h.apply(upstream);
+        }
+        return upstream;
     }
 
     public static <T> ParallelFolyam<T> onAssembly(ParallelFolyam<T> upstream) {
-        return upstream; // TODO make customizable
+        Function<? super ParallelFolyam, ? extends ParallelFolyam> h = parallelOnAssembly;
+        if (h != null) {
+            return h.apply(upstream);
+        }
+        return upstream;
     }
 
     public static void onError(Throwable ex) {
-        // TODO implement
+        Consumer<? super Throwable> h = onError;
+        if (h != null) {
+            try {
+                h.accept(ex);
+                return;
+            } catch (Throwable exc) {
+                exc.printStackTrace();
+            }
+        }
         ex.printStackTrace();
+    }
+
+    public static void setOnError(Consumer<? super Throwable> handler) {
+        FolyamPlugins.onError = handler;
+    }
+
+    public static Consumer<? super Throwable> getOnError() {
+        return onError;
     }
 
     public static void handleFatal(Throwable ex) {

@@ -75,4 +75,9 @@ public class FolyamTest {
     public void connectableFolyamFinalMethods() {
         checkFinalMethods(ConnectableFolyam.class);
     }
+
+    @Test
+    public void backpressureModeEnum() {
+        TestHelper.checkEnum(BackpressureMode.class);
+    }
 }

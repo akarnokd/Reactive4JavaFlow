@@ -574,8 +574,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> take(long n) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTake<>(this, n));
     }
 
     public final Folyam<T> takeLast(long n) {
@@ -584,8 +583,10 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> skip(long n) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        if (n <= 0L) {
+            return this;
+        }
+        return FolyamPlugins.onAssembly(new FolyamSkip<>(this, n));
     }
 
     public final Folyam<T> skipLast(long n) {

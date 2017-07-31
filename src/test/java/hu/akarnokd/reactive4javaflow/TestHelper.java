@@ -19,8 +19,12 @@ import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
 
-import java.util.NoSuchElementException;
+import java.lang.reflect.Constructor;
+import java.util.*;
 import java.util.concurrent.*;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public final class TestHelper {
 
@@ -643,4 +647,35 @@ public final class TestHelper {
         return o.toString() + " (" + o.getClass().getSimpleName() + ")";
     }
 
+    public static List<Throwable> trackErrors() {
+        List<Throwable> list = Collections.synchronizedList(new ArrayList<>());
+
+        FolyamPlugins.setOnError(list::add);
+
+        return list;
+    }
+
+    public static void checkUtilityClass(Class<?> clazz) {
+        try {
+            Constructor c = clazz.getDeclaredConstructor();
+            c.setAccessible(true);
+            c.newInstance();
+
+        } catch (Throwable ex) {
+            if ((ex.getCause() instanceof IllegalStateException)
+                    && ex.getCause().getMessage().equals("No instances!")) {
+                return;
+            }
+            throw new AssertionError(ex);
+        }
+        throw new AssertionError("Not an utility class!");
+    }
+
+    public static <E extends Enum<E>> void checkEnum(Class<E> e) {
+        Enum<?>[] o = e.getEnumConstants();
+        for (Enum<?> a : o) {
+            assertNotNull(a.name());
+            assertTrue(a.ordinal() >= 0);
+        }
+    }
 }
