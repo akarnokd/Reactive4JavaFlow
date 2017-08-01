@@ -120,14 +120,12 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public static <T> Esetleg<T> error(Throwable error) {
         Objects.requireNonNull(error, "error == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegError<>(error));
     }
 
     public static <T> Esetleg<T> error(Callable<? extends Throwable> errorSupplier) {
         Objects.requireNonNull(errorSupplier, "errorSupplier == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegErrorCallable<>(errorSupplier));
     }
 
     public static <T> Esetleg<T> create(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe) {
@@ -358,9 +356,8 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Esetleg<T> ignoreElements() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Esetleg<T> ignoreElement() {
+        return FolyamPlugins.onAssembly(new EsetlegIgnoreElement<>(this));
     }
 
     public final Esetleg<Boolean> equalsWith(Flow.Publisher<? extends T> other) {

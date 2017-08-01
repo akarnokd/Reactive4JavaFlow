@@ -337,6 +337,22 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return o.toString() + " (" + o.getClass().getSimpleName() + ")";
     }
 
+    public final TestConsumer<T> assertErrorMessage(String message) {
+        int c = errors.size();
+        if (c == 0) {
+            throw fail("No errors.");
+        }
+        String msg = errors.get(0).getMessage();
+        if (Objects.equals(message, msg)) {
+            if (c != 1) {
+                throw fail("Message present but other errors as well.");
+            }
+        } else {
+            throw fail("Messages differ. Expected: " + message + ", Actual: " + msg);
+        }
+        return this;
+    }
+
     @SafeVarargs
     public final TestConsumer<T> assertResult(T... expected) {
         assertOnSubscribe();
@@ -351,6 +367,17 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         assertOnSubscribe();
         assertValues(expected);
         assertError(errorClass);
+        assertNotComplete();
+        return this;
+    }
+
+
+    @SafeVarargs
+    public final TestConsumer<T> assertFailureAndMessage(Class<? extends Throwable> errorClass, String message, T... expected) {
+        assertOnSubscribe();
+        assertValues(expected);
+        assertError(errorClass);
+        assertErrorMessage(message);
         assertNotComplete();
         return this;
     }

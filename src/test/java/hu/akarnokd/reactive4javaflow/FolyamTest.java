@@ -21,9 +21,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -184,5 +183,35 @@ public class FolyamTest {
         Folyam.just(1)
                 .test(1, true, 0)
                 .assertEmpty();
+    }
+
+    @Test
+    public void toList() {
+        Folyam.range(1, 5).toList()
+                .test()
+                .assertResult(List.of(1, 2, 3, 4, 5));
+    }
+
+    @Test
+    public void fromStream() {
+        Folyam<Integer> f = Folyam.fromStream(IntStream.range(1, 6).boxed());
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.test().assertFailure(IllegalStateException.class);
+    }
+
+    @Test
+    public void fromOptional() {
+        Folyam.fromOptional(Optional.of(1))
+                .test()
+                .assertResult(1);
+    }
+
+    @Test
+    public void fromOptionalEmpty() {
+        Folyam.fromOptional(Optional.empty())
+                .test()
+                .assertResult();
     }
 }

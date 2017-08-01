@@ -265,20 +265,17 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> fromIterable(Iterable<? extends T> iterable) {
         Objects.requireNonNull(iterable, "iterable == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamIterable<>(iterable));
     }
 
     public static <T> Folyam<T> fromStream(Stream<? extends T> stream) {
         Objects.requireNonNull(stream, "stream == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamIterable<T>(() -> (Iterator<T>)stream.iterator()));
     }
 
     public static <T> Folyam<T> fromOptional(Optional<? extends T> optional) {
         Objects.requireNonNull(optional, "optional == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return optional.isPresent() ? just(optional.get()) : empty();
     }
 
     public static <T> Folyam<T> fromPublisher(Flow.Publisher<? extends T> source) {
@@ -527,6 +524,70 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    @SafeVarargs
+    public static <T> Folyam<T> ambArray(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> concatArray(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> concatArrayDelayError(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> concatArrayEager(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> concatArrayEagerDelayError(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> mergeArray(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> mergeArrayDelayError(Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> zipArray(CheckedFunction<? super Object[], ? extends R> zipper, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> zipArrayDelayError(CheckedFunction<? super Object[], ? extends R> zipper, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
+    }
+
+
     // -----------------------------------------------------------------------------------
     // Instance operators
     // -----------------------------------------------------------------------------------
@@ -538,8 +599,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> mapOptional(CheckedFunction<? super T, ? extends Optional<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamMapOptional<>(this, mapper));
     }
 
     public final <R> Folyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -1090,35 +1150,34 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> startWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return concat(Arrays.asList(other, this));
+        return concatArray(other, this);
     }
 
     public final Folyam<T> ambWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return amb(Arrays.asList(this, other));
+        return ambArray(this, other);
     }
 
     public final Folyam<T> concatWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return concat(Arrays.asList(this, other));
+        return concatArray(this, other);
     }
 
     public final Folyam<T> mergeWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return merge(Arrays.asList(this, other));
+        return mergeArray(this, other);
     }
 
     public final <U, R> Folyam<R> zipWith(Flow.Publisher<? extends T> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
         Objects.requireNonNull(other, "other == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        return zip(Arrays.asList(this, other), a -> zipper.apply((T)a[0], (U)a[1]));
+        return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
     }
 
     // operators returning Esetleg
 
     public final Esetleg<T> ignoreElements() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamIgnoreElements<>(this));
     }
 
     public final Esetleg<T> first() {
@@ -1141,22 +1200,19 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final <C> Esetleg<C> collect(Callable<? extends C> collectionSupplier, CheckedBiConsumer<C, ? super T> collector) {
+    public final <C> Esetleg<C> collect(Callable<C> collectionSupplier, CheckedBiConsumer<C, ? super T> collector) {
         Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
         Objects.requireNonNull(collector, "collector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamCollect<>(this, collectionSupplier, collector));
     }
 
-    public final <A, R> Esetleg<R> collectWith(Collector<T, A, R> collector) {
+    public final <A, R> Esetleg<R> collect(Collector<T, A, R> collector) {
         Objects.requireNonNull(collector, "collector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamStreamCollector<>(this, collector));
     }
 
     public final Esetleg<List<T>> toList() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return collect(ArrayList::new, List::add);
     }
 
     public final Esetleg<T> reduce(CheckedBiFunction<T, T, T> reducer) {

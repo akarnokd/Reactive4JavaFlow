@@ -23,10 +23,12 @@ import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -740,5 +742,57 @@ public final class TestHelper {
         } finally {
             FolyamPlugins.setOnError(null);
         }
+    }
+
+    @SafeVarargs
+    public static <R> void folyamDonePath(Function<? super Folyam<Integer>, Flow.Publisher<R>> compose, R... result) {
+        withErrorTracking(errors -> {
+            Folyam<Integer> f = new Folyam<Integer>() {
+
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new BooleanSubscription());
+                    s.onNext(1);
+                    s.onComplete();
+                    s.onError(new IOException("folyamDonePath"));
+                    s.onComplete();
+                    s.onNext(2);
+                }
+            };
+
+            TestConsumer<R> tc = new TestConsumer<>();
+
+            compose.apply(f).subscribe(tc);
+
+            tc.assertResult(result);
+
+            assertError(errors, 0, IOException.class, "folyamDonePath");
+        });
+    }
+
+    @SafeVarargs
+    public static <R> void esetlegDonePath(Function<? super Esetleg<Integer>, Flow.Publisher<R>> compose, R... result) {
+        withErrorTracking(errors -> {
+            Esetleg<Integer> f = new Esetleg<Integer>() {
+
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new BooleanSubscription());
+                    s.onNext(1);
+                    s.onComplete();
+                    s.onError(new IOException("folyamDonePath"));
+                    s.onComplete();
+                    s.onNext(2);
+                }
+            };
+
+            TestConsumer<R> tc = new TestConsumer<>();
+
+            compose.apply(f).subscribe(tc);
+
+            tc.assertResult(result);
+
+            assertError(errors, 0, IOException.class, "folyamDonePath");
+        });
     }
 }

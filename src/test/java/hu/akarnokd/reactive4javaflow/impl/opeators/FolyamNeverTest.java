@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.opeators;
 import hu.akarnokd.reactive4javaflow.Folyam;
 import org.junit.Test;
 
-public class FolyamNever {
+public class FolyamNeverTest {
 
     @Test
     public void normal() {

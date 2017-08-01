@@ -56,7 +56,10 @@ public final class FolyamRepeatCallable<T> extends Folyam<T> {
 
         @Override
         public final int requestFusion(int mode) {
-            return mode & SYNC;
+            if ((mode & BOUNDARY) == 0) {
+                return mode & SYNC;
+            }
+            return NONE;
         }
 
         @Override

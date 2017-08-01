@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeferredScalarSubscription<T> extends AtomicInteger implements FusedSubscription<T> {
 
-    final FolyamSubscriber<? super T> actual;
+    protected final FolyamSubscriber<? super T> actual;
 
-    T value;
+    protected T value;
 
     static final int NO_REQUEST_NO_VALUE = 0;
     static final int NO_REQUEST_HAS_VALUE = 1;
