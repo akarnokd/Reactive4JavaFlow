@@ -16,6 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow;
 
+import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import org.junit.Test;
 
@@ -213,5 +214,41 @@ public class FolyamTest {
         Folyam.fromOptional(Optional.empty())
                 .test()
                 .assertResult();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void fusedOfferTrows() {
+        new FusedSubscription<>() {
+
+            @Override
+            public void request(long n) {
+
+            }
+
+            @Override
+            public void cancel() {
+
+            }
+
+            @Override
+            public Object poll() throws Throwable {
+                return null;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public void clear() {
+
+            }
+
+            @Override
+            public int requestFusion(int mode) {
+                return 0;
+            }
+        }.offer(1);
     }
 }

@@ -129,14 +129,12 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
         }
     }
 
-    /*
     public final void complete() {
         if (getAcquire() != CANCELLED) {
             setRelease(CANCELLED);
             actual.onComplete();
         }
     }
-    */
 
     public final void error(Throwable ex) {
         if (getAcquire() != CANCELLED) {
