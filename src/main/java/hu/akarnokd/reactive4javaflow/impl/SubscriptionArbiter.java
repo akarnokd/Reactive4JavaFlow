@@ -208,4 +208,8 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
             requestFrom.request(toRequest);
         }
     }
+
+    protected final boolean arbiterIsCancelled() {
+        return (boolean)CANCELLED.getAcquire(this);
+    }
 }

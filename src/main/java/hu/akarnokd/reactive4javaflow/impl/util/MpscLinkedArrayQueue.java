@@ -42,8 +42,8 @@ public final class MpscLinkedArrayQueue<T> implements PlainQueue<T> {
     static final Island EMPTY = new Island(0);
 
     static {
+        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
         try {
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
             PRODUCER_ARRAY = MethodHandles.lookup().findVarHandle(MpscLinkedArrayQueue.class, "producerArray", Island.class);
             PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(Island.class, "producerIndex", Integer.TYPE);
             CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(MpscLinkedArrayQueue.class, "consumerIndex", Integer.TYPE);
@@ -127,7 +127,7 @@ public final class MpscLinkedArrayQueue<T> implements PlainQueue<T> {
             return NEXT_ISLAND.getAcquire(a) == null;
         }
 
-        return ARRAY.getAcquire(a, ci) == null;
+        return ARRAY.getAcquire(a.array, ci) == null;
     }
 
     @Override

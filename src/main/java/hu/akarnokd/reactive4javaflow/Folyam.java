@@ -707,8 +707,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> repeat(long times, CheckedBooleanSupplier condition) {
+        Objects.requireNonNull(condition, "condition == null");
         // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRepeat<>(this, times, condition));
     }
 
     public final Folyam<T> repeatWhen(Function<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {

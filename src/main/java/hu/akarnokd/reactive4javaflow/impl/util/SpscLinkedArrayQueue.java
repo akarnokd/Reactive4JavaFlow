@@ -41,8 +41,8 @@ public final class SpscLinkedArrayQueue<T> implements PlainQueue<T> {
     static final Object NEXT = new Object();
 
     static {
+        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
         try {
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
             PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(SpscLinkedArrayQueue.class, "producerIndex", Long.TYPE);
             CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(SpscLinkedArrayQueue.class, "consumerIndex", Long.TYPE);
         } catch (Throwable ex) {
@@ -93,7 +93,7 @@ public final class SpscLinkedArrayQueue<T> implements PlainQueue<T> {
         }
 
         if (v == NEXT) {
-            Object[] b = (Object[])a[m + 2];
+            Object[] b = (Object[])a[m + 1];
             v = b[offset];
             a[m + 1] = null;
             consumerArray = b;
@@ -130,6 +130,7 @@ public final class SpscLinkedArrayQueue<T> implements PlainQueue<T> {
             b[offset] = item1;
             b[offset + 1] = item2;
             a[m + 1] = b;
+            producerArray = b;
             ARRAY.setRelease(a, offset, NEXT);
         } else {
             ARRAY.set(a, offset + 1, item2);
@@ -150,7 +151,7 @@ public final class SpscLinkedArrayQueue<T> implements PlainQueue<T> {
         }
         Object w;
         if (v == NEXT) {
-            Object[] b = (Object[])a[m + 2];
+            Object[] b = (Object[])a[m + 1];
             a[m + 1] = null;
             consumerArray = b;
             v = b[offset];

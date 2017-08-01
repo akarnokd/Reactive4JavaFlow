@@ -39,10 +39,10 @@ public final class SpscArrayQueue<T> implements PlainQueue<T> {
         try {
             PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(SpscArrayQueue.class, "producerIndex", Long.TYPE);
             CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(SpscArrayQueue.class, "consumerIndex", Long.TYPE);
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
         } catch (Throwable ex) {
             throw new InternalError(ex);
         }
+        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
     }
 
     public SpscArrayQueue(int capacity) {
