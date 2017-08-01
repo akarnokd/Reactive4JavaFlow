@@ -19,6 +19,9 @@ package hu.akarnokd.reactive4javaflow.impl.util;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -74,6 +77,7 @@ public class MpscLinkedArrayQueueTest {
 
     @Test(timeout = 10000)
     public void concurrentOffer() throws Exception {
+        ExecutorService exec = Executors.newSingleThreadExecutor();
         for (int c = 1; c < 2048; c *= 2) {
             int lc = loopCount();
             for (int i = 0; i < lc; i++) {
@@ -81,7 +85,7 @@ public class MpscLinkedArrayQueueTest {
 
                 AtomicInteger sync = new AtomicInteger(2);
 
-                Thread t = new Thread(() -> {
+                Future<?> f = exec.submit(() -> {
                     if (sync.decrementAndGet() != 0) {
                         while (sync.get() != 0) ;
                     }
@@ -89,8 +93,6 @@ public class MpscLinkedArrayQueueTest {
                         q.offer(j);
                     }
                 });
-
-                t.start();
 
                 if (sync.decrementAndGet() != 0) {
                     while (sync.get() != 0) ;
@@ -100,7 +102,7 @@ public class MpscLinkedArrayQueueTest {
                     q.offer(j);
                 }
 
-                t.join();
+                f.get();
 
                 assertFalse(q.isEmpty());
 
@@ -127,6 +129,8 @@ public class MpscLinkedArrayQueueTest {
 
     @Test
     public void concurrentOfferPoll() throws Exception {
+        ExecutorService exec = Executors.newSingleThreadExecutor();
+
         for (int c = 1; c < 2048; c *= 2) {
             int lc = loopCount();
             for (int i = 0; i < lc; i++) {
@@ -134,7 +138,7 @@ public class MpscLinkedArrayQueueTest {
 
                 AtomicInteger sync = new AtomicInteger(2);
 
-                Thread t = new Thread(() -> {
+                Future<?> f = exec.submit(() -> {
                     if (sync.decrementAndGet() != 0) {
                         while (sync.get() != 0) ;
                     }
@@ -142,8 +146,6 @@ public class MpscLinkedArrayQueueTest {
                         q.offer(j);
                     }
                 });
-
-                t.start();
 
                 if (sync.decrementAndGet() != 0) {
                     while (sync.get() != 0) ;
@@ -160,7 +162,7 @@ public class MpscLinkedArrayQueueTest {
                     assertEquals(j, v.intValue());
                 }
 
-                t.join();
+                f.get();
 
                 assertTrue(q.isEmpty());
             }
