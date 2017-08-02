@@ -186,38 +186,28 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> generate(CheckedConsumer<Emitter<T>> generator) {
         Objects.requireNonNull(generator, "generator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return generate(() -> null, (s, e) -> { generator.accept(e); return null;  }, s -> { });
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiConsumer<S, Emitter<T>> generator) {
-        Objects.requireNonNull(stateSupplier, "stateSupplier == null");
         Objects.requireNonNull(generator, "generator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return generate(stateSupplier, (s, e) -> { generator.accept(s, e); return s;  }, s -> { });
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiConsumer<S, Emitter<T>> generator, CheckedConsumer<? super S> stateCleanup) {
-        Objects.requireNonNull(stateSupplier, "stateSupplier == null");
         Objects.requireNonNull(generator, "generator == null");
-        Objects.requireNonNull(stateCleanup, "stateCleanup == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return generate(stateSupplier, (s, e) -> { generator.accept(s, e); return s;  }, stateCleanup);
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiFunction<S, Emitter<T>, S> generator) {
-        Objects.requireNonNull(stateSupplier, "stateSupplier == null");
-        Objects.requireNonNull(generator, "generator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return generate(stateSupplier, generator, s -> { });
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiFunction<S, Emitter<T>, S> generator, CheckedConsumer<? super S> stateCleanup) {
         Objects.requireNonNull(stateSupplier, "stateSupplier == null");
         Objects.requireNonNull(generator, "generator == null");
         Objects.requireNonNull(stateCleanup, "stateCleanup == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamGenerate<>(stateSupplier, generator, stateCleanup));
     }
 
     @SafeVarargs
@@ -245,22 +235,25 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamCallable<>(callable));
     }
 
+    public static <T> Folyam<T> fromCallableAllowEmpty(Callable<? extends T> callable) {
+        Objects.requireNonNull(callable, "callable == null");
+        return FolyamPlugins.onAssembly(new FolyamCallableAllowEmpty<>(callable));
+    }
+
     public static <T> Folyam<T> fromCompletionStage(CompletionStage<? extends T> stage) {
         Objects.requireNonNull(stage, "stage == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamCompletionStage<>(stage));
     }
 
     public static <T> Folyam<T> fromFuture(Future<? extends T> future) {
         Objects.requireNonNull(future, "future == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFuture<>(future, 0, null));
     }
 
     public static <T> Folyam<T> fromFuture(Future<? extends T> future, long timeout, TimeUnit unit) {
         Objects.requireNonNull(future, "future == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(unit, "unit == null");
+        return FolyamPlugins.onAssembly(new FolyamFuture<>(future, timeout, unit));
     }
 
     public static <T> Folyam<T> fromIterable(Iterable<? extends T> iterable) {
@@ -280,8 +273,10 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> fromPublisher(Flow.Publisher<? extends T> source) {
         Objects.requireNonNull(source, "source == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        if (source instanceof Folyam) {
+            return (Folyam<T>)source;
+        }
+        return FolyamPlugins.onAssembly(new FolyamWrap<>(source));
     }
 
     public static Folyam<Long> interval(long delay, TimeUnit unit, SchedulerService executor) {
@@ -311,8 +306,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static <T> Folyam<T> defer(Callable<? extends Flow.Publisher<T>> publisherFactory) {
         Objects.requireNonNull(publisherFactory, "publisherFactory == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDefer<>(publisherFactory));
     }
 
     public static <T, R> Folyam<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Flow.Publisher<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner) {

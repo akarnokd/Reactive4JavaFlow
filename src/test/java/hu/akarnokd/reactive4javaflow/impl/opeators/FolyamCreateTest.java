@@ -347,7 +347,7 @@ public class FolyamCreateTest {
     @Test
     public void concurrentOnNext() {
         int n = 500;
-        Integer[] values = new Integer[n];
+        Object[] values = new Object[n];
         Arrays.fill(values, 1);
         for (int i = 0; i < 1000; i++) {
 

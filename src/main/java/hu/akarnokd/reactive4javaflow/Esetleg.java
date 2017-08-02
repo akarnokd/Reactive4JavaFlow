@@ -176,10 +176,9 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static <T> Esetleg<T> defer(Callable<? extends Flow.Publisher<T>> publisherFactory) {
-        Objects.requireNonNull(publisherFactory, "publisherFactory == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public static <T> Esetleg<T> defer(Callable<? extends Esetleg<T>> esetlegFactory) {
+        Objects.requireNonNull(esetlegFactory, "esetlegFactory == null");
+        return FolyamPlugins.onAssembly(new EsetlegDefer<>(esetlegFactory));
     }
 
     public static <T, R> Esetleg<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Flow.Publisher<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner) {
@@ -245,8 +244,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final <R> Esetleg<R> map(CheckedFunction<? super T, ? extends R> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegMap<>(this, mapper));
     }
 
     public final <R> Esetleg<R> mapOptional(CheckedFunction<? super T, ? extends Optional<? extends R>> mapper) {
@@ -278,8 +276,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final Esetleg<T> filter(CheckedPredicate<? super T> filter) {
         Objects.requireNonNull(filter, "filter == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFilter<>(this, filter));
     }
 
     public final Esetleg<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter) {

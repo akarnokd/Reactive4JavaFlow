@@ -23,11 +23,11 @@ import hu.akarnokd.reactive4javaflow.impl.util.VolatileSizeArrayList;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
@@ -422,6 +422,14 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final TestConsumer<T> cancel() {
         close();
+        return this;
+    }
+
+    public final TestConsumer<T> assertInnerErrors(Consumer<List<Throwable>> consumer) {
+        if (errors.size() == 0) {
+            throw fail("No errors");
+        }
+        consumer.accept(Arrays.asList(errors.get(0).getSuppressed()));
         return this;
     }
 

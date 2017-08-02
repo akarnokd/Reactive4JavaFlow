@@ -251,4 +251,21 @@ public class FolyamTest {
             }
         }.offer(1);
     }
+
+    @Test
+    public void fromPublisherAlreadyAFolyam() {
+        Folyam<Integer> f = Folyam.just(1);
+
+        assertSame(f, Folyam.fromPublisher(f));
+    }
+
+
+    @Test
+    public void fromPublisher() {
+        Folyam<Integer> f = Folyam.just(1);
+
+        Folyam.fromPublisher(f::subscribe)
+                .test()
+                .assertResult(1);
+    }
 }

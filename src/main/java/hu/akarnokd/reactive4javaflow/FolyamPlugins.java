@@ -34,6 +34,8 @@ public final class FolyamPlugins {
 
     static volatile Function<? super ParallelFolyam, ? extends ParallelFolyam> parallelOnAssembly;
 
+    static volatile Function<? super ConnectableFolyam, ? extends ConnectableFolyam> connectableOnAssembly;
+
     private FolyamPlugins() {
         throw new IllegalStateException("No instances!");
     }
@@ -72,6 +74,14 @@ public final class FolyamPlugins {
 
     public static <T> ParallelFolyam<T> onAssembly(ParallelFolyam<T> upstream) {
         Function<? super ParallelFolyam, ? extends ParallelFolyam> h = parallelOnAssembly;
+        if (h != null) {
+            return h.apply(upstream);
+        }
+        return upstream;
+    }
+
+    public static <T> ConnectableFolyam<T> onAssembly(ConnectableFolyam<T> upstream) {
+        Function<? super ConnectableFolyam, ? extends ConnectableFolyam> h = connectableOnAssembly;
         if (h != null) {
             return h.apply(upstream);
         }

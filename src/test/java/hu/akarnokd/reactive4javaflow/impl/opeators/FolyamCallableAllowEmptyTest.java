@@ -16,29 +16,41 @@
 
 package hu.akarnokd.reactive4javaflow.impl.opeators;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
-import hu.akarnokd.reactive4javaflow.TestHelper;
+import hu.akarnokd.reactive4javaflow.*;
 import org.junit.Test;
 
 import java.io.IOException;
 
-public class FromCallableTest {
+public class FolyamCallableAllowEmptyTest {
 
     @Test
     public void standard() {
-        TestHelper.assertResult(Folyam.fromCallable(() -> 1), 1);
+        TestHelper.assertResult(Folyam.fromCallableAllowEmpty(() -> 1), 1);
+    }
+
+    @Test
+    public void standard2() {
+        TestHelper.assertResult(Folyam.fromCallableAllowEmpty(() -> null));
+    }
+
+
+    @Test
+    public void nullReturn() {
+        Folyam.fromCallableAllowEmpty(() -> null)
+                .test()
+                .assertResult();
     }
 
     @Test
     public void error() {
-        Folyam.fromCallable(() -> { throw new IOException(); })
+        Folyam.fromCallableAllowEmpty(() -> { throw new IOException(); })
                 .test()
                 .assertFailure(IOException.class);
     }
 
     @Test
     public void cancelUpFront() {
-        Folyam.fromCallable(() -> 1)
+        Folyam.fromCallableAllowEmpty(() -> 1)
                 .test(1, true, 0)
                 .assertEmpty();
     }
