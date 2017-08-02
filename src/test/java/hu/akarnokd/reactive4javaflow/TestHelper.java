@@ -15,23 +15,20 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
+import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
-import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.fused.FusedDynamicSource;
-import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
-import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
+import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class TestHelper {
 
@@ -196,6 +193,7 @@ public final class TestHelper {
             source.subscribe(new FolyamSubscriber<T>() {
                 FusedQueue<T> qs;
                 Flow.Subscription upstream;
+                boolean done;
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     upstream = subscription;
@@ -254,6 +252,7 @@ public final class TestHelper {
                         } catch (Throwable ex) {
                             ts1.onError(ex);
                         }
+                        done = true;
                         upstream.cancel();
                         fs.clear();
                         if (!fs.isEmpty()) {
@@ -275,12 +274,16 @@ public final class TestHelper {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    ts1.onError(throwable);
+                    if (!done) {
+                        ts1.onError(throwable);
+                    }
                 }
 
                 @Override
                 public void onComplete() {
-                    ts1.onComplete();
+                    if (!done) {
+                        ts1.onComplete();
+                    }
                 }
             });
 
@@ -293,6 +296,7 @@ public final class TestHelper {
             source.subscribe(new ConditionalSubscriber<T>() {
                 FusedQueue<T> qs;
                 Flow.Subscription upstream;
+                boolean done;
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     upstream = subscription;
@@ -352,6 +356,7 @@ public final class TestHelper {
                         } catch (Throwable ex) {
                             ts2.onError(ex);
                         }
+                        done = true;
                         upstream.cancel();
                         fs.clear();
                         if (!fs.isEmpty()) {
@@ -381,12 +386,16 @@ public final class TestHelper {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    ts2.onError(throwable);
+                    if (!done) {
+                        ts2.onError(throwable);
+                    }
                 }
 
                 @Override
                 public void onComplete() {
-                    ts2.onComplete();
+                    if (!done) {
+                        ts2.onComplete();
+                    }
                 }
             });
 
@@ -794,5 +803,52 @@ public final class TestHelper {
 
             assertError(errors, 0, IOException.class, "folyamDonePath");
         });
+    }
+
+    public static void race(Runnable r1, Runnable r2) {
+        AtomicInteger sync = new AtomicInteger(2);
+
+        AtomicReference<Throwable> asyncError = new AtomicReference<>();
+
+        Future<?> f = ForkJoinPool.commonPool().submit(() -> {
+            AtomicInteger s = sync;
+            if (s.decrementAndGet() != 0) {
+                while (s.get() != 0) ;
+            }
+            try {
+                r2.run();
+            } catch (Throwable ex) {
+                asyncError.setRelease(ex);
+            }
+        });
+
+        Throwable error1 = null;
+        if (sync.decrementAndGet() != 0) {
+            while (sync.get() != 0) ;
+        }
+        try {
+            r1.run();
+        } catch (Throwable ex) {
+            error1 = ex;
+        }
+
+        try {
+            f.get(5, TimeUnit.SECONDS);
+        } catch (Throwable ex) {
+            f.cancel(true);
+            throw new AssertionError(ex);
+        }
+
+        Throwable error2 = asyncError.getPlain();
+
+        if (error1 != null && error2 != null) {
+            throw new CompositeThrowable(error1, error2);
+        }
+        if (error1 != null) {
+            throw new AssertionError(error1);
+        }
+        if (error2 != null) {
+            throw new AssertionError(error2);
+        }
     }
 }

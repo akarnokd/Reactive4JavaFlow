@@ -142,6 +142,22 @@ public enum SubscriptionHelper implements Flow.Subscription {
         }
     }
 
+    public static long addRequestedCancellable(AtomicLong requested, long n) {
+        for (;;) {
+            long a = (long)requested.getAcquire();
+            if (a == Long.MAX_VALUE) {
+                return Long.MAX_VALUE;
+            }
+            if (a == Long.MIN_VALUE) {
+                return Long.MIN_VALUE;
+            }
+            long b = addCap(a, n);
+            if (requested.compareAndSet(a, b)) {
+                return a;
+            }
+        }
+    }
+
     public static boolean deferredReplace(Object target, VarHandle upstream, VarHandle requested, Flow.Subscription s) {
         if (replace(target, upstream, s)) {
             long n = (long)requested.getAndSet(target, 0L);

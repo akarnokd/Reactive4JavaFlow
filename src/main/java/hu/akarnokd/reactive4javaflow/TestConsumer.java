@@ -15,6 +15,7 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
+import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
@@ -78,7 +79,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     @Override
     public final void onSubscribe(Flow.Subscription subscription) {
         if (subscription == null) {
-            errors.add(new NullPointerException("subscription == null"));
+            errors.add(new NullPointerException("subscription == null in TestConsumer"));
             return;
         }
         if (UPSTREAM.compareAndSet(this, null, subscription)) {
@@ -124,7 +125,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         } else {
             subscription.cancel();
             if (!SubscriptionHelper.isCancelled(this, UPSTREAM)) {
-                errors.add(new IllegalStateException("OnSubscribe called again"));
+                errors.add(new IllegalStateException("onSubscribe called again in TestConsumer"));
             }
         }
     }
@@ -133,7 +134,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     public void onNext(T item) {
         if (upstream == null) {
             UPSTREAM.compareAndSet(this, null, MissingSubscription.MISSING);
-            errors.add(new IllegalStateException("onSubscribe was not called before onNext"));
+            errors.add(new IllegalStateException("onSubscribe was not called before onNext in TestConsumer"));
         }
         if (actualFusionMode > 0) {
             if (actualFusionMode == FusedSubscription.SYNC) {
@@ -158,7 +159,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
             }
         } else {
             if (item == null) {
-                errors.add(new NullPointerException("item == null"));
+                errors.add(new NullPointerException("item == null in TestConsumer"));
             } else {
                 items.add(item);
             }
@@ -169,10 +170,10 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     public void onError(Throwable throwable) {
         if (upstream == null) {
             UPSTREAM.compareAndSet(this, null, MissingSubscription.MISSING);
-            errors.add(new IllegalStateException("onSubscribe was not called before onError"));
+            errors.add(new IllegalStateException("onSubscribe was not called before onError in TestConsumer"));
         }
         if (throwable == null) {
-            throwable = new IllegalArgumentException("onError called with null");
+            throwable = new NullPointerException("throwable == null in TestConsumer");
         }
         errors.add(throwable);
         cdl.countDown();
@@ -182,7 +183,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     public void onComplete() {
         if (upstream == null) {
             UPSTREAM.compareAndSet(this, null, MissingSubscription.MISSING);
-            errors.add(new IllegalStateException("onSubscribe was not called before onComplete"));
+            errors.add(new IllegalStateException("onSubscribe was not called before onComplete in TestConsumer"));
         }
         if (++completions > 1) {
             errors.add(new IllegalStateException("onComplete called again: " + completions));
@@ -429,7 +430,27 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         if (errors.size() == 0) {
             throw fail("No errors");
         }
-        consumer.accept(Arrays.asList(errors.get(0).getSuppressed()));
+        List<Throwable> errorsList = new ArrayList<>();
+        errors.forEach(e -> {
+            if (e instanceof CompositeThrowable) {
+                errorsList.addAll(Arrays.asList(e.getSuppressed()));
+            } else {
+                errorsList.add(e);
+            }
+        });
+        consumer.accept(errorsList);
+        return this;
+    }
+
+    public final TestConsumer<T> assertValueAt(int index, T item) {
+        int s = items.size();
+        if (s < index) {
+            throw fail("Not enough elements: " + index);
+        }
+        T v = items.get(index);
+        if (!Objects.equals(item, v)) {
+            throw fail("Item @ " + index + " differs. Expected: " + valueAndClass(item) + ", Actual: " + valueAndClass(v));
+        }
         return this;
     }
 
