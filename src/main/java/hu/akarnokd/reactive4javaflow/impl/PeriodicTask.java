@@ -16,7 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.SchedulerService;
+import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 
 import java.lang.invoke.*;
@@ -62,7 +62,12 @@ public final class PeriodicTask implements Runnable, AutoDisposable {
 
     @Override
     public void run() {
-        actual.run();
+        try {
+            actual.run();
+        } catch (Throwable ex) {
+            FolyamPlugins.onError(ex);
+            return;
+        }
 
         SchedulerService.Worker w = this.worker;
 

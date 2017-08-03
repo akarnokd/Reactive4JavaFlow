@@ -271,6 +271,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return optional.isPresent() ? just(optional.get()) : empty();
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Folyam<T> fromPublisher(Flow.Publisher<? extends T> source) {
         Objects.requireNonNull(source, "source == null");
         if (source instanceof Folyam) {
@@ -317,9 +318,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         Objects.requireNonNull(resourceSupplier, "resourceSupplier == null");
         Objects.requireNonNull(flowSupplier, "flowSupplier == null");
         Objects.requireNonNull(resourceCleaner, "resourceCleaner == null");
-
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamUsing<>(resourceSupplier, flowSupplier, resourceCleaner, eagerCleanup));
     }
 
     // -----------------------------------------------------------------------------------

@@ -181,17 +181,15 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new EsetlegDefer<>(esetlegFactory));
     }
 
-    public static <T, R> Esetleg<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Flow.Publisher<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner) {
+    public static <T, R> Esetleg<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Esetleg<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner) {
         return using(resourceSupplier, flowSupplier, resourceCleaner, false);
     }
 
-    public static <T, R> Esetleg<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Flow.Publisher<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner, boolean eagerCleanup) {
+    public static <T, R> Esetleg<T> using(Callable<R> resourceSupplier, CheckedFunction<? super R, ? extends Esetleg<? extends T>> flowSupplier, CheckedConsumer<? super R> resourceCleaner, boolean eagerCleanup) {
         Objects.requireNonNull(resourceSupplier, "resourceSupplier == null");
         Objects.requireNonNull(flowSupplier, "flowSupplier == null");
         Objects.requireNonNull(resourceCleaner, "resourceCleaner == null");
-
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegUsing<>(resourceSupplier, flowSupplier, resourceCleaner, eagerCleanup));
     }
 
     // -----------------------------------------------------------------------------------

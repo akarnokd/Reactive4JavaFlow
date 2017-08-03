@@ -30,25 +30,33 @@ public interface SchedulerService {
 
     default AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
         Worker w = worker();
-        w.schedule(() -> {
+        AutoDisposable d = w.schedule(() -> {
             try {
                 task.run();
             } finally {
                 w.close();
             }
         }, delay, unit);
+        if (d == REJECTED) {
+            w.close();
+            return REJECTED;
+        }
         return w;
     }
 
     default AutoDisposable schedulePeriodically(Runnable task, long initialDelay, long period, TimeUnit unit) {
         Worker w = worker();
-        w.schedulePeriodically(() -> {
+        AutoDisposable d = w.schedulePeriodically(() -> {
             try {
                 task.run();
             } finally {
                 w.close();
             }
         }, initialDelay, period, unit);
+        if (d == REJECTED) {
+            w.close();
+            return REJECTED;
+        }
         return w;
     }
 
@@ -78,8 +86,11 @@ public interface SchedulerService {
             Objects.requireNonNull(task, "task == null");
             PeriodicTask t = new PeriodicTask(this, task, period,  unit,now(unit) + initialDelay);
             AutoDisposable d = schedule(t, initialDelay, unit);
-            t.setFirst(d);
-            return t;
+            if (d != REJECTED) {
+                t.setFirst(d);
+                return t;
+            }
+            return REJECTED;
         }
 
         default long now(TimeUnit unit) {
@@ -87,4 +98,5 @@ public interface SchedulerService {
         }
     }
 
+    AutoDisposable REJECTED = new Rejected();
 }
