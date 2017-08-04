@@ -26,11 +26,11 @@ import java.util.function.Consumer;
 
 public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, Consumer<AutoDisposable> {
 
-    final ScheduledExecutorService exec;
+    protected final ScheduledExecutorService exec;
 
-    OpenHashSet<AutoDisposable> tasks;
+    protected OpenHashSet<AutoDisposable> tasks;
 
-    volatile boolean closed;
+    protected volatile boolean closed;
 
     public ScheduledExecutorServiceWorker(ScheduledExecutorService exec) {
         this.exec = exec;
@@ -94,16 +94,16 @@ public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, 
         return SchedulerService.REJECTED;
     }
 
-    boolean add(AutoDisposable d) {
+    protected boolean add(AutoDisposable d) {
         if (!closed) {
             synchronized (this) {
-                if (closed) {
-                    return false;
+                if (!closed) {
+                    tasks.add(d);
+                    return true;
                 }
-                tasks.add(d);
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -132,7 +132,9 @@ public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, 
 
             Object[] o = set.keys();
             for (Object e : o) {
-                ((AutoDisposable)e).close();
+                if (e != null) {
+                    ((AutoDisposable) e).close();
+                }
             }
         }
     }

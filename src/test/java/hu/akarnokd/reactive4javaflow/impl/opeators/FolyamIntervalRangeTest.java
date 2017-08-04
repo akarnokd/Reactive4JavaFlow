@@ -59,6 +59,24 @@ public class FolyamIntervalRangeTest {
                 .assertResult(0L, 1L, 2L, 3L, 4L);
     }
 
+    @Test
+    public void normal2() {
+        Folyam.intervalRange(10, 5, 1, 1, TimeUnit.MILLISECONDS, SchedulerServices.single())
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(10L, 11L, 12L, 13L, 14L);
+    }
+
+
+    @Test
+    public void normalConditional2() {
+        Folyam.intervalRange(10, 5, 1, 1, TimeUnit.MILLISECONDS, SchedulerServices.single())
+                .filter(v -> true)
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(10L, 11L, 12L, 13L, 14L);
+    }
+
     @Test(timeout = 10000)
     public void trampoline() {
         Folyam.intervalRange(0, 5, 1, 1, TimeUnit.MILLISECONDS, SchedulerServices.trampoline())

@@ -262,9 +262,10 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamIterable<>(iterable));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Folyam<T> fromStream(Stream<? extends T> stream) {
         Objects.requireNonNull(stream, "stream == null");
-        return FolyamPlugins.onAssembly(new FolyamIterable<T>(() -> (Iterator<T>)stream.iterator()));
+        return FolyamPlugins.onAssembly(new FolyamIterable<>(() -> (Iterator<T>)stream.iterator()));
     }
 
     public static <T> Folyam<T> fromOptional(Optional<? extends T> optional) {
@@ -758,9 +759,8 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<T> rebatchRequests(long n) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> rebatchRequests(int n) {
+        return observeOn(ImmediateSchedulerService.INSTANCE, n);
     }
 
     public final Folyam<T> hide() {
@@ -911,8 +911,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> observeOn(SchedulerService executor, int prefetch) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamObserveOn<>(this, executor, prefetch));
     }
 
     public final Folyam<T> delay(long time, TimeUnit unit, SchedulerService executor) {

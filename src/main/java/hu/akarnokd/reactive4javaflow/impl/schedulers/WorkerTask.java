@@ -58,7 +58,9 @@ public final class WorkerTask implements Callable<Void>, Runnable, AutoDisposabl
         Future<?> f = (Future<?>)FUTURE.getAcquire(this);
         if (f != DONE && f != CLOSED) {
             if (FUTURE.compareAndSet(this, f, CLOSED)) {
-                f.cancel(runner != Thread.currentThread());
+                if (f != null) {
+                    f.cancel(runner != Thread.currentThread());
+                }
             }
         }
         Consumer<? super WorkerTask> w = (Consumer<? super WorkerTask>)WORKER.getAndSet(this, null);

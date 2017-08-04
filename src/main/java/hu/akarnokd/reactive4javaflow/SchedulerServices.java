@@ -40,11 +40,11 @@ public final class SchedulerServices {
     static final SchedulerService TRAMPOLINE;
 
     static final class SingleHolder {
-        static final SchedulerService INSTANCE = new SingleSchedulerService("SingleSchedulerService", Thread.NORM_PRIORITY, true);
+        static final SchedulerService INSTANCE = new SingleSchedulerService("Reactive4JavaFlow.Single", Thread.NORM_PRIORITY, true);
     }
 
     static final class ComputationHolder {
-        static final SchedulerService INSTANCE = SingleHolder.INSTANCE; // FIXME implement
+        static final SchedulerService INSTANCE = new ParallelSchedulerService(Runtime.getRuntime().availableProcessors(), "Reactive4JavaFlow.CPU", Thread.NORM_PRIORITY, true); // FIXME implement
     }
 
     static final class IOHolder {
@@ -52,7 +52,7 @@ public final class SchedulerServices {
     }
 
     static final class NewThreadHolder {
-        static final SchedulerService INSTANCE = SingleHolder.INSTANCE; // FIXME implement
+        static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true);; // FIXME implement
     }
 
     static {
@@ -116,6 +116,7 @@ public final class SchedulerServices {
         COMPUTATION.start();
         IO.start();
         NEW_THREAD.start();
+        ExecutorSchedulerService.startTimedHelpers();
     }
 
     public static void shutdown() {
@@ -123,6 +124,7 @@ public final class SchedulerServices {
         COMPUTATION.shutdown();
         IO.start();
         NEW_THREAD.shutdown();
+        ExecutorSchedulerService.shutdownTimedHelpers();
     }
 
     public static SchedulerService newSingle(String name) {
@@ -138,8 +140,7 @@ public final class SchedulerServices {
     }
 
     public static SchedulerService newParallel(int parallelism, String name, int priority, boolean daemon) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return new ParallelSchedulerService(parallelism, name, priority, daemon);
     }
 
     public static SchedulerService newIO(String name) {
@@ -151,21 +152,29 @@ public final class SchedulerServices {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
+    public static SchedulerService newThread(String name) {
+        return newThread(name, Thread.NORM_PRIORITY, true);
+    }
+
+    public static SchedulerService newThread(String name, int priority, boolean daemon) {
+        return new NewThreadSchedulerService(name, priority, daemon);
+    }
+
     public static SchedulerService newShared(SchedulerService.Worker worker) {
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     public static SchedulerService newExecutor(Executor exec) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return newExecutor(exec, true);
+    }
+
+    public static SchedulerService newExecutor(Executor exec, boolean trampoline) {
+        Objects.requireNonNull(exec, "exec == null");
+        return new ExecutorSchedulerService(exec, trampoline);
     }
 
     public static ScheduledService newBlocking() {
-        return newBlocking(single());
-    }
-
-    public static ScheduledService newBlocking(SchedulerService timeSource) {
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }

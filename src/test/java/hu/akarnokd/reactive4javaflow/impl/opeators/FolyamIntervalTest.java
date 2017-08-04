@@ -54,6 +54,16 @@ public class FolyamIntervalTest {
 
 
     @Test
+    public void normal2() {
+        Folyam.interval(1, TimeUnit.MILLISECONDS, SchedulerServices.single())
+                .take(5)
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(0L, 1L, 2L, 3L, 4L);
+    }
+
+
+    @Test
     public void normalConditional() {
         Folyam.interval(1, 1, TimeUnit.MILLISECONDS, SchedulerServices.single())
                 .filter(v -> true)

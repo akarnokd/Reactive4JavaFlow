@@ -64,9 +64,10 @@ public final class CompositeAutoDisposable implements AutoDisposable {
             }
             Object[] entries = set.keys();
             if (entries != null) {
-                for (Object o : entries) {
-                    ((AutoDisposable)o).close();
-                }
+                for (Object e : entries) {
+                    if (e != null) {
+                        ((AutoDisposable) e).close();
+                    }                }
             }
         }
     }
