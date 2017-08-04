@@ -21,6 +21,7 @@ import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaConsumer;
 import hu.akarnokd.reactive4javaflow.impl.consumers.SafeFolyamSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.consumers.StrictSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
+import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -160,8 +161,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public static <T> Esetleg<T> fromOptional(Optional<? extends T> optional) {
         Objects.requireNonNull(optional, "optional == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return optional.isPresent() ? just(optional.get()) : empty();
     }
 
     public static <T> Esetleg<T> fromPublisher(Flow.Publisher<? extends T> source) {
@@ -172,8 +172,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     public static Esetleg<Long> timer(long delay, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegTimer(delay, unit, executor));
     }
 
     public static <T> Esetleg<T> defer(Callable<? extends Esetleg<T>> esetlegFactory) {
@@ -470,15 +469,13 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final Esetleg<T> doFinally(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return doFinally(handler, ImmediateSchedulerService.INSTANCE);
     }
 
     public final Esetleg<T> doFinally(CheckedRunnable handler, SchedulerService executor) {
         Objects.requireNonNull(handler, "handler == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegDoFinally<>(this, handler, executor));
     }
 
     public final Esetleg<T> doOnRequest(CheckedConsumer<? super Long> handler) {

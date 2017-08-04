@@ -34,7 +34,7 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
     long index;
     static final VarHandle INDEX;
 
-    ScheduledExecutorService exec = SHUTDOWN;
+    ScheduledExecutorService exec;
     static final VarHandle EXEC;
 
     static final ScheduledExecutorService SHUTDOWN;
@@ -54,11 +54,14 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
         this.namePrefix = namePrefix;
         this.priority = priority;
         this.daemon = daemon;
+        ScheduledExecutorService b = Executors.newScheduledThreadPool(1, this);
+        ((ScheduledThreadPoolExecutor)b).setRemoveOnCancelPolicy(true);
+        EXEC.setRelease(this, b);
     }
 
     @Override
     public Thread newThread(Runnable r) {
-        Thread thread = new Thread(r, namePrefix + "-" + ((int)INDEX.getAndAdd(this, 1) + 1));
+        Thread thread = new Thread(r, namePrefix + "-" + ((long)INDEX.getAndAdd(this, 1) + 1));
         thread.setPriority(priority);
         thread.setDaemon(daemon);
         return thread;
@@ -71,7 +74,7 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
         WorkerTask wt = new WorkerTask(task, null);
         try {
             Future<?> f = exec.submit((Callable<Void>)wt);
-            wt.setFuture(f);
+            wt.setFutureNoCancel(f);
             return wt;
         } catch (RejectedExecutionException ex) {
             FolyamPlugins.onError(ex);
@@ -86,7 +89,7 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
         WorkerTask wt = new WorkerTask(task, null);
         try {
             Future<?> f = exec.schedule((Callable<Void>)wt, delay, unit);
-            wt.setFuture(f);
+            wt.setFutureNoCancel(f);
             return wt;
         } catch (RejectedExecutionException ex) {
             FolyamPlugins.onError(ex);
@@ -104,7 +107,7 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
         WorkerTask wt = new WorkerTask(task, null);
         try {
             Future<?> f = exec.scheduleAtFixedRate(wt, initialDelay, period, unit);
-            wt.setFuturePeriodic(f);
+            wt.setFutureNoCancel(f);
             return wt;
         } catch (RejectedExecutionException ex) {
             FolyamPlugins.onError(ex);
@@ -129,7 +132,7 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
                 return;
             }
             if (b == null) {
-                b = Executors.newSingleThreadScheduledExecutor(this);
+                b = Executors.newScheduledThreadPool(1, this);
                 ((ScheduledThreadPoolExecutor)b).setRemoveOnCancelPolicy(true);
             }
             if (EXEC.compareAndSet(this, a, b)) {

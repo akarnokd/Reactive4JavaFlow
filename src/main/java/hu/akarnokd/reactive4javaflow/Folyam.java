@@ -20,6 +20,7 @@ import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
+import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -287,22 +288,19 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static Folyam<Long> interval(long initialDelay, long period, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamInterval(initialDelay, period, unit, executor));
     }
 
     public static Folyam<Long> intervalRange(long start, long count, long initialDelay, long period, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamInterval(start, start + count, initialDelay, period, unit, executor));
     }
 
     public static Folyam<Long> timer(long delay, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTimer(delay, unit, executor));
     }
 
     public static <T> Folyam<T> defer(Callable<? extends Flow.Publisher<T>> publisherFactory) {
@@ -971,15 +969,13 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> doFinally(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return doFinally(handler, ImmediateSchedulerService.INSTANCE);
     }
 
     public final Folyam<T> doFinally(CheckedRunnable handler, SchedulerService executor) {
         Objects.requireNonNull(handler, "handler == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDoFinally<>(this, handler, executor));
     }
 
     public final Folyam<T> doOnRequest(CheckedConsumer<? super Long> handler) {

@@ -45,7 +45,7 @@ public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, 
             Future<?> f;
             try {
                 f = exec.submit((Callable<Void>)wt);
-                wt.setFuture(f);
+                wt.setFutureCanCancel(f);
                 return wt;
             } catch (RejectedExecutionException ex) {
                 accept(wt);
@@ -63,7 +63,7 @@ public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, 
             Future<?> f;
             try {
                 f = exec.schedule((Callable<Void>)wt, delay, unit);
-                wt.setFuture(f);
+                wt.setFutureCanCancel(f);
                 return wt;
             } catch (RejectedExecutionException ex) {
                 accept(wt);
@@ -84,7 +84,7 @@ public class ScheduledExecutorServiceWorker implements SchedulerService.Worker, 
             Future<?> f;
             try {
                 f = exec.scheduleAtFixedRate(wt, initialDelay, period, unit);
-                wt.setFuturePeriodic(f);
+                wt.setFutureCanCancel(f);
                 return wt;
             } catch (RejectedExecutionException ex) {
                 accept(wt);

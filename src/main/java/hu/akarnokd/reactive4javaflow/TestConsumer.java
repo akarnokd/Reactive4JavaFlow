@@ -454,6 +454,21 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return this;
     }
 
+    public final TestConsumer<T> assertNoTimeout() {
+        if (timeout) {
+            throw fail("Timeout!");
+        }
+        return this;
+    }
+
+    public final TestConsumer<T> assertValueCount(int expected) {
+        int s = items.size();
+        if (s != expected) {
+            throw fail("Number of items differ. Expected: " + expected + ", Actual: " + s);
+        }
+        return this;
+    }
+
     enum MissingSubscription implements Flow.Subscription {
         MISSING;
 

@@ -70,14 +70,14 @@ public final class TrampolineSchedulerService implements SchedulerService {
         }
 
         void drain() {
-            if ((int)WIP.getAndAdd(this, 1) == 0) {
+            if ((long)WIP.getAndAdd(this, 1) == 0) {
                 PlainQueue<TrampolineTask> q = queue;
                 do {
                     TrampolineTask tt = q.poll();
                     if (tt != null && !closed) {
                         tt.run();
                     }
-                } while ((int)WIP.getAndAdd(this, -1) - 1 != 0);
+                } while ((long)WIP.getAndAdd(this, -1) - 1 != 0);
             }
         }
 

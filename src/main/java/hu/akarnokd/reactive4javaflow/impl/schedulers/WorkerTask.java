@@ -55,34 +55,37 @@ public final class WorkerTask implements Callable<Void>, Runnable, AutoDisposabl
 
     @Override
     public void close() {
+        Future<?> f = (Future<?>)FUTURE.getAcquire(this);
+        if (f != DONE && f != CLOSED) {
+            if (FUTURE.compareAndSet(this, f, CLOSED)) {
+                f.cancel(runner != Thread.currentThread());
+            }
+        }
         Consumer<? super WorkerTask> w = (Consumer<? super WorkerTask>)WORKER.getAndSet(this, null);
         if (w != null) {
-            Future<?> f = (Future<?>)FUTURE.getAcquire(this);
-            if (f != DONE) {
-                if (FUTURE.compareAndSet(this, f, CLOSED)) {
-                    f.cancel(runner != Thread.currentThread());
-                    w.accept(this);
-                }
-            } else {
-                w.accept(this);
-            }
+            w.accept(this);
         }
     }
 
-    public void setFuture(Future<?> future) {
+    public void setFutureNoCancel(Future<?> future) {
         Future<?> f = (Future<?>)FUTURE.getAcquire(this);
         if (f != DONE) {
             FUTURE.compareAndSet(this, f, future);
         }
     }
 
-    public void setFuturePeriodic(Future<?> future) {
+    public void setFutureCanCancel(Future<?> future) {
         Future<?> f = (Future<?>)FUTURE.getAcquire(this);
-        if (f != DONE) {
-            if (!FUTURE.compareAndSet(this, f, future)) {
-                f.cancel(runner == Thread.currentThread());
+        if (f != DONE && f != CLOSED) {
+            if (FUTURE.compareAndSet(this, f, future)) {
+                return;
+            }
+            f = (Future<?>)FUTURE.getAcquire(this);
+            if (f == DONE) {
+                return;
             }
         }
+        f.cancel(runner == Thread.currentThread());
     }
 
     @Override

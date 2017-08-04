@@ -127,7 +127,17 @@ public final class FolyamUsing<T, R> extends Folyam<T> {
 
         @Override
         public final T poll() throws Throwable {
-            return qs.poll();
+            T v = qs.poll();
+            if (v == null && fusionMode == SYNC) {
+                if (eager) {
+                    if (ONCE.compareAndSet(this, false, true)) {
+                        resourceCleanup.accept(res);
+                    }
+                } else {
+                    cleanup();
+                }
+            }
+            return v;
         }
 
         @Override

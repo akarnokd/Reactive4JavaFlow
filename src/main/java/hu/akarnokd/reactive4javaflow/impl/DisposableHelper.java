@@ -66,7 +66,7 @@ public enum DisposableHelper implements AutoDisposable {
 
     public static boolean replace(Object target, VarHandle FIELD, AutoDisposable d) {
         for (;;) {
-            AutoDisposable a = (AutoDisposable)FIELD.get(target);
+            AutoDisposable a = (AutoDisposable)FIELD.getAcquire(target);
             if (a == DISPOSED) {
                 d.close();
                 return false;

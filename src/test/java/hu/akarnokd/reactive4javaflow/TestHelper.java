@@ -135,7 +135,9 @@ public final class TestHelper {
 
                 for (int i = 0; i < values.length; i++) {
                     ts.requestMore(1)
-                            .awaitCount(i + 1, 10, 5000);
+                            .awaitCount(i + 1, 10, 5000)
+                            .assertValueCount(i + 1)
+                            ;
                 }
 
                 ts.awaitDone(5, TimeUnit.SECONDS)
