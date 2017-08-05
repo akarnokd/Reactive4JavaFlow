@@ -355,4 +355,23 @@ public class FolyamObserveOnTest {
                 .assertFailureAndMessage(IOException.class, "Forced failure");
     }
 
+    @Test
+    public void rebatch() {
+        Folyam.range(1, 1000)
+                .rebatchRequests(1)
+                .test()
+                .assertValueCount(1000)
+                .assertNoErrors()
+                .assertComplete();
+    }
+
+    @Test
+    public void rebatchHide() {
+        Folyam.range(1, 1000).hide()
+                .rebatchRequests(1)
+                .test()
+                .assertValueCount(1000)
+                .assertNoErrors()
+                .assertComplete();
+    }
 }

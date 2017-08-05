@@ -119,7 +119,9 @@ public final class BlockingLambdaConsumer<T> extends ReentrantLock implements Fo
 
     @Override
     public void onNext(T item) {
-        queue.offer(item);
+        if (item != null) {
+            queue.offer(item);
+        }
         signal();
     }
 

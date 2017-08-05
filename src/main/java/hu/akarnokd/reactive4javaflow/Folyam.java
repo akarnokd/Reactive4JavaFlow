@@ -755,8 +755,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> onTerminateDetach() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnTerminateDetach<>(this));
     }
 
     public final Folyam<T> rebatchRequests(int n) {
@@ -937,32 +936,27 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> doOnSubscribe(CheckedConsumer<? super Flow.Subscription> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnSubscribe(this, handler));
     }
 
     public final Folyam<T> doOnNext(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnNext(this, handler));
     }
 
     public final Folyam<T> doAfterNext(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnAfterNext(this, handler));
     }
 
     public final Folyam<T> doOnError(CheckedConsumer<? super Throwable> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnError(this, handler));
     }
 
     public final Folyam<T> doOnComplete(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnComplete(this, handler));
     }
 
     public final Folyam<T> doFinally(CheckedRunnable handler) {
@@ -978,14 +972,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> doOnRequest(CheckedConsumer<? super Long> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnRequest(this, handler));
     }
 
     public final Folyam<T> doOnCancel(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(FolyamDoOnSignal.withOnCancel(this, handler));
     }
 
     // custom backpressure handling
@@ -1510,26 +1502,22 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Esetleg<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSumInt<>(this, valueSelector));
     }
 
     public final Esetleg<Long> sumLong(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSumLong<>(this, valueSelector));
     }
 
     public final Esetleg<Float> sumFloat(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSumFloat<>(this, valueSelector));
     }
 
     public final Esetleg<Double> sumDouble(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSumDouble<>(this, valueSelector));
     }
 
     // -----------------------------------------------------------------------------------

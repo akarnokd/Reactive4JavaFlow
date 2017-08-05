@@ -469,6 +469,11 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return this;
     }
 
+    public final TestConsumer<T> clear() {
+        items.clear();
+        return this;
+    }
+
     enum MissingSubscription implements Flow.Subscription {
         MISSING;
 

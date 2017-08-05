@@ -62,7 +62,7 @@ public class BlockingLambdaConsumerTest {
         tc.assertResult(1, 2, 3, 4, 5);
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void normalASync1() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -76,7 +76,7 @@ public class BlockingLambdaConsumerTest {
                 .assertNotComplete();
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void normalASync2() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -90,7 +90,7 @@ public class BlockingLambdaConsumerTest {
                 .assertNotComplete();
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void normalASync3() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -103,7 +103,7 @@ public class BlockingLambdaConsumerTest {
     }
 
 
-    @Test
+    @Test(timeout = 1000)
     public void normalASync4() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -115,7 +115,36 @@ public class BlockingLambdaConsumerTest {
         tc.assertResult(1, 2, 3, 4, 5);
     }
 
-    @Test
+    @Test(timeout = 5000)
+    public void normalASync1Loop() {
+        for (int i = 0; i < 1000; i++) {
+            normalASync1();
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void normalASync2Loop() {
+        for (int i = 0; i < 1000; i++) {
+            normalASync2();
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void normalASync3Loop() {
+        for (int i = 0; i < 1000; i++) {
+            normalASync3();
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void normalASync4Loop() {
+        for (int i = 0; i < 1000; i++) {
+            normalASync4();
+        }
+    }
+
+
+    @Test(timeout = 1000)
     public void normalASync5() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -128,8 +157,7 @@ public class BlockingLambdaConsumerTest {
         tc.assertResult(1, 2, 3, 4, 5);
     }
 
-
-    @Test
+    @Test(timeout = 1000)
     public void normalASync6() {
         TestConsumer<Integer> tc = new TestConsumer<>();
         tc.onSubscribe(new BooleanSubscription());
@@ -142,7 +170,7 @@ public class BlockingLambdaConsumerTest {
         tc.assertResult(1, 2, 3, 4, 5);
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void errorNoConsumer() {
         TestHelper.withErrorTracking(errors -> {
             Folyam.error(new IOException())
@@ -152,7 +180,7 @@ public class BlockingLambdaConsumerTest {
         });
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void errorWithConsumer() {
         TestHelper.withErrorTracking(errors -> {
             TestConsumer<Integer> tc = new TestConsumer<>();
