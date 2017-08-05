@@ -26,14 +26,14 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
 
     protected T value;
 
-    static final int NO_REQUEST_NO_VALUE = 0;
-    static final int NO_REQUEST_HAS_VALUE = 1;
-    static final int HAS_REQUEST_NO_VALUE = 2;
-    static final int HAS_REQUEST_HAS_VALUE = 3;
-    static final int CANCELLED = 4;
-    static final int FUSED_NONE = 5;
-    static final int FUSED_READY = 6;
-    static final int FUSED_CONSUMED = 7;
+    protected static final int NO_REQUEST_NO_VALUE = 0;
+    protected static final int NO_REQUEST_HAS_VALUE = 1;
+    protected static final int HAS_REQUEST_NO_VALUE = 2;
+    protected static final int HAS_REQUEST_HAS_VALUE = 3;
+    protected static final int CANCELLED = 4;
+    protected static final int FUSED_NONE = 5;
+    protected static final int FUSED_READY = 6;
+    protected static final int FUSED_CONSUMED = 7;
 
 
     public DeferredScalarSubscription(FolyamSubscriber<? super T> actual) {

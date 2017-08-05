@@ -901,8 +901,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> subscribeOn(SchedulerService executor, boolean requestOn) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSubscribeOn<>(this, executor, requestOn));
     }
 
     public final Folyam<T> observeOn(SchedulerService executor) {
@@ -1206,14 +1205,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Esetleg<T> reduce(CheckedBiFunction<T, T, T> reducer) {
         Objects.requireNonNull(reducer, "reducer == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamReduce<>(this, reducer));
     }
 
     public final <R> Esetleg<R> reduce(Callable<? extends R> initialSupplier, CheckedBiFunction<R, ? super T, R> reducer) {
         Objects.requireNonNull(reducer, "reducer == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamReduceSeed<>(this, initialSupplier, reducer));
     }
 
     public final Esetleg<Boolean> equalsWith(Flow.Publisher<? extends T> other) {
@@ -1489,41 +1486,47 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public static Folyam<Integer> characters(CharSequence source) {
         Objects.requireNonNull(source, "source == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamCharacters(source, 0, source.length()));
     }
 
-    public final Folyam<T> min(Comparator<? super T> comparator) {
+    public static Folyam<Integer> characters(CharSequence source, int start, int end) {
+        Objects.requireNonNull(source, "source == null");
+        int c = source.length();
+        if (start < 0 || end < 0 || start > end || start > c || end > c) {
+            throw new IndexOutOfBoundsException("start: " + start + ", end: " + end + ", length: " + c);
+        }
+        return FolyamPlugins.onAssembly(new FolyamCharacters(source, start, end));
+    }
+
+    public final Esetleg<T> min(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return reduce((a, b) -> comparator.compare(a, b) < 0 ? a : b);
     }
 
-    public final Folyam<T> max(Comparator<? super T> comparator) {
+    public final Esetleg<T> max(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return reduce((a, b) -> comparator.compare(a, b) > 0 ? a : b);
     }
 
-    public final Folyam<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
+    public final Esetleg<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<Long> sumLong(CheckedFunction<? super T, ? extends Number> valueSelector) {
+    public final Esetleg<Long> sumLong(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<Float> sumFloat(CheckedFunction<? super T, ? extends Number> valueSelector) {
+    public final Esetleg<Float> sumFloat(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<Double> sumDouble(CheckedFunction<? super T, ? extends Number> valueSelector) {
+    public final Esetleg<Double> sumDouble(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
@@ -1589,7 +1592,14 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final void blockingSubscribe() {
-        blockingSubscribe(v -> { }, FolyamPlugins::onError, () -> { });
+        BlockingConsumerIgnore s = new BlockingConsumerIgnore();
+        subscribe(s);
+        try {
+            s.await();
+        } catch (InterruptedException ex) {
+            s.close();
+            FolyamPlugins.onError(ex);
+        }
     }
 
     public final void blockingSubscribe(CheckedConsumer<? super T> onNext) {
@@ -1605,8 +1615,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         Objects.requireNonNull(onError, "onError == null");
         Objects.requireNonNull(onComplete, "onComplete == null");
 
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLambdaConsumer<T> s = new BlockingLambdaConsumer<>(onNext, onError, onComplete, FolyamPlugins.defaultBufferSize());
+        subscribe(s);
+        s.run();
     }
 
     public final Iterable<T> blockingIterable() {
@@ -1614,8 +1625,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Iterable<T> blockingIterable(int prefetch) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return new FolyamBlockingIterable<>(this, prefetch);
     }
 
     public final Stream<T> blockingStream() {
@@ -1623,17 +1633,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Stream<T> blockingStream(int prefetch) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamBlockingIterable.toStream(this, prefetch, false);
     }
 
-    public final CompletionStage<T> toCompletionStage() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final Future<T> toFuture() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final CompletableFuture<T> toCompletableFuture() {
+        CompletionStageConsumer<T> c = new CompletionStageConsumer<>();
+        subscribe(c);
+        return c;
     }
 }

@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.opeators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.hot.SolocastProcessor;
-import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -289,46 +289,6 @@ public class FolyamObserveOnTest {
                 .filter(v -> true)
                 .test(0)
                 .assertFailure(IOException.class);
-    }
-
-    static final class FailingFusedSubscription implements FusedSubscription<Integer> {
-
-        final int mode;
-
-        FailingFusedSubscription(int mode) {
-            this.mode = mode;
-        }
-
-
-        @Override
-        public int requestFusion(int mode) {
-            return mode & this.mode;
-        }
-
-        @Override
-        public Integer poll() throws Throwable {
-            throw new IOException("Forced failure");
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public void clear() {
-
-        }
-
-        @Override
-        public void request(long n) {
-
-        }
-
-        @Override
-        public void cancel() {
-
-        }
     }
 
     @Test

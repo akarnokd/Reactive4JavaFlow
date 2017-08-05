@@ -182,7 +182,7 @@ public final class FolyamObserveOn<T> extends Folyam<T> {
         @Override
         public final T poll() throws Throwable {
             T v = queue.poll();
-            if (v != null && sourceFused == ASYNC) {
+            if (v != null && sourceFused != SYNC) {
                 int e = consumed + 1;
                 if (e == limit) {
                     consumed = 0;

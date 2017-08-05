@@ -82,7 +82,7 @@ public final class NewThreadSchedulerService implements SchedulerService, Thread
 
         public NewThreadWorker(ScheduledExecutorService exec) {
             super(exec);
-            cleanable = CleanerHelper.register(exec, new CleanupNewThreadWorker(exec));
+            cleanable = CleanerHelper.register(this, new CleanupNewThreadWorker(exec));
         }
 
         @Override
