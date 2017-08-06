@@ -82,11 +82,29 @@ public final class TestHelper {
             // in-sequence cancel after first item
             // -----------------------------------
             ts = new TestConsumer<>() {
+
+                boolean done;
                 @Override
                 public void onNext(T item) {
                     super.onNext(item);
                     close();
                     onComplete();
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    if (!done) {
+                        done = true;
+                        super.onError(throwable);
+                    }
+                }
+
+                @Override
+                public void onComplete() {
+                    if (!done) {
+                        done = true;
+                        super.onComplete();
+                    }
                 }
             };
 
@@ -99,11 +117,29 @@ public final class TestHelper {
             // -----------------------------------
             if (values.length > 2) {
                 ts = new TestConsumer<>(2) {
+                    boolean done;
+
                     @Override
                     public void onNext(T item) {
                         super.onNext(item);
                         close();
                         onComplete();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        if (!done) {
+                            done = true;
+                            super.onError(throwable);
+                        }
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (!done) {
+                            done = true;
+                            super.onComplete();
+                        }
                     }
                 };
 
@@ -271,6 +307,7 @@ public final class TestHelper {
                     } else {
                         ts1.onNext(item);
                         upstream.cancel();
+                        done = true;
                         ts1.onComplete();
                     }
                 }
@@ -375,6 +412,7 @@ public final class TestHelper {
                     } else {
                         ts2.onNext(item);
                         upstream.cancel();
+                        done = true;
                         ts2.onComplete();
                     }
                     return true;
@@ -542,10 +580,13 @@ public final class TestHelper {
 
                 int index;
 
+                boolean done;
+
                 @Override
                 public boolean tryOnNext(T item) {
                     ts4.onNext(item);
                     upstream.cancel();
+                    done = true;
                     ts4.onComplete();
                     return ((index++) & 1) == 0;
                 }
@@ -566,12 +607,16 @@ public final class TestHelper {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    ts4.onError(throwable);
+                    if (!done) {
+                        ts4.onError(throwable);
+                    }
                 }
 
                 @Override
                 public void onComplete() {
-                    ts4.onComplete();
+                    if (!done) {
+                        ts4.onComplete();
+                    }
                 }
             });
 
@@ -588,10 +633,13 @@ public final class TestHelper {
 
                 int index;
 
+                boolean done;
+
                 @Override
                 public boolean tryOnNext(T item) {
                     ts5.onNext(item);
                     upstream.cancel();
+                    done = true;
                     ts5.onComplete();
                     return ((index++) & 1) == 0;
                 }
@@ -612,12 +660,16 @@ public final class TestHelper {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    ts5.onError(throwable);
+                    if (!done) {
+                        ts5.onError(throwable);
+                    }
                 }
 
                 @Override
                 public void onComplete() {
-                    ts5.onComplete();
+                    if (!done) {
+                        ts5.onComplete();
+                    }
                 }
             });
 

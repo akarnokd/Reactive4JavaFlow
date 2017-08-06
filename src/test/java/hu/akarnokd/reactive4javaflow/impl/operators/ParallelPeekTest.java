@@ -35,17 +35,22 @@ public class ParallelPeekTest {
 
     @Test
     public void onSubscribeCrash() {
-        Folyam.range(1, 5)
-        .parallel()
-        .doOnSubscribe(new CheckedConsumer<Flow.Subscription>() {
-            @Override
-            public void accept(Flow.Subscription s) throws Exception {
-                throw new IOException();
+        TestHelper.withErrorTracking(errors -> {
+            Folyam.range(1, 5)
+                    .parallel()
+                    .doOnSubscribe(new CheckedConsumer<Flow.Subscription>() {
+                        @Override
+                        public void accept(Flow.Subscription s) throws Exception {
+                            throw new IOException();
+                        }
+                    })
+                    .sequential()
+                    .test()
+                    .assertFailure(IOException.class);
+            for (int i = 0; i < errors.size(); i++) {
+                TestHelper.assertError(errors, i, IOException.class);
             }
-        })
-        .sequential()
-        .test()
-        .assertFailure(IOException.class);
+        });
     }
 
     @Test

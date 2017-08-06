@@ -650,26 +650,22 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> takeWhile(CheckedPredicate<? super T> predicate) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTakeWhile<>(this, predicate));
     }
 
     public final Folyam<T> skipWhile(CheckedPredicate<? super T> predicate) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSkipWhile<>(this, predicate));
     }
 
     public final Folyam<T> takeUntil(CheckedPredicate<? super T> predicate) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTakeUntilPredicate<>(this, predicate));
     }
 
     public final Folyam<T> takeUntil(Flow.Publisher<?> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTakeUntil<>(this, other));
     }
 
     public final Folyam<T> skipUntil(Flow.Publisher<?> other) {
