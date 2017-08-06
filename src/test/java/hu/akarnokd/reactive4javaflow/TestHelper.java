@@ -18,8 +18,9 @@ package hu.akarnokd.reactive4javaflow;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -867,6 +868,139 @@ public final class TestHelper {
 
         for (int i = 0; i <= n; i++) {
             tss[i].assertFailure(IllegalArgumentException.class);
+        }
+    }
+
+    /**
+     * Runs tests by running an range or error source through direct, hidden, conditional
+     * and fused modes.
+     * @param items the number of items to emit, -1 uses a plain error source, -2 uses
+     *              a crashing sync-fused empty source and -3 uses a crashing
+     *              async-fused source.
+     * @param compose the function to compose item processing onto
+     * @param errorClass the expected output error class
+     * @param expected the expected items to be received before the error
+     * @param <R> the result value type of the transformation
+     */
+    @SafeVarargs
+    public static <R> void assertFailureComposed(int items, Function<? super Folyam<Integer>, ? extends Folyam<R>> compose, Class<? extends Throwable> errorClass, R... expected) {
+        Folyam<Integer> source;
+
+        if (items == -1) {
+            source = Folyam.error(new IOException("Forced source failure"));
+        } else
+        if (items == -2) {
+            source = new Folyam<Integer>() {
+
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new FailingFusedSubscription(FusedSubscription.SYNC));
+                }
+            };
+        } else
+        if (items == -3) {
+            source = new Folyam<Integer>() {
+
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new FailingFusedSubscription(FusedSubscription.ASYNC));
+                }
+            };
+        } else {
+            source = Folyam.range(1, items);
+        }
+        source
+                .compose(compose)
+                .test()
+                .withTag("Direct, non-fused")
+                .assertFailure(errorClass, expected);
+
+        source
+                .compose(compose)
+                .test(Long.MAX_VALUE, false, FusedSubscription.SYNC)
+                .withTag("Direct, sync-fused")
+                .assertFailure(errorClass, expected);
+
+        source
+                .compose(compose)
+                .test(Long.MAX_VALUE, false, FusedSubscription.ASYNC)
+                .withTag("Direct, async-fused")
+                .assertFailure(errorClass, expected);
+
+        // -----------------------------------------------
+
+        if (items >= -1) {
+            source
+                    .hide()
+                    .compose(compose)
+                    .test()
+                    .withTag("Hidden, non-fused")
+                    .assertFailure(errorClass, expected);
+
+            source
+                    .hide()
+                    .compose(compose)
+                    .test(Long.MAX_VALUE, false, FusedSubscription.SYNC)
+                    .withTag("Hidden, sync-fused")
+                    .assertFailure(errorClass, expected);
+
+            source
+                    .hide()
+                    .compose(compose)
+                    .test(Long.MAX_VALUE, false, FusedSubscription.ASYNC)
+                    .withTag("Hidden, async-fused")
+                    .assertFailure(errorClass, expected);
+        }
+
+        // -----------------------------------------------
+
+        source
+                .compose(compose)
+                .filter(v -> true)
+                .test()
+                .withTag("Direct, conditional, non-fused")
+                .assertFailure(errorClass, expected);
+
+        source
+                .compose(compose)
+                .filter(v -> true)
+                .test(Long.MAX_VALUE, false, FusedSubscription.SYNC)
+                .withTag("Direct, conditional, sync-fused")
+                .assertFailure(errorClass, expected);
+
+        source
+                .compose(compose)
+                .filter(v -> true)
+                .test(Long.MAX_VALUE, false, FusedSubscription.ASYNC)
+                .withTag("Direct, conditional, async-fused")
+                .assertFailure(errorClass, expected);
+
+        // -----------------------------------------------
+
+        if (items >= -1) {
+            source
+                    .hide()
+                    .compose(compose)
+                    .filter(v -> true)
+                    .test()
+                    .withTag("Hidden, conditional, non-fused")
+                    .assertFailure(errorClass, expected);
+
+            source
+                    .hide()
+                    .compose(compose)
+                    .filter(v -> true)
+                    .test(Long.MAX_VALUE, false, FusedSubscription.SYNC)
+                    .withTag("Hidden, conditional, sync-fused")
+                    .assertFailure(errorClass, expected);
+
+            source
+                    .hide()
+                    .compose(compose)
+                    .filter(v -> true)
+                    .test(Long.MAX_VALUE, false, FusedSubscription.ASYNC)
+                    .withTag("Hidden, conditional, async-fused")
+                    .assertFailure(errorClass, expected);
         }
     }
 }

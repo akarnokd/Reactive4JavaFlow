@@ -20,55 +20,34 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 
 import java.util.concurrent.Flow;
-import java.util.function.Function;
 
-/**
- * Flattens the generated Publishers on each rail.
- *
- * @param <T> the input value type
- * @param <R> the output value type
- */
-public final class ParallelFlatMap<T, R> extends ParallelFolyam<R> {
+public final class FolyamFlatMap<T, R> extends Folyam<R> {
 
-    final ParallelFolyam<T> source;
+    final Folyam<T> source;
 
     final CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper;
-
-    final boolean delayError;
 
     final int maxConcurrency;
 
     final int prefetch;
 
-    public ParallelFlatMap(
-            ParallelFolyam<T> source,
-            CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper,
-            boolean delayError,
-            int maxConcurrency,
-            int prefetch) {
+    final boolean delayErrors;
+
+    public FolyamFlatMap(Folyam<T> source, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayErrors) {
         this.source = source;
         this.mapper = mapper;
-        this.delayError = delayError;
         this.maxConcurrency = maxConcurrency;
         this.prefetch = prefetch;
+        this.delayErrors = delayErrors;
     }
 
     @Override
-    public int parallelism() {
-        return source.parallelism();
+    protected void subscribeActual(FolyamSubscriber<? super R> s) {
+
     }
 
-    @Override
-    public void subscribeActual(FolyamSubscriber<? super R>[] subscribers) {
-        int n = subscribers.length;
-
-        @SuppressWarnings("unchecked")
-        FolyamSubscriber<T>[] parents = new FolyamSubscriber[n];
-
-        for (int i = 0; i < n; i++) {
-            parents[i] = FolyamFlatMap.create(subscribers[i], mapper, maxConcurrency, prefetch, delayError);
-        }
-
-        source.subscribe(parents);
+    public static <T, R> FolyamSubscriber<T> create(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayErrors) {
+        // TODO implement
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 }

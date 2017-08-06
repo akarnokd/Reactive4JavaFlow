@@ -526,15 +526,13 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     @SafeVarargs
     public static <T> Folyam<T> concatArray(Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatArray<>(sources, false));
     }
 
     @SafeVarargs
     public static <T> Folyam<T> concatArrayDelayError(Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatArray<>(sources, true));
     }
 
     @SafeVarargs
@@ -840,8 +838,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> flatMapIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFlattenIterable<>(this, mapper, prefetch));
     }
 
     public final <R> Folyam<R> flatMapStream(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper) {
@@ -1140,7 +1137,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> concatWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return concatArray(this, other);
+        return FolyamPlugins.onAssembly(FolyamConcatArray.concatWith(this, other, false));
+    }
+
+    public final Folyam<T> concatWithDelayError(Flow.Publisher<? extends T> other) {
+        Objects.requireNonNull(other, "other == null");
+        return FolyamPlugins.onAssembly(FolyamConcatArray.concatWith(this, other, true));
     }
 
     public final Folyam<T> mergeWith(Flow.Publisher<? extends T> other) {
