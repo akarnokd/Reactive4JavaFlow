@@ -334,7 +334,6 @@ public class ParallelFolyamTest {
     }
 
     @Test
-    @Ignore("FlatMap not implemented yet") // FIXME implement
     public void flatMapUnordered() {
         TestConsumer<Integer> ts = new TestConsumer<Integer>();
 
@@ -1104,7 +1103,6 @@ public class ParallelFolyamTest {
     }
 
     @Test
-    @Ignore("FlatMap not implemented yet") // FIXME implement
     public void flatMapDelayError() {
         final int[] count = { 0 };
 
@@ -1137,7 +1135,6 @@ public class ParallelFolyamTest {
     }
 
     @Test
-    @Ignore("FlatMap not implemented yet") // FIXME implement
     public void flatMapDelayErrorMaxConcurrency() {
         final int[] count = { 0 };
 

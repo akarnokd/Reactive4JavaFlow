@@ -112,16 +112,22 @@ public class ParallelPeekTest {
 
     @Test
     public void onCompleteCrash() {
-        Folyam.just(1)
-        .parallel()
-        .doOnComplete(new CheckedRunnable() {
-            @Override
-            public void run() throws Exception {
-                throw new IOException();
+        TestHelper.withErrorTracking(errors -> {
+            Folyam.just(1)
+            .parallel()
+            .doOnComplete(new CheckedRunnable() {
+                @Override
+                public void run() throws Exception {
+                    throw new IOException();
+                }
+            })
+            .sequential()
+            .test()
+            .assertFailure(IOException.class, 1);
+
+            for (int i = 0; i < errors.size(); i++) {
+                TestHelper.assertError(errors, i, IOException.class);
             }
-        })
-        .sequential()
-        .test()
-        .assertFailure(IOException.class, 1);
+        });
     }
 }

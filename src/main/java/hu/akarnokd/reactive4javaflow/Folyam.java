@@ -794,8 +794,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> flatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFlatMap<>(this, mapper, maxConcurrency, prefetch, false));
     }
 
     public final <R> Folyam<R> flatMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -808,8 +807,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> flatMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFlatMap<>(this, mapper, maxConcurrency, prefetch, true));
     }
 
     public final <R> Folyam<R> switchMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {

@@ -28,23 +28,29 @@ public class ParallelJoinTest {
 
     @Test
     public void overflowFastpath() {
-        new ParallelFolyam<Integer>() {
-            @Override
-            public void subscribeActual(FolyamSubscriber<? super Integer>[] subscribers) {
-                subscribers[0].onSubscribe(new BooleanSubscription());
-                subscribers[0].onNext(1);
-                subscribers[0].onNext(2);
-                subscribers[0].onNext(3);
-            }
+        TestHelper.withErrorTracking(errors -> {
+            new ParallelFolyam<Integer>() {
+                @Override
+                public void subscribeActual(FolyamSubscriber<? super Integer>[] subscribers) {
+                    subscribers[0].onSubscribe(new BooleanSubscription());
+                    subscribers[0].onNext(1);
+                    subscribers[0].onNext(2);
+                    subscribers[0].onNext(3);
+                }
 
-            @Override
-            public int parallelism() {
-                return 1;
+                @Override
+                public int parallelism() {
+                    return 1;
+                }
             }
-        }
-        .sequential(1)
-        .test(0)
-        .assertFailure(IllegalStateException.class);
+            .sequential(1)
+            .test(0)
+            .assertFailure(IllegalStateException.class);
+
+            if (!errors.isEmpty()) {
+                TestHelper.assertError(errors, 0, IllegalStateException.class);
+            }
+        });
     }
 
     @Test
