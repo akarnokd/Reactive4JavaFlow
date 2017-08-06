@@ -79,7 +79,7 @@ public final class FolyamTake<T> extends Folyam<T> {
                 if (fusionMode == ASYNC) {
                     onComplete();
                 }
-                r = -1L;
+                remaining = -1L;
                 return null;
             }
             T v = qs.poll();
@@ -95,7 +95,11 @@ public final class FolyamTake<T> extends Folyam<T> {
 
         @Override
         public final boolean isEmpty() {
-            return qs.isEmpty() || remaining == 0L;
+            long r = remaining;
+            if (r == 0 && fusionMode == ASYNC) {
+                return false;
+            }
+            return qs.isEmpty() || r <= 0L;
         }
 
         @Override

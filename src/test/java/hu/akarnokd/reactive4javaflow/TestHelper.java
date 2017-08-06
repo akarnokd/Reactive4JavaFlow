@@ -853,4 +853,20 @@ public final class TestHelper {
             throw new AssertionError(error2);
         }
     }
+
+    public static <T> void checkInvalidParallelSubscribers(ParallelFolyam<T> source) {
+        int n = source.parallelism();
+
+        @SuppressWarnings("unchecked")
+        TestConsumer<Object>[] tss = new TestConsumer[n + 1];
+        for (int i = 0; i <= n; i++) {
+            tss[i] = new TestConsumer<Object>().withTag("" + i);
+        }
+
+        source.subscribe(tss);
+
+        for (int i = 0; i <= n; i++) {
+            tss[i].assertFailure(IllegalArgumentException.class);
+        }
+    }
 }

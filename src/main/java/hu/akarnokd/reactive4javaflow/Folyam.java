@@ -1470,8 +1470,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final ParallelFolyam<T> parallel(int parallelism, int prefetch) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelFromPublisher<>(this, parallelism, prefetch));
     }
 
     // type-specific operators

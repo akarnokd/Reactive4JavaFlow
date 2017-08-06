@@ -71,7 +71,7 @@ public final class ParallelSchedulerService implements SchedulerService, ThreadF
         int idx = n;
         ScheduledExecutorService b = a[idx];
         int j = idx + 1;
-        n = j == n ? 0 : j;
+        n = j == a.length ? 0 : j;
         return b;
     }
 

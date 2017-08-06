@@ -19,6 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 
 import java.lang.invoke.VarHandle;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ExceptionHelper {
 
@@ -37,6 +38,27 @@ public final class ExceptionHelper {
         @Override
         public Throwable fillInStackTrace() {
             return this;
+        }
+    }
+
+    public static boolean addThrowable(AtomicReference<Throwable> errors, Throwable t) {
+        for (;;) {
+            Throwable a = (Throwable) errors.getAcquire();
+            if (a == TERMINATED) {
+                return false;
+            }
+            Throwable b;
+            if (a instanceof CompositeThrowable) {
+                b = ((CompositeThrowable) a).copyAndAdd(t);
+            } else
+            if (a == null) {
+                b = t;
+            } else {
+                b = new CompositeThrowable(a, t);
+            }
+            if (errors.compareAndSet(a, b)) {
+                return true;
+            }
         }
     }
 
@@ -65,6 +87,15 @@ public final class ExceptionHelper {
         Throwable a = (Throwable)ERRORS.getAcquire(target);
         if (a != TERMINATED) {
             a = (Throwable)ERRORS.getAndSet(target, TERMINATED);
+        }
+        return a;
+    }
+
+
+    public static Throwable terminate(AtomicReference<Throwable> errors) {
+        Throwable a = (Throwable)errors.getAcquire();
+        if (a != TERMINATED) {
+            a = (Throwable)errors.getAndSet(TERMINATED);
         }
         return a;
     }

@@ -48,6 +48,10 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
         source.subscribe(new ConcatMapSubscriber<>(s, mapper, prefetch, delayError));
     }
 
+    public static <T, R> FolyamSubscriber<T> subscribe(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch, boolean delayError) {
+        return new ConcatMapSubscriber<>(s, mapper, prefetch, delayError);
+    }
+
     static final class ConcatMapSubscriber<T, R> extends SubscriptionArbiter implements FolyamSubscriber<T> {
 
         final FolyamSubscriber<? super R> actual;
@@ -158,6 +162,19 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
             }
         }
 
+        void innerError(Throwable throwable) {
+            ACTIVE.setRelease(this, false);
+            if (ExceptionHelper.addThrowable(this, ERROR, throwable)) {
+                if (!delayError) {
+                    upstream.cancel();
+                    DONE.setRelease(this, true);
+                }
+                drain();
+            } else {
+                FolyamPlugins.onError(throwable);
+            }
+        }
+
         @Override
         public void onComplete() {
             DONE.setRelease(this, true);
@@ -181,6 +198,7 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
                     Flow.Publisher<? extends R> fp = null;
 
                     if (d && !delayError && ERROR.getAcquire(this) != null) {
+                        queue.clear();
                         Throwable ex = ExceptionHelper.terminate(this, ERROR);
                         actual.onError(ex);
                         return;
@@ -264,8 +282,7 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
             @Override
             public void onError(Throwable throwable) {
                 ConcatMapSubscriber<?, ?> parent = this.parent;
-                ACTIVE.setRelease(parent, false);
-                parent.onError(throwable);
+                parent.innerError(throwable);
             }
 
             @Override

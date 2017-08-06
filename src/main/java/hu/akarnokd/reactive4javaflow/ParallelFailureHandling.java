@@ -19,7 +19,7 @@ import hu.akarnokd.reactive4javaflow.functionals.CheckedBiFunction;
 
 public enum ParallelFailureHandling implements CheckedBiFunction<Long, Throwable, ParallelFailureHandling> {
     ERROR,
-    COMPLETE,
+    STOP,
     RETRY,
     SKIP
     ;

@@ -474,6 +474,24 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return this;
     }
 
+    public final TestConsumer<T> assertValueSet(Collection<T> expected) {
+        int s = items.size();
+        if (s != expected.size()) {
+            throw fail("Number of items differ. Expected: " + expected.size() + ", Actual: " + s);
+        }
+        for (int i = 0; i < items.size(); i++) {
+            T v = items.get(i);
+            if (!expected.contains(v)) {
+                throw fail("Item @ " + i + ": " + valueAndClass(v) + " not expected");
+            }
+        }
+        return this;
+    }
+
+    public final List<T> values() {
+        return items;
+    }
+
     enum MissingSubscription implements Flow.Subscription {
         MISSING;
 
