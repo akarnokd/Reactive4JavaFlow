@@ -17,22 +17,35 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
+import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.util.*;
 
-import java.util.Arrays;
+import java.lang.invoke.*;
+import java.util.*;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.*;
 
-public final class FolyamAmbIterable<T> extends Folyam<T> {
+public final class FolyamZipIterable<T, R> extends Folyam<R> {
 
     final Iterable<? extends Flow.Publisher<? extends T>> sources;
 
-    public FolyamAmbIterable(Iterable<? extends Flow.Publisher<? extends T>> sources) {
+    final CheckedFunction<? super Object[], ? extends R> zipper;
+
+    final int prefetch;
+
+    final boolean delayError;
+
+    public FolyamZipIterable(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper, int prefetch, boolean delayError) {
         this.sources = sources;
+        this.zipper = zipper;
+        this.prefetch = prefetch;
+        this.delayError = delayError;
     }
 
     @Override
-    protected void subscribeActual(FolyamSubscriber<? super T> s) {
+    protected void subscribeActual(FolyamSubscriber<? super R> s) {
         Flow.Publisher<? extends T>[] srcs = new Flow.Publisher[8];
         int n = 0;
         try {
@@ -47,28 +60,6 @@ public final class FolyamAmbIterable<T> extends Folyam<T> {
             EmptySubscription.error(s, ex);
             return;
         }
-
-        if (n == 0) {
-            EmptySubscription.complete(s);
-            return;
-        }
-        if (n == 1) {
-            Flow.Publisher<? extends T> fp = srcs[0];
-            if (fp == null) {
-                EmptySubscription.error(s, new NullPointerException("Flow.Publisher[0] == null"));
-            } else {
-                fp.subscribe(s);
-            }
-            return;
-        }
-        if (s instanceof ConditionalSubscriber) {
-            FolyamAmbArray.AmbConditionalCoordinator<T> parent = new FolyamAmbArray.AmbConditionalCoordinator<>((ConditionalSubscriber<? super T>)s, n);
-            s.onSubscribe(parent);
-            parent.subscribe(srcs, n);
-        } else {
-            FolyamAmbArray.AmbCoordinator<T> parent = new FolyamAmbArray.AmbCoordinator<>(s, n);
-            s.onSubscribe(parent);
-            parent.subscribe(srcs, n);
-        }
+        FolyamZipArray.subscribe(srcs, n, s, zipper, prefetch, delayError);
     }
 }

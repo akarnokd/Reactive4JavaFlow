@@ -425,6 +425,38 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamMergePublisher<>(sources, prefetch, true));
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Folyam<R> zip(Flow.Publisher<? extends T> source1, Flow.Publisher<? extends U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+        Objects.requireNonNull(source1, "source1 == null");
+        Objects.requireNonNull(source2, "source2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), source1, source2);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Folyam<R> zip(Flow.Publisher<? extends T> source1, Flow.Publisher<? extends U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper, int prefetch) {
+        Objects.requireNonNull(source1, "source1 == null");
+        Objects.requireNonNull(source2, "source2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), prefetch, source1, source2);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Folyam<R> zipDelayError(Flow.Publisher<? extends T> source1, Flow.Publisher<? extends U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+        Objects.requireNonNull(source1, "source1 == null");
+        Objects.requireNonNull(source2, "source2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return zipArrayDelayError(a -> zipper.apply((T)a[0], (U)a[1]), source1, source2);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Folyam<R> zipDelayError(Flow.Publisher<? extends T> source1, Flow.Publisher<? extends U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper, int prefetch) {
+        Objects.requireNonNull(source1, "source1 == null");
+        Objects.requireNonNull(source2, "source2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return zipArrayDelayError(a -> zipper.apply((T)a[0], (U)a[1]), prefetch, source1, source2);
+    }
+
     public static <T, R> Folyam<R> zip(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
         return zip(sources, zipper, FolyamPlugins.defaultBufferSize());
     }
@@ -432,8 +464,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T, R> Folyam<R> zip(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamZipIterable<>(sources, zipper, prefetch, false));
     }
 
     public static <T, R> Folyam<R> zipDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
@@ -443,8 +474,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T, R> Folyam<R> zipDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamZipIterable<>(sources, zipper, prefetch, true));
     }
 
     public static <T, R> Folyam<R> zipLatest(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
@@ -555,16 +585,24 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     @SafeVarargs
     public static <T, R> Folyam<R> zipArray(CheckedFunction<? super Object[], ? extends R> zipper, Flow.Publisher<? extends T>... sources) {
+        return zipArray(zipper, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> zipArray(CheckedFunction<? super Object[], ? extends R> zipper, int prefetch, Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamZipArray<>(sources, zipper, prefetch, false));
     }
 
     @SafeVarargs
     public static <T, R> Folyam<R> zipArrayDelayError(CheckedFunction<? super Object[], ? extends R> zipper, Flow.Publisher<? extends T>... sources) {
+        return zipArrayDelayError(zipper, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> zipArrayDelayError(CheckedFunction<? super Object[], ? extends R> zipper, int prefetch, Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamZipArray<>(sources, zipper, prefetch, true));
     }
 
 

@@ -21,7 +21,7 @@ import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Flow;
 
 import static org.junit.Assert.assertFalse;
@@ -413,5 +413,46 @@ public class FolyamAmbTest {
         f.test().assertResult(1, 2, 3, 4, 5);
 
         f.filter(v -> true).test().assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void ambIterableMany() {
+        List<Folyam<Integer>> list = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            list.add(Folyam.never());
+        }
+        list.add(Folyam.range(1, 5));
+
+        Folyam.amb(list)
+                .test()
+                .assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void ambIterableEmpty() {
+        Folyam.amb(List.of())
+                .test()
+                .assertResult();
+    }
+
+    @Test
+    public void ambIterableOne() {
+        Folyam.amb(List.of(Folyam.range(1, 5)))
+                .test()
+                .assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void ambIterableOneNull() {
+        Folyam.amb(Collections.singleton(null))
+                .test()
+                .assertFailure(NullPointerException.class);
+    }
+
+    @Test
+    public void iterableFails() {
+        Folyam.amb(new FailingMappedIterable<>(1, 10, 10, idx -> Folyam.never()))
+                .test()
+                .assertFailure(IllegalStateException.class);
     }
 }
