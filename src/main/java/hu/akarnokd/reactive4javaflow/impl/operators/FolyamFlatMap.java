@@ -49,10 +49,10 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super R> s) {
-        source.subscribe(create(s, mapper, maxConcurrency, prefetch, delayErrors));
+        source.subscribe(createSubscriber(s, mapper, maxConcurrency, prefetch, delayErrors));
     }
 
-    public static <T, R> FolyamSubscriber<T> create(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayErrors) {
+    public static <T, R> FolyamSubscriber<T> createSubscriber(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayErrors) {
         if (s instanceof ConditionalSubscriber) {
             return new FlatMapConditionalSubscriber<>((ConditionalSubscriber<? super R>)s, mapper, maxConcurrency, prefetch, delayErrors);
         }
@@ -113,7 +113,7 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
             this.maxConcurrency = maxConcurrency;
             this.prefetch = prefetch;
             this.delayErrors = delayErrors;
-            this.limit = maxConcurrency - (maxConcurrency >> 2);
+            this.limit = maxConcurrency == Integer.MAX_VALUE ? Integer.MAX_VALUE : maxConcurrency - (maxConcurrency >> 2);
             SUBSCRIBERS.setRelease(this, EMPTY);
         }
 
@@ -121,7 +121,7 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
         public final void onSubscribe(Flow.Subscription subscription) {
             upstream = subscription;
             onStart();
-            subscription.request(maxConcurrency);
+            subscription.request(maxConcurrency == Integer.MAX_VALUE ? Long.MAX_VALUE : maxConcurrency);
         }
 
         abstract void onStart();

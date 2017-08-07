@@ -141,4 +141,45 @@ public class FolyamConcatMapTest {
                 .test()
                 .assertFailure(IOException.class, 1);
     }
+
+    @Test
+    public void publisher() {
+        Folyam.concat(Folyam.fromArray(Folyam.range(1, 3), Folyam.range(4, 3)))
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 6);
+    }
+
+    @Test
+    public void publisher2() {
+        Folyam.concat(Folyam.fromArray(Folyam.range(1, 3), Folyam.range(4, 3)), 1)
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 6);
+    }
+
+    @Test
+    public void publisher3() {
+        Folyam.concatDelayError(Folyam.fromArray(Folyam.range(1, 3), Folyam.range(4, 3)))
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 6);
+    }
+
+    @Test
+    public void publisher4() {
+        Folyam.concatDelayError(Folyam.fromArray(Folyam.range(1, 3), Folyam.range(4, 3)), 1)
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 6);
+    }
+    @Test
+    public void publisher5() {
+        Folyam.concatDelayError(Folyam.fromArray(Folyam.range(1, 3), Folyam.error(new IOException()), Folyam.range(4, 3)))
+                .test()
+                .assertFailure(IOException.class, 1, 2, 3, 4, 5, 6);
+    }
+
+    @Test
+    public void publisher6() {
+        Folyam.concatDelayError(Folyam.fromArray(Folyam.range(1, 3), Folyam.error(new IOException()), Folyam.range(4, 3)), 1)
+                .test()
+                .assertFailure(IOException.class, 1, 2, 3, 4, 5, 6);
+    }
 }

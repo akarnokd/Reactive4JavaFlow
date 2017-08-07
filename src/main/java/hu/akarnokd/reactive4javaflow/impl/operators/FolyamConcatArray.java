@@ -62,6 +62,22 @@ public final class FolyamConcatArray<T> extends Folyam<T> {
         return new FolyamConcatArray<>(new Flow.Publisher[] { source, other }, delayError);
     }
 
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static <T> Folyam<T> startWith(Folyam<T> source, Flow.Publisher<? extends T> other, boolean delayError) {
+        if (source instanceof FolyamConcatArray) {
+            FolyamConcatArray f = (FolyamConcatArray) source;
+            if (f.delayError == delayError) {
+                int n = f.sources.length;
+                Flow.Publisher<? extends T>[] b = new Flow.Publisher[n + 1];
+                System.arraycopy(f.sources, 0, b, 1, n);
+                b[0] = other;
+                return new FolyamConcatArray<>(b, delayError);
+            }
+        }
+        return new FolyamConcatArray<>(new Flow.Publisher[] { source, other }, delayError);
+    }
+
     static abstract class AbstractConcatArray<T> extends SubscriptionArbiter implements ConditionalSubscriber<T> {
 
         final Flow.Publisher<? extends T>[] sources;

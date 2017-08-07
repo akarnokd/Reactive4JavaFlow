@@ -48,7 +48,7 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
         source.subscribe(new ConcatMapSubscriber<>(s, mapper, prefetch, delayError));
     }
 
-    public static <T, R> FolyamSubscriber<T> subscribe(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch, boolean delayError) {
+    public static <T, R> FolyamSubscriber<T> createSubscribe(FolyamSubscriber<? super R> s, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch, boolean delayError) {
         return new ConcatMapSubscriber<>(s, mapper, prefetch, delayError);
     }
 

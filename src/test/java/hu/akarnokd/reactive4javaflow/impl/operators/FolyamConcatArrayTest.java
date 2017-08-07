@@ -125,4 +125,55 @@ public class FolyamConcatArrayTest {
                 .test(0, true, FusedSubscription.NONE)
                 .assertEmpty();
     }
+
+    @Test
+    public void startWithMany() {
+        Folyam<Integer> f = Folyam.range(1, 5);
+        for (int i = 0; i < 1000; i++) {
+            f = f.startWith(Folyam.empty());
+        }
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.filter(v -> true).test().assertResult(1, 2, 3, 4, 5);
+    }
+
+
+    @Test
+    public void startWithDelayErrorMany() {
+        Folyam<Integer> f = Folyam.range(1, 5);
+        for (int i = 0; i < 1000; i++) {
+            f = f.startWithDelayError(Folyam.empty());
+        }
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.filter(v -> true).test().assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void endWithMany() {
+        Folyam<Integer> f = Folyam.empty();
+        for (int i = 0; i < 1000; i++) {
+            f = f.concatWith(Folyam.empty());
+        }
+        f = f.concatWith(Folyam.range(1, 5));
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.filter(v -> true).test().assertResult(1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void endWithDelayErrorMany() {
+        Folyam<Integer> f = Folyam.empty();
+        for (int i = 0; i < 1000; i++) {
+            f = f.concatWithDelayError(Folyam.empty());
+        }
+        f = f.concatWithDelayError(Folyam.range(1, 5));
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.filter(v -> true).test().assertResult(1, 2, 3, 4, 5);
+    }
 }

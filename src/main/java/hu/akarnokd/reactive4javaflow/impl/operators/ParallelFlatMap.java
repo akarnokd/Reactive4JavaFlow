@@ -66,7 +66,7 @@ public final class ParallelFlatMap<T, R> extends ParallelFolyam<R> {
         FolyamSubscriber<T>[] parents = new FolyamSubscriber[n];
 
         for (int i = 0; i < n; i++) {
-            parents[i] = FolyamFlatMap.create(subscribers[i], mapper, maxConcurrency, prefetch, delayError);
+            parents[i] = FolyamFlatMap.createSubscriber(subscribers[i], mapper, maxConcurrency, prefetch, delayError);
         }
 
         source.subscribe(parents);

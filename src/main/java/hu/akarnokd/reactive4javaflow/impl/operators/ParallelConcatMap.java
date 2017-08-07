@@ -60,7 +60,7 @@ public final class ParallelConcatMap<T, R> extends ParallelFolyam<R> {
         final FolyamSubscriber<T>[] parents = new FolyamSubscriber[n];
 
         for (int i = 0; i < n; i++) {
-            parents[i] = FolyamConcatMap.subscribe(subscribers[i], mapper, prefetch, delayError);
+            parents[i] = FolyamConcatMap.createSubscribe(subscribers[i], mapper, prefetch, delayError);
         }
 
         source.subscribe(parents);
