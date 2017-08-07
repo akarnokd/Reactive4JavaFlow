@@ -336,8 +336,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T, R> Folyam<R> combineLatest(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> combiner, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamCombineLatestIterable<>(sources, combiner, prefetch, false));
     }
 
     public static <T, R> Folyam<R> combineLatestDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> combiner) {
@@ -347,8 +346,31 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T, R> Folyam<R> combineLatestDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> combiner, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamCombineLatestIterable<>(sources, combiner, prefetch, true));
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> combineLatestArray(CheckedFunction<? super Object[], ? extends R> combiner, Flow.Publisher<? extends T>... sources) {
+        return combineLatestArray(combiner, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> combineLatestArray(CheckedFunction<? super Object[], ? extends R> combiner, int prefetch, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(combiner, "combiner == null");
+        return FolyamPlugins.onAssembly(new FolyamCombineLatest<>(sources, combiner, prefetch, false));
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> combineLatestArrayDelayError(CheckedFunction<? super Object[], ? extends R> combiner, Flow.Publisher<? extends T>... sources) {
+        return combineLatestArrayDelayError(combiner, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> combineLatestArrayDelayError(CheckedFunction<? super Object[], ? extends R> combiner, int prefetch, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(combiner, "combiner == null");
+        return FolyamPlugins.onAssembly(new FolyamCombineLatest<>(sources, combiner, prefetch, true));
     }
 
     public static <T> Folyam<T> concat(Iterable<? extends Flow.Publisher<? extends T>> sources) {
