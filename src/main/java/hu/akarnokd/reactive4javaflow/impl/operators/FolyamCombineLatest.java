@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
+import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.*;
 
@@ -75,7 +75,7 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         }
     }
 
-    static abstract class AbstractCombineLatest<T, R> extends AtomicInteger implements Flow.Subscription {
+    static abstract class AbstractCombineLatest<T, R> extends AtomicInteger implements FusedSubscription<R> {
 
         final CheckedFunction<? super Object[], ? extends R> combiner;
 
@@ -84,6 +84,8 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         final CombineLatestInnerSubscriber<T>[] subscribers;
 
         final SpscLinkedArrayQueue<Object> queue;
+
+        boolean outputFused;
 
         volatile boolean cancelled;
 
@@ -102,6 +104,7 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         static final VarHandle DONE;
 
         int active;
+
 
         static {
             try {
@@ -168,12 +171,6 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
             }
         }
 
-        final void drain() {
-            if (getAndIncrement() == 0) {
-                drainLoop();
-            }
-        }
-
         final void innerNext(CombineLatestInnerSubscriber<T> sender, int index, T item) {
             boolean shouldDrain = false;
             Object[] vals = (Object[])VALUES.getAcquire(this);
@@ -220,6 +217,54 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
             drain();
         }
 
+        @Override
+        public int requestFusion(int mode) {
+            if ((mode & ASYNC) != 0) {
+                outputFused = true;
+                return ASYNC;
+            }
+            return NONE;
+        }
+
+        @Override
+        public R poll() throws Throwable {
+            SpscLinkedArrayQueue<Object> q = this.queue;
+            Object[] vals = (Object[]) q.poll();
+            if (vals != null) {
+                CombineLatestInnerSubscriber<?> sender = (CombineLatestInnerSubscriber<?>) q.poll();
+
+                R v = Objects.requireNonNull(combiner.apply(vals), "The combiner returned a null value");
+
+                sender.request();
+
+                return v;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return queue.isEmpty();
+        }
+
+        @Override
+        public void clear() {
+            VALUES.setRelease(this, null);
+            queue.clear();
+        }
+
+        final void drain() {
+            if (getAndIncrement() == 0) {
+                if (outputFused) {
+                    drainFusedLoop();
+                } else {
+                    drainLoop();
+                }
+            }
+        }
+
+        abstract void drainFusedLoop();
+
         abstract void drainLoop();
     }
 
@@ -230,6 +275,55 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         protected CombineLatestCoordinator(FolyamSubscriber<? super R> actual, CheckedFunction<? super Object[], ? extends R> combiner, int n, int prefetch, boolean delayError) {
             super(combiner, n, prefetch, delayError);
             this.actual = actual;
+        }
+
+        @Override
+        void drainFusedLoop() {
+            int missed = 1;
+            FolyamSubscriber<? super R> a = actual;
+            SpscLinkedArrayQueue<Object> q = queue;
+            int n = subscribers.length;
+
+            for (; ; ) {
+                if (cancelled) {
+                    VALUES.setRelease(this, null);
+                    q.clear();
+                    return;
+                }
+
+                if (!delayError) {
+                    Throwable ex = (Throwable) ERROR.getAcquire(this);
+                    if (ex != null) {
+                        ex = ExceptionHelper.terminate(this, ERROR);
+                        VALUES.setRelease(this, null);
+                        q.clear();
+                        a.onError(ex);
+                        return;
+                    }
+                }
+
+                boolean d = n == (int) DONE.getAcquire(this);
+
+                if (!q.isEmpty()) {
+                    a.onNext(null);
+                }
+
+                if (d) {
+                    Throwable ex = ExceptionHelper.terminate(this, ERROR);
+                    VALUES.setRelease(this, null);
+                    if (ex != null) {
+                        a.onError(ex);
+                    } else {
+                        a.onComplete();
+                    }
+                    return;
+                }
+
+                missed = addAndGet(-missed);
+                if (missed == 0) {
+                    break;
+                }
+            }
         }
 
         @Override
@@ -323,6 +417,56 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         protected CombineLatestConditionalCoordinator(ConditionalSubscriber<? super R> actual, CheckedFunction<? super Object[], ? extends R> combiner, int n, int prefetch, boolean delayError) {
             super(combiner, n, prefetch, delayError);
             this.actual = actual;
+        }
+
+
+        @Override
+        void drainFusedLoop() {
+            int missed = 1;
+            FolyamSubscriber<? super R> a = actual;
+            SpscLinkedArrayQueue<Object> q = queue;
+            int n = subscribers.length;
+
+            for (; ; ) {
+                if (cancelled) {
+                    VALUES.setRelease(this, null);
+                    q.clear();
+                    return;
+                }
+
+                if (!delayError) {
+                    Throwable ex = (Throwable) ERROR.getAcquire(this);
+                    if (ex != null) {
+                        ex = ExceptionHelper.terminate(this, ERROR);
+                        VALUES.setRelease(this, null);
+                        q.clear();
+                        a.onError(ex);
+                        return;
+                    }
+                }
+
+                boolean d = n == (int) DONE.getAcquire(this);
+
+                if (!q.isEmpty()) {
+                    a.onNext(null);
+                }
+
+                if (d) {
+                    Throwable ex = ExceptionHelper.terminate(this, ERROR);
+                    VALUES.setRelease(this, null);
+                    if (ex != null) {
+                        a.onError(ex);
+                    } else {
+                        a.onComplete();
+                    }
+                    return;
+                }
+
+                missed = addAndGet(-missed);
+                if (missed == 0) {
+                    break;
+                }
+            }
         }
 
         @Override

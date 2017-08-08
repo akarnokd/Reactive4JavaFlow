@@ -17,6 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -252,5 +253,53 @@ public class FolyamCombineLatestTest {
         Folyam.combineLatest(new FailingMappedIterable<>(1, 10, 10, v -> Folyam.just(1)), Arrays::toString)
                 .test()
                 .assertFailure(IllegalStateException.class);
+    }
+
+    @Test
+    public void fusedNoDelayErrorFail() {
+        Folyam.combineLatestArray(a -> a, Folyam.just(1), Folyam.<Integer>error(new IOException()))
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertFailure(IOException.class);
+    }
+
+
+    @Test
+    public void fusedNoDelayErrorFailConditional() {
+        Folyam.combineLatestArray(a -> a, Folyam.just(1), Folyam.<Integer>error(new IOException()))
+                .filter(v -> true)
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertFailure(IOException.class);
+    }
+
+
+    @Test
+    public void fusedDelayErrorFail() {
+        Folyam.combineLatestArrayDelayError(a -> a, Folyam.just(1), Folyam.<Integer>error(new IOException()))
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertFailure(IOException.class);
+    }
+
+
+    @Test
+    public void fusedDelayErrorFailConditional() {
+        Folyam.combineLatestArrayDelayError(a -> a, Folyam.just(1), Folyam.<Integer>error(new IOException()))
+                .filter(v -> true)
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void fusedEmpty() {
+        Folyam.combineLatestArrayDelayError(a -> a, Folyam.just(1), Folyam.<Integer>empty())
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertResult();
+    }
+
+    @Test
+    public void fusedEmptyConditional() {
+        Folyam.combineLatestArrayDelayError(a -> a, Folyam.just(1), Folyam.<Integer>empty())
+                .filter(v -> true)
+                .test(Long.MAX_VALUE, false, FusedSubscription.ANY)
+                .assertResult();
     }
 }

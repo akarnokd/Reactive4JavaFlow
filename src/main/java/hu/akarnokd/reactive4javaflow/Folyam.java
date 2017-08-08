@@ -692,9 +692,14 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamTake<>(this, n));
     }
 
-    public final Folyam<T> takeLast(long n) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> takeLast(int n) {
+        if (n <= 0) {
+            return FolyamPlugins.onAssembly(new FolyamIgnoreElementsFolyam<>(this));
+        }
+        if (n == 1) {
+            return FolyamPlugins.onAssembly(new FolyamTakeLastOneFolyam<>(this));
+        }
+        return FolyamPlugins.onAssembly(new FolyamTakeLast<>(this, n));
     }
 
     public final Folyam<T> skip(long n) {
@@ -704,8 +709,11 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamSkip<>(this, n));
     }
 
-    public final Folyam<T> skipLast(long n) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> skipLast(int n) {
+        if (n <= 0) {
+            return this;
+        }
+        return FolyamPlugins.onAssembly(new FolyamSkipLast<>(this, n));
     }
 
     public final Folyam<T> takeWhile(CheckedPredicate<? super T> predicate) {
@@ -730,14 +738,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> skipUntil(Flow.Publisher<?> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSkipUntil<>(this, other));
     }
 
     public final Folyam<T> delaySubscription(Flow.Publisher<?> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDelaySubscription<>(this, other));
     }
 
     public final Folyam<T> repeat() {
@@ -754,7 +760,6 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> repeat(long times, CheckedBooleanSupplier condition) {
         Objects.requireNonNull(condition, "condition == null");
-        // TODO implement
         return FolyamPlugins.onAssembly(new FolyamRepeat<>(this, times, condition));
     }
 
@@ -1237,8 +1242,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Esetleg<T> last() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamTakeLastOne<>(this));
     }
 
     public final Esetleg<T> elementAt(long index) {
