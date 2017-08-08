@@ -53,7 +53,9 @@ public final class TestHelper {
 
         source.subscribe(ts);
 
-        ts.awaitDone(5, TimeUnit.SECONDS)
+        ts
+        .withTag("Normal consumption")
+        .awaitDone(5, TimeUnit.SECONDS)
         .assertResult(values);
 
         if (values.length != 0) {
@@ -63,7 +65,9 @@ public final class TestHelper {
 
             source.subscribe(ts);
 
-                ts.assertEmpty()
+                ts
+                  .withTag("Request 0 upfront, unbounded after")
+                  .assertEmpty()
                   .requestMore(Long.MAX_VALUE)
                   .awaitDone(5, TimeUnit.SECONDS)
                   .assertResult(values);

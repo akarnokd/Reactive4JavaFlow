@@ -39,4 +39,14 @@ public final class CompositeThrowable extends RuntimeException {
         ct.addSuppressed(next);
         return ct;
     }
+
+    public static Throwable combine(Throwable previous, Throwable next) {
+        if (previous == null) {
+            return next;
+        }
+        if (previous instanceof CompositeThrowable) {
+            return ((CompositeThrowable)previous).copyAndAdd(next);
+        }
+        return new CompositeThrowable(previous, next);
+    }
 }

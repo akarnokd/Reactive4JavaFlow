@@ -374,13 +374,8 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public static <T> Folyam<T> concat(Iterable<? extends Flow.Publisher<? extends T>> sources) {
-        return concat(sources, 2);
-    }
-
-    public static <T> Folyam<T> concat(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatIterable<>(sources, false));
     }
 
     public static <T> Folyam<T> concat(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
@@ -393,13 +388,8 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public static <T> Folyam<T> concatDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources) {
-        return concatDelayError(sources, 2);
-    }
-
-    public static <T> Folyam<T> concatDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatIterable<>(sources, true));
     }
 
     public static <T> Folyam<T> concatDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
@@ -643,13 +633,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final <R> Folyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
-        return mapWhen(mapper, FolyamPlugins.defaultBufferSize());
+        return mapWhen(mapper, (a, b) -> b, FolyamPlugins.defaultBufferSize());
     }
 
     public final <R> Folyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return mapWhen(mapper, (a, b) -> b, prefetch);
     }
 
     public final <U, R> Folyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
@@ -659,8 +648,21 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final <U, R> Folyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamMapWhen<>(this, mapper, combiner, prefetch, false));
+    }
+
+    public final <R> Folyam<R> mapWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
+        return mapWhenDelayError(mapper, (a, b) -> b, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final <U, R> Folyam<R> mapWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
+        return mapWhenDelayError(mapper, combiner, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final <U, R> Folyam<R> mapWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner, int prefetch) {
+        Objects.requireNonNull(mapper, "mapper == null");
+        Objects.requireNonNull(combiner, "combiner == null");
+        return FolyamPlugins.onAssembly(new FolyamMapWhen<>(this, mapper, combiner, prefetch, true));
     }
 
     public final Folyam<T> filter(CheckedPredicate<? super T> predicate) {
@@ -674,8 +676,16 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter, int prefetch) {
         Objects.requireNonNull(filter, "filter == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFilterWhen<>(this, filter, prefetch, false));
+    }
+
+    public final Folyam<T> filterWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter) {
+        return filterWhenDelayError(filter, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final Folyam<T> filterWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter, int prefetch) {
+        Objects.requireNonNull(filter, "filter == null");
+        return FolyamPlugins.onAssembly(new FolyamFilterWhen<>(this, filter, prefetch, true));
     }
 
     public final Folyam<T> take(long n) {
