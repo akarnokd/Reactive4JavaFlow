@@ -1042,8 +1042,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> onBackpressureDrop(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureDrop<>(this, handler));
     }
 
     public final Folyam<T> onBackpressureLatest() {
@@ -1052,13 +1051,15 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> onBackpressureLatest(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureLatest<>(this, handler));
     }
 
     public final Folyam<T> onBackpressureBuffer() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return onBackpressureBuffer(FolyamPlugins.defaultBufferSize());
+    }
+
+    public final Folyam<T> onBackpressureBuffer(int capacityHint) {
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureBufferAll<>(this, capacityHint, false));
     }
 
     public final Folyam<T> onBackpressureDropOldest(int capacity) {
@@ -1067,8 +1068,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> onBackpressureDropOldest(int capacity, CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureBufferDrop<>(this, capacity, false, handler));
     }
 
     public final Folyam<T> onBackpressureDropNewest(int capacity) {
@@ -1077,18 +1077,15 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> onBackpressureDropNewest(int capacity, CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureBufferDrop<>(this, capacity, true, handler));
     }
 
     public final Folyam<T> onBackpressureError() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureDrop<>(this, v -> { throw new IllegalStateException("The consumer is not ready to receive items"); }));
     }
 
     public final Folyam<T> onBackpressureError(int capacity) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureBufferAll<>(this, capacity, true));
     }
 
     public final Folyam<T> onBackpressureTimeout(int capacity, long timeout, TimeUnit unit, SchedulerService executor) {
