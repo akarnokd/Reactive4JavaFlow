@@ -8,7 +8,7 @@ buildscript {
 
     dependencies {
         classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
-        classpath "me.champeau.gradle:jmh-gradle-plugin:0.2.0"
+        classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.4"
     }
 }
 
@@ -98,11 +98,13 @@ publishing {
 jmh {
     jmhVersion = '1.19'
     humanOutputFile = null
+    /*
     if (project.hasProperty('jmh')) {
         include = ".*" + project.jmh + ".*"
     } else {
         include = ".*"
     }
+    */
 }
 
 plugins.withType(EclipsePlugin) {
@@ -128,7 +130,7 @@ javadoc {
 test {
     maxHeapSize = "2g"
     testLogging  {
-        events "started", "failed" // "skipped", "passed"
+        events "started", "failed", "skipped" //, "passed"
     //    showStandardStreams = true
     }
 }

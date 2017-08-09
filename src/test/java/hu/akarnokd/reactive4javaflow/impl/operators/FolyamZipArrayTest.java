@@ -511,4 +511,10 @@ public class FolyamZipArrayTest {
                 .assertFailure(IllegalStateException.class);
     }
 
+    @Test
+    public void zipWith() {
+        Folyam.range(1, 5).zipWith(Folyam.range(1, 6), (a, b) -> a + b)
+                .test()
+                .assertResult(2, 4, 6, 8, 10);
+    }
 }

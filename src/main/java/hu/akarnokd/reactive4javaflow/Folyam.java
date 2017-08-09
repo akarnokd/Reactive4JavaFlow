@@ -971,14 +971,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final Folyam<T> delay(long time, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDelayTime<>(this, time, unit, executor));
     }
 
     public final Folyam<T> delay(CheckedFunction<? super T, ? extends Flow.Publisher<?>> delaySelector) {
         Objects.requireNonNull(delaySelector, "delaySelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDelaySelector<>(this, delaySelector));
     }
 
     public final Folyam<T> spanout(long time, TimeUnit unit, SchedulerService executor) {
@@ -1219,7 +1217,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(FolyamMergeArray.mergeWith(this, other, true));
     }
 
-    public final <U, R> Folyam<R> zipWith(Flow.Publisher<? extends T> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+    public final <U, R> Folyam<R> zipWith(Flow.Publisher<? extends U> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
         Objects.requireNonNull(other, "other == null");
         Objects.requireNonNull(zipper, "zipper == null");
         return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
@@ -1496,37 +1494,36 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> distinct() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return distinct(v -> v, HashSet::new);
     }
 
     public final <K> Folyam<T> distinct(CheckedFunction<? super T, ? extends K> keySelector) {
-        Objects.requireNonNull(keySelector, "keySelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return distinct(keySelector, HashSet::new);
     }
 
     public final <K> Folyam<T> distinct(CheckedFunction<? super T, ? extends K> keySelector, Callable<? extends Collection<? super K>> collectionProvider) {
         Objects.requireNonNull(keySelector, "keySelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDistinct<>(this, keySelector, collectionProvider));
     }
 
     public final Folyam<T> distinctUntilChanged() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return distinctUntilChanged(Objects::equals);
+    }
+
+    public final Folyam<T> distinctUntilChanged(CheckedBiPredicate<? super T, ? super T> comparator) {
+        Objects.requireNonNull(comparator, "comparator == null");
+        return FolyamPlugins.onAssembly(new FolyamDistinctUntilChanged<>(this, comparator));
     }
 
     public final <K> Folyam<T> distinctUntilChanged(CheckedFunction<? super T, ? extends K> keySelector) {
         Objects.requireNonNull(keySelector, "keySelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return distinctUntilChanged(keySelector, Objects::equals);
     }
 
-    public final <K> Folyam<T> distinctUntilChanged(Comparator<? super T> comparator) {
+    public final <K> Folyam<T> distinctUntilChanged(CheckedFunction<? super T, ? extends K> keySelector, CheckedBiPredicate<? super K, ? super K> comparator) {
+        Objects.requireNonNull(keySelector, "keySelector == null");
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDistinctUntilChangedSelector<>(this, keySelector, comparator));
     }
 
     // parallel
