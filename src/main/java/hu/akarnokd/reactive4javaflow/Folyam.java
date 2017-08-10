@@ -1105,6 +1105,19 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     // resilience operators
 
+    public final Folyam<T> timeout(long timeout, TimeUnit unit, SchedulerService executor) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutTimed<>(this, timeout, unit, executor));
+    }
+
+    public final Folyam<T> timeout(long timeout, TimeUnit unit, SchedulerService executor, Flow.Publisher<? extends T> fallback) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
+        Objects.requireNonNull(fallback, "fallback == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutTimedFallback<>(this, timeout, unit, executor, fallback));
+    }
+
     public final Folyam<T> timeout(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeout) {
         Objects.requireNonNull(itemTimeout, "itemTimeout == null");
         // TODO implement
@@ -1132,25 +1145,22 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> onErrorComplete() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnErrorComplete(this));
     }
 
     public final Folyam<T> onErrorReturn(T item) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(item, "item == null");
+        return onErrorFallback(Folyam.just(item));
     }
 
     public final Folyam<T> onErrorFallback(Flow.Publisher<? extends T> fallback) {
         Objects.requireNonNull(fallback, "fallback == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return onErrorResumeNext(e -> fallback);
     }
 
     public final Folyam<T> onErrorResumeNext(CheckedFunction<? super Throwable, ? extends Flow.Publisher<? extends T>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnErrorResumeNext<>(this, handler));
     }
 
     public final Folyam<T> retry() {
@@ -1167,8 +1177,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> retry(long times, CheckedPredicate<? super Throwable> condition) {
         Objects.requireNonNull(condition, "condition == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRetry<>(this, times, condition));
     }
 
     public final Folyam<T> retryWhen(Function<? super Folyam<Throwable>, ? extends Flow.Publisher<?>> handler) {
