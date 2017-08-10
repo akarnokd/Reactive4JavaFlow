@@ -763,10 +763,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamRepeat<>(this, times, condition));
     }
 
-    public final Folyam<T> repeatWhen(Function<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
+    public final Folyam<T> repeatWhen(CheckedFunction<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRepeatWhen<>(this, handler));
     }
 
     public final Folyam<T> switchIfEmpty(Flow.Publisher<? extends T> other) {
@@ -786,15 +785,13 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final <U, R> Folyam<R> withLatestFrom(Flow.Publisher<? extends U> other, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
         Objects.requireNonNull(other, "other == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamWithLatestFrom<>(this, other, combiner));
     }
 
     public final <U, R> Folyam<R> withLatestFromMany(Iterable<? extends Flow.Publisher<? extends U>> others, CheckedFunction<? super Object[], ? extends R> combiner) {
         Objects.requireNonNull(others, "others == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamWithLatestFromMany<>(this, others, combiner));
     }
 
     public final Folyam<T> scan(CheckedBiFunction<T, T, T> scanner) {
@@ -803,9 +800,13 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final <R> Folyam<R> scan(Callable<? extends R> initialSupplier, CheckedBiFunction<R, ? super T, R> scanner) {
+        return scan(initialSupplier, scanner, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final <R> Folyam<R> scan(Callable<? extends R> initialSupplier, CheckedBiFunction<R, ? super T, R> scanner, int prefetch) {
+        Objects.requireNonNull(initialSupplier, "initialSupplier == null");
         Objects.requireNonNull(scanner, "scanner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamScanSeed<>(this, initialSupplier, scanner, prefetch));
     }
 
     public final Folyam<T> onTerminateDetach() {
@@ -1138,7 +1139,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> onErrorComplete() {
-        return FolyamPlugins.onAssembly(new FolyamOnErrorComplete(this));
+        return FolyamPlugins.onAssembly(new FolyamOnErrorComplete<>(this));
     }
 
     public final Folyam<T> onErrorReturn(T item) {
@@ -1173,10 +1174,9 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamRetry<>(this, times, condition));
     }
 
-    public final Folyam<T> retryWhen(Function<? super Folyam<Throwable>, ? extends Flow.Publisher<?>> handler) {
+    public final Folyam<T> retryWhen(CheckedFunction<? super Folyam<Throwable>, ? extends Flow.Publisher<?>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRetryWhen<>(this, handler));
     }
 
     // pair combinators
@@ -1216,6 +1216,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(FolyamMergeArray.mergeWith(this, other, true));
     }
 
+    @SuppressWarnings("unchecked")
     public final <U, R> Folyam<R> zipWith(Flow.Publisher<? extends U> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
         Objects.requireNonNull(other, "other == null");
         Objects.requireNonNull(zipper, "zipper == null");

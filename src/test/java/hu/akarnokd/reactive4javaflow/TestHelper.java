@@ -40,6 +40,7 @@ public final class TestHelper {
     @SafeVarargs
     public static <T> void assertResult(Flow.Publisher<T> source, T... values) {
         assertResultInternal(source, values);
+        assertResultInternal(Folyam.fromPublisher(source).filter(v -> true), values);
         assertResultInternal(FolyamPlugins.onAssembly(new FolyamHide<>(source)), values);
     }
 
