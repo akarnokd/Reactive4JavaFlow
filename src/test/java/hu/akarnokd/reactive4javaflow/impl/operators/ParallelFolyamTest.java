@@ -710,39 +710,143 @@ public class ParallelFolyamTest {
     }
 
     @Test
-    public void parallelismAndPrefetch() {
-        for (int parallelism = 1; parallelism <= 8; parallelism++) {
-            for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
-                Folyam.range(1, 1024 * 1024)
-                .parallel(parallelism, prefetch)
-                .map(v -> v)
-                .sequential()
-                .test()
-                .assertValueCount(1024 * 1024)
-                .assertNoErrors()
-                .assertComplete();
-            }
+    public void parallelismAndPrefetch1() {
+        int parallelism = 1;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .map(v -> v)
+                    .sequential()
+                    .test()
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
         }
     }
 
     @Test
-    public void parallelismAndPrefetchAsync() {
-        for (int parallelism = 1; parallelism <= 8; parallelism *= 2) {
-            for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
-                //System.out.println("parallelismAndPrefetchAsync >> " + parallelism + ", " + prefetch);
+    public void parallelismAndPrefetch2() {
+        int parallelism = 2;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .map(v -> v)
+                    .sequential()
+                    .test()
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
 
-                Folyam.range(1, 1024 * 1024)
-                .parallel(parallelism, prefetch)
-                .runOn(SchedulerServices.computation())
-                .map(v -> v)
-                .sequential(prefetch)
-                .test()
-                .withTag("parallelism = " + parallelism + ", prefetch = " + prefetch)
-                .awaitDone(30, TimeUnit.SECONDS)
-                .assertValueCount(1024 * 1024)
-                .assertNoErrors()
-                .assertComplete();
-            }
+    @Test
+    public void parallelismAndPrefetch4() {
+        int parallelism = 4;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .map(v -> v)
+                    .sequential()
+                    .test()
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
+
+    @Test
+    public void parallelismAndPrefetch8() {
+        int parallelism = 8;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .map(v -> v)
+                    .sequential()
+                    .test()
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
+
+    @Test
+    public void parallelismAndPrefetchAsync1() {
+        int parallelism = 1;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            //System.out.println("parallelismAndPrefetchAsync >> " + parallelism + ", " + prefetch);
+
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .runOn(SchedulerServices.computation())
+                    .map(v -> v)
+                    .sequential(prefetch)
+                    .test()
+                    .withTag("parallelism = " + parallelism + ", prefetch = " + prefetch)
+                    .awaitDone(30, TimeUnit.SECONDS)
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
+
+
+    @Test
+    public void parallelismAndPrefetchAsync2() {
+        int parallelism = 2;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            //System.out.println("parallelismAndPrefetchAsync >> " + parallelism + ", " + prefetch);
+
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .runOn(SchedulerServices.computation())
+                    .map(v -> v)
+                    .sequential(prefetch)
+                    .test()
+                    .withTag("parallelism = " + parallelism + ", prefetch = " + prefetch)
+                    .awaitDone(30, TimeUnit.SECONDS)
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
+
+    @Test
+    public void parallelismAndPrefetchAsync4() {
+        int parallelism = 4;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            //System.out.println("parallelismAndPrefetchAsync >> " + parallelism + ", " + prefetch);
+
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .runOn(SchedulerServices.computation())
+                    .map(v -> v)
+                    .sequential(prefetch)
+                    .test()
+                    .withTag("parallelism = " + parallelism + ", prefetch = " + prefetch)
+                    .awaitDone(30, TimeUnit.SECONDS)
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
+        }
+    }
+
+    @Test
+    public void parallelismAndPrefetchAsync8() {
+        int parallelism = 8;
+        for (int prefetch = 1; prefetch <= 1024; prefetch *= 2) {
+            //System.out.println("parallelismAndPrefetchAsync >> " + parallelism + ", " + prefetch);
+
+            Folyam.range(1, 1024 * 1024)
+                    .parallel(parallelism, prefetch)
+                    .runOn(SchedulerServices.computation())
+                    .map(v -> v)
+                    .sequential(prefetch)
+                    .test()
+                    .withTag("parallelism = " + parallelism + ", prefetch = " + prefetch)
+                    .awaitDone(30, TimeUnit.SECONDS)
+                    .assertValueCount(1024 * 1024)
+                    .assertNoErrors()
+                    .assertComplete();
         }
     }
 

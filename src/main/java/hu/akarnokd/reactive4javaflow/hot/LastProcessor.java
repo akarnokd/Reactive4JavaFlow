@@ -64,6 +64,14 @@ public final class LastProcessor<T> extends FolyamProcessor<T> {
         return ((LastProcessorSubscription[])SUBSCRIBERS.getAcquire(this)).length != 0;
     }
 
+    public boolean hasValue() {
+        return SUBSCRIBERS.getAcquire(this) == TERMINATED && value != null;
+    }
+
+    public T getValue() {
+        return SUBSCRIBERS.getAcquire(this) == TERMINATED ? value : null;
+    }
+
     @SuppressWarnings("unchecked")
     boolean add(LastProcessorSubscription<T> ps) {
         for (;;) {

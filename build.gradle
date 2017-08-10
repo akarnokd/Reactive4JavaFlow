@@ -98,13 +98,12 @@ publishing {
 jmh {
     jmhVersion = '1.19'
     humanOutputFile = null
-    /*
+
     if (project.hasProperty('jmh')) {
         include = ".*" + project.jmh + ".*"
-    } else {
-        include = ".*"
+        println("JMH: " + include);
     }
-    */
+
 }
 
 plugins.withType(EclipsePlugin) {

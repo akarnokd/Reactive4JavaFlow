@@ -93,6 +93,20 @@ public class FolyamFlatMapTest {
     }
 
     @Test
+    public void standard6() {
+        TestHelper.assertResult(
+                Folyam.range(1, 5).flatMap(Folyam::just, 1),
+                1, 2, 3, 4, 5);
+    }
+
+    @Test
+    public void standard7() {
+        TestHelper.assertResult(
+                Folyam.range(1, 5).flatMapDelayError(Folyam::just, 1),
+                1, 2, 3, 4, 5);
+    }
+
+    @Test
     public void longScalar() {
         Folyam.range(1, 1000)
                 .flatMap(Folyam::just)

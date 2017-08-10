@@ -23,7 +23,7 @@ import org.openjdk.jmh.annotations.*;
 /**
  * Example benchmark. Run from command line as
  * <br>
- * gradle jmh -Pjmh='ExamplePerf'
+ * gradle jmh -Pjmh="ExamplePerf"
  */
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 5)

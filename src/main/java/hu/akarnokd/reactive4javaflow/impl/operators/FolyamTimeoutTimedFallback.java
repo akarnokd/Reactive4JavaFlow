@@ -283,6 +283,7 @@ public final class FolyamTimeoutTimedFallback<T> extends Folyam<T> {
         void complete() {
             actual.onComplete();
         }
+
         static final class FallbackSubscriber<T> implements ConditionalSubscriber<T> {
 
             final SubscriptionArbiter arbiter;

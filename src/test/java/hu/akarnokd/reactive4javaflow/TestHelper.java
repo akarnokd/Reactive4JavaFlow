@@ -19,7 +19,7 @@ import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
 import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.operators.FolyamHide;
+import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -1058,5 +1058,96 @@ public final class TestHelper {
                     .withTag("Hidden, conditional, async-fused")
                     .assertFailure(errorClass, expected);
         }
+    }
+
+    public static <T> void checkBadSource(Function<? super Folyam<Integer>, ? extends Folyam<T>> mapper) {
+        withErrorTracking(errors -> {
+            Folyam<Integer> badSource = new Folyam<Integer>() {
+                @Override
+                protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
+                    s.onSubscribe(new BooleanSubscription());
+                    s.onComplete();
+                    s.onNext(1);
+                    s.onError(new IOException("CheckBadSource"));
+                    s.onComplete();
+                }
+            };
+
+            // normal
+            {
+                Flow.Publisher<T> p = mapper.apply(badSource);
+
+                TestConsumer<Object> tc = new TestConsumer<>();
+                tc.withTag("Normal");
+
+                p.subscribe(tc);
+
+                tc.awaitDone(5, TimeUnit.SECONDS)
+                        .assertNoErrors()
+                        .assertComplete();
+
+                assertEquals(errors.toString(), 1, errors.size());
+                assertError(errors, 0, IOException.class, "CheckBadSource");
+            }
+
+            errors.clear();
+
+            // normal, fused
+            {
+                Flow.Publisher<T> p = mapper.apply(badSource);
+
+                TestConsumer<Object> tc = new TestConsumer<>();
+                tc.withTag("Normal, fused");
+                tc.requestFusionMode(FusedSubscription.ANY);
+
+                p.subscribe(tc);
+
+                tc.awaitDone(5, TimeUnit.SECONDS)
+                        .assertNoErrors()
+                        .assertComplete();
+
+                assertEquals(errors.toString(), 1, errors.size());
+                assertError(errors, 0, IOException.class, "CheckBadSource");
+            }
+
+            errors.clear();
+
+            // conditional
+            {
+                Flow.Publisher<T> p = new FolyamFilter<T>(mapper.apply(badSource), v -> true);
+
+                TestConsumer<Object> tc = new TestConsumer<>();
+                tc.withTag("Conditional");
+
+                p.subscribe(tc);
+
+                tc.awaitDone(5, TimeUnit.SECONDS)
+                        .assertNoErrors()
+                        .assertComplete();
+
+                assertEquals(errors.toString(), 1, errors.size());
+                assertError(errors, 0, IOException.class, "CheckBadSource");
+            }
+
+            errors.clear();
+
+            // conditional, fused
+            {
+                Flow.Publisher<T> p = new FolyamFilter<T>(mapper.apply(badSource), v -> true);
+
+                TestConsumer<Object> tc = new TestConsumer<>();
+                tc.withTag("Conditional, fused");
+                tc.requestFusionMode(FusedSubscription.ANY);
+
+                p.subscribe(tc);
+
+                tc.awaitDone(5, TimeUnit.SECONDS)
+                        .assertNoErrors()
+                        .assertComplete();
+
+                assertEquals(errors.toString(), 1, errors.size());
+                assertError(errors, 0, IOException.class, "CheckBadSource");
+            }
+        });
     }
 }

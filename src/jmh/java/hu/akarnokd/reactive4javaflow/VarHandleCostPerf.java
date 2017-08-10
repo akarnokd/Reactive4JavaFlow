@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Example benchmark. Run from command line as
  * <br>
- * gradle jmh -Pjmh='VarHandleCostPerf'
+ * gradle jmh -Pjmh="VarHandleCostPerf"
  */
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 5)

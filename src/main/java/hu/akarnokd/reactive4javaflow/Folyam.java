@@ -771,20 +771,16 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> switchIfEmpty(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSwitchIfEmpty<>(this, other));
     }
 
     public final Folyam<T> switchIfEmptyMany(Iterable<? extends Flow.Publisher<? extends T>> others) {
         Objects.requireNonNull(others, "others == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSwitchIfEmptyMany<>(this, others));
     }
 
     public final Folyam<T> defaultIfEmpty(T item) {
-        Objects.requireNonNull(item, "item == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return switchIfEmpty(Folyam.just(item));
     }
 
     public final <U, R> Folyam<R> withLatestFrom(Flow.Publisher<? extends U> other, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
@@ -803,8 +799,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> scan(CheckedBiFunction<T, T, T> scanner) {
         Objects.requireNonNull(scanner, "scanner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamScan<>(this, scanner));
     }
 
     public final <R> Folyam<R> scan(Callable<? extends R> initialSupplier, CheckedBiFunction<R, ? super T, R> scanner) {
@@ -1118,30 +1113,28 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamTimeoutTimedFallback<>(this, timeout, unit, executor, fallback));
     }
 
-    public final Folyam<T> timeout(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeout) {
-        Objects.requireNonNull(itemTimeout, "itemTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> timeout(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector) {
+        Objects.requireNonNull(itemTimeoutSelector, "itemTimeoutSelector == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutSelector<>(this, null, itemTimeoutSelector));
     }
 
-    public final Folyam<T> timeout(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeout, Flow.Publisher<? extends T> fallback) {
-        Objects.requireNonNull(itemTimeout, "itemTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<T> timeout(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector, Flow.Publisher<? extends T> fallback) {
+        Objects.requireNonNull(itemTimeoutSelector, "itemTimeoutSelector == null");
+        Objects.requireNonNull(fallback, "fallback == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutSelectorFallback<>(this, null, itemTimeoutSelector, fallback));
     }
 
-    public final Folyam<T> timeout(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeout) {
+    public final Folyam<T> timeout(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector) {
         Objects.requireNonNull(firstTimeout, "firstTimeout == null");
-        Objects.requireNonNull(itemTimeout, "itemTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(itemTimeoutSelector, "itemTimeoutSelector == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutSelector<>(this, firstTimeout, itemTimeoutSelector));
     }
 
-    public final Folyam<T> timeout(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeout, Flow.Publisher<? extends T> fallback) {
+    public final Folyam<T> timeout(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector, Flow.Publisher<? extends T> fallback) {
         Objects.requireNonNull(firstTimeout, "firstTimeout == null");
-        Objects.requireNonNull(itemTimeout, "itemTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(itemTimeoutSelector, "itemTimeoutSelector == null");
+        Objects.requireNonNull(fallback, "fallback == null");
+        return FolyamPlugins.onAssembly(new FolyamTimeoutSelectorFallback<>(this, firstTimeout, itemTimeoutSelector, fallback));
     }
 
     public final Folyam<T> onErrorComplete() {
