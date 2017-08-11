@@ -492,18 +492,22 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T, R> Folyam<R> zipLatest(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamZipLatestIterable<>(sources, zipper));
+    }
+
+    @SafeVarargs
+    public static <T, R> Folyam<R> zipLatestArray(CheckedFunction<? super Object[], ? extends R> zipper, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new FolyamZipLatestArray<>(sources, zipper));
     }
 
     public static <T extends Comparable<? super T>> Folyam<T> orderedMerge(Iterable<? extends Flow.Publisher<? extends T>> sources) {
-        return orderedMerge(sources, FolyamPlugins.defaultBufferSize());
+        return orderedMerge(sources, Comparator.naturalOrder(), FolyamPlugins.defaultBufferSize());
     }
 
     public static <T extends Comparable<? super T>> Folyam<T> orderedMerge(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
-        Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return orderedMerge(sources, Comparator.naturalOrder(), prefetch);
     }
 
     public static <T> Folyam<T> orderedMerge(Iterable<? extends Flow.Publisher<? extends T>> sources, Comparator<? super T> comparator) {
@@ -513,8 +517,69 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public static <T> Folyam<T> orderedMerge(Iterable<? extends Flow.Publisher<? extends T>> sources, Comparator<? super T> comparator, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOrderedMergeIterable<>(sources, comparator, prefetch, false));
+    }
+
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources) {
+        return orderedMergeDelayError(sources, Comparator.naturalOrder(), FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
+        return orderedMergeDelayError(sources, Comparator.naturalOrder(), prefetch);
+    }
+
+    public static <T> Folyam<T> orderedMergeDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, Comparator<? super T> comparator) {
+        return orderedMergeDelayError(sources, comparator, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> orderedMergeDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, Comparator<? super T> comparator, int prefetch) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(comparator, "comparator == null");
+        return FolyamPlugins.onAssembly(new FolyamOrderedMergeIterable<>(sources, comparator, prefetch, true));
+    }
+
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeArray(Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArray(Comparator.naturalOrder(), FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeArray(int prefetch, Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArray(Comparator.naturalOrder(), prefetch, sources);
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> orderedMergeArray(Comparator<? super T> comparator, Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArray(comparator, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> orderedMergeArray(Comparator<? super T> comparator, int prefetch, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(comparator, "comparator == null");
+        return FolyamPlugins.onAssembly(new FolyamOrderedMergeArray<>(sources, comparator, prefetch, false));
+    }
+
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeArrayDelayError(Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArrayDelayError(Comparator.naturalOrder(), FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Folyam<T> orderedMergeArrayDelayError(int prefetch, Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArrayDelayError(Comparator.naturalOrder(), prefetch, sources);
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> orderedMergeArrayDelayError(Comparator<? super T> comparator, Flow.Publisher<? extends T>... sources) {
+        return orderedMergeArrayDelayError(comparator, FolyamPlugins.defaultBufferSize(), sources);
+    }
+
+    @SafeVarargs
+    public static <T> Folyam<T> orderedMergeArrayDelayError(Comparator<? super T> comparator, int prefetch, Flow.Publisher<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(comparator, "comparator == null");
+        return FolyamPlugins.onAssembly(new FolyamOrderedMergeArray<>(sources, comparator, prefetch, true));
     }
 
     public static <T> Folyam<T> switchNext(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
@@ -921,13 +986,20 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> valve(Flow.Publisher<Boolean> openClose) {
-        return valve(openClose, FolyamPlugins.defaultBufferSize());
+        return valve(openClose, FolyamPlugins.defaultBufferSize(), true);
+    }
+
+    public final Folyam<T> valve(Flow.Publisher<Boolean> openClose, boolean defaultOpen) {
+        return valve(openClose, FolyamPlugins.defaultBufferSize(), defaultOpen);
     }
 
     public final Folyam<T> valve(Flow.Publisher<Boolean> openClose, int prefetch) {
+        return valve(openClose, prefetch, true);
+    }
+
+    public final Folyam<T> valve(Flow.Publisher<Boolean> openClose, int prefetch, boolean defaultOpen) {
         Objects.requireNonNull(openClose, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamValve<>(this, openClose, prefetch, defaultOpen));
     }
 
     // async-introducing operators
@@ -962,10 +1034,24 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> spanout(long time, TimeUnit unit, SchedulerService executor) {
+        return spanout(0L, time, unit, executor);
+    }
+
+    public final Folyam<T> spanout(long initialSpan, long betweenSpan, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSpanout<>(this, initialSpan, betweenSpan, unit, executor, false, FolyamPlugins.defaultBufferSize()));
+    }
+
+    public final Folyam<T> spanoutDelayError(long time, TimeUnit unit, SchedulerService executor) {
+        return spanoutDelayError(0L, time, unit, executor);
+    }
+
+
+    public final Folyam<T> spanoutDelayError(long initialSpan, long betweenSpan, TimeUnit unit, SchedulerService executor) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
+        return FolyamPlugins.onAssembly(new FolyamSpanout<>(this, initialSpan, betweenSpan, unit, executor, true, FolyamPlugins.defaultBufferSize()));
     }
 
     // state-peeking operators

@@ -79,4 +79,12 @@ public class FolyamSkipLastTest {
                 .test()
                 .assertFailure(IOException.class);
     }
+
+    @Test
+    public void skip0() {
+        Folyam.range(1, 5)
+                .skipLast(0)
+                .test()
+                .assertResult(1, 2, 3, 4, 5);
+    }
 }
