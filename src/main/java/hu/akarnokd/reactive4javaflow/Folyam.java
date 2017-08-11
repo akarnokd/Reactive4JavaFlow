@@ -523,32 +523,22 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public static <T, R> Folyam<R> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources) {
-        return concatEager(sources, FolyamPlugins.defaultBufferSize(), FolyamPlugins.defaultBufferSize());
+    public static <T> Folyam<T> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources) {
+        return concatEager(sources, FolyamPlugins.defaultBufferSize());
     }
 
-    public static <T, R> Folyam<R> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency) {
-        return concatEager(sources, maxConcurrency, FolyamPlugins.defaultBufferSize());
-    }
-
-    public static <T, R> Folyam<R> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency, int prefetch) {
+    public static <T> Folyam<T> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatIterableEager<>(sources, prefetch, false));
     }
 
-    public static <T, R> Folyam<R> concatEagerDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources) {
-        return concatEagerDelayError(sources, FolyamPlugins.defaultBufferSize(), FolyamPlugins.defaultBufferSize());
+    public static <T> Folyam<T> concatEagerDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources) {
+        return concatEagerDelayError(sources, FolyamPlugins.defaultBufferSize());
     }
 
-    public static <T, R> Folyam<R> concatEagerDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency) {
-        return concatEagerDelayError(sources, maxConcurrency, FolyamPlugins.defaultBufferSize());
-    }
-
-    public static <T, R> Folyam<R> concatEagerDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency, int prefetch) {
+    public static <T> Folyam<T> concatEagerDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatIterableEager<>(sources, prefetch, true));
     }
 
     @SafeVarargs
@@ -572,15 +562,13 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     @SafeVarargs
     public static <T> Folyam<T> concatArrayEager(Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatArrayEager<>(sources, false));
     }
 
     @SafeVarargs
     public static <T> Folyam<T> concatArrayEagerDelayError(Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatArrayEager<>(sources, true));
     }
 
     @SafeVarargs
@@ -916,8 +904,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> concatMapEager(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatMapEager<>(this, mapper, maxConcurrency, prefetch, false));
     }
 
     public final <R> Folyam<R> concatMapEagerDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -930,8 +917,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> concatMapEagerDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamConcatMapEager<>(this, mapper, maxConcurrency, prefetch, true));
     }
 
     public final Folyam<T> valve(Flow.Publisher<Boolean> openClose) {

@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.*;
 
 public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
@@ -490,6 +490,14 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final List<T> values() {
         return items;
+    }
+
+    public final TestConsumer<T> forEach(BiConsumer<Integer, T> onItem) {
+        int s = items.size();
+        for (int i = 0; i < s; i++) {
+            onItem.accept(i, items.get(i));
+        }
+        return this;
     }
 
     enum MissingSubscription implements Flow.Subscription {

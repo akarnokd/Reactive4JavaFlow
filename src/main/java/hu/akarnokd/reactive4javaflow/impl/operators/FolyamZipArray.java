@@ -77,11 +77,11 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
         }
     }
 
-    static abstract class AbstractZipCoordinator<T, R> extends AtomicInteger implements Flow.Subscription {
+    static abstract class AbstractZipCoordinator<T, R> extends AtomicInteger implements Flow.Subscription, QueuedFolyamSubscriberSupport<T> {
 
         final CheckedFunction<? super Object[], ? extends R> zipper;
 
-        final ZipInnerSubscriber<T>[] subscribers;
+        final QueuedInnerFolyamSubscriber<T>[] subscribers;
 
         final boolean delayError;
 
@@ -108,9 +108,9 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
 
         AbstractZipCoordinator(CheckedFunction<? super Object[], ? extends R> zipper, int n, int prefetch, boolean delayError) {
             this.zipper = zipper;
-            ZipInnerSubscriber<T>[] subs = new ZipInnerSubscriber[n];
+            QueuedInnerFolyamSubscriber<T>[] subs = new QueuedInnerFolyamSubscriber[n];
             for (int i = 0; i < n; i++) {
-                subs[i] = new ZipInnerSubscriber<>(this, i, prefetch);
+                subs[i] = new QueuedInnerFolyamSubscriber<>(this, i, prefetch);
             }
             this.values = new Object[n];
             this.subscribers = subs;
@@ -118,7 +118,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
         }
 
         void subscribe(Flow.Publisher<? extends T>[] sources, int n) {
-            ZipInnerSubscriber<T>[] subs = this.subscribers;
+            QueuedInnerFolyamSubscriber<T>[] subs = this.subscribers;
 
             for (int i = 0; i < n; i++) {
                 if (cancelled || (!delayError && ERROR.getAcquire(this) != null)) {
@@ -146,7 +146,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
         @Override
         public final void cancel() {
             cancelled = true;
-            ZipInnerSubscriber<T>[] subs = this.subscribers;
+            QueuedInnerFolyamSubscriber<T>[] subs = this.subscribers;
             cancelSubscribers(subs);
             if (getAndIncrement() == 0) {
                 values = null;
@@ -154,19 +154,20 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
             }
         }
 
-        final void clearSubscribers(ZipInnerSubscriber<T>[] subs) {
-            for (ZipInnerSubscriber<?> inner : subs) {
+        final void clearSubscribers(QueuedInnerFolyamSubscriber<T>[] subs) {
+            for (QueuedInnerFolyamSubscriber<?> inner : subs) {
                 inner.clear();
             }
         }
 
-        final void cancelSubscribers(ZipInnerSubscriber<T>[] subs) {
-            for (ZipInnerSubscriber<?> inner : subs) {
+        final void cancelSubscribers(QueuedInnerFolyamSubscriber<T>[] subs) {
+            for (QueuedInnerFolyamSubscriber<?> inner : subs) {
                 inner.cancel();
             }
         }
 
-        final void drain() {
+        @Override
+        public final void drain() {
             if (getAndIncrement() == 0) {
                 drainLoop();
             }
@@ -174,11 +175,12 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
 
         abstract void drainLoop();
 
-        final void innerError(ZipInnerSubscriber<T> inner, int index, Throwable ex) {
+        @Override
+        public final void innerError(QueuedInnerFolyamSubscriber<T> inner, int index, Throwable ex) {
             if (ExceptionHelper.addThrowable(this, ERROR, ex)) {
                 inner.setDone();
                 if (!delayError) {
-                    ZipInnerSubscriber<T>[] subs = this.subscribers;
+                    QueuedInnerFolyamSubscriber<T>[] subs = this.subscribers;
                     for (int i = 0; i < index; i++) {
                         subs[i].cancel();
                     }
@@ -207,7 +209,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
             int missed = 1;
             FolyamSubscriber<? super R> a = actual;
             Object[] vals = values;
-            ZipInnerSubscriber<T>[] subs = subscribers;
+            QueuedInnerFolyamSubscriber<T>[] subs = subscribers;
             int n = subs.length;
             long e = emitted;
 
@@ -240,7 +242,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
                         if (vals[i] != null) {
                             hasValue++;
                         } else {
-                            ZipInnerSubscriber<T> inner = subs[i];
+                            QueuedInnerFolyamSubscriber<T> inner = subs[i];
                             boolean d = inner.isDone();
                             FusedQueue<T> q = inner.getQueue();
                             if (q != null) {
@@ -314,7 +316,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
                     e++;
 
                     Arrays.fill(vals, null);
-                    for (ZipInnerSubscriber<T> inner : subs) {
+                    for (QueuedInnerFolyamSubscriber<T> inner : subs) {
                         inner.request();
                     }
                 }
@@ -343,7 +345,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
             int missed = 1;
             ConditionalSubscriber<? super R> a = actual;
             Object[] vals = values;
-            ZipInnerSubscriber<T>[] subs = subscribers;
+            QueuedInnerFolyamSubscriber<T>[] subs = subscribers;
             int n = subs.length;
             long e = emitted;
 
@@ -376,7 +378,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
                         if (vals[i] != null) {
                             hasValue++;
                         } else {
-                            ZipInnerSubscriber<T> inner = subs[i];
+                            QueuedInnerFolyamSubscriber<T> inner = subs[i];
                             boolean d = inner.isDone();
                             FusedQueue<T> q = inner.getQueue();
                             if (q != null) {
@@ -450,7 +452,7 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
                     }
 
                     Arrays.fill(vals, null);
-                    for (ZipInnerSubscriber<T> inner : subs) {
+                    for (QueuedInnerFolyamSubscriber<T> inner : subs) {
                         inner.request();
                     }
                 }
@@ -461,128 +463,6 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
                     break;
                 }
             }
-        }
-    }
-
-    static final class ZipInnerSubscriber<T> extends AtomicReference<Flow.Subscription> implements FolyamSubscriber<T> {
-
-        final AbstractZipCoordinator<T, ?> parent;
-
-        final int index;
-
-        final int prefetch;
-
-        final int limit;
-
-        boolean done;
-        static final VarHandle DONE;
-
-        FusedQueue<T> queue;
-        static final VarHandle QUEUE;
-
-        int consumed;
-
-        boolean allowRequest;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(ZipInnerSubscriber.class, "done", Boolean.TYPE);
-                QUEUE = MethodHandles.lookup().findVarHandle(ZipInnerSubscriber.class, "queue", FusedQueue.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
-        ZipInnerSubscriber(AbstractZipCoordinator<T, ?> parent, int index, int prefetch) {
-            this.parent = parent;
-            this.index = index;
-            this.prefetch = prefetch;
-            this.limit = prefetch - (prefetch >> 2);
-        }
-
-        @Override
-        public void onSubscribe(Flow.Subscription subscription) {
-            if (SubscriptionHelper.replace(this, subscription)) {
-                if (subscription instanceof FusedSubscription) {
-                    FusedSubscription fs = (FusedSubscription) subscription;
-                    int m = fs.requestFusion(FusedSubscription.ANY | FusedSubscription.BOUNDARY);
-                    if (m == FusedSubscription.SYNC) {
-                        QUEUE.setRelease(this, fs);
-                        DONE.setRelease(this, true);
-                        parent.drain();
-                        return;
-                    }
-                    if (m == FusedSubscription.ASYNC) {
-                        allowRequest = true;
-                        QUEUE.setRelease(this, fs);
-                        subscription.request(prefetch);
-                        return;
-                    }
-                }
-
-                allowRequest = true;
-                int pf = prefetch;
-                if (pf == 1) {
-                    QUEUE.setRelease(this, new SpscOneQueue<>());
-                } else {
-                    QUEUE.setRelease(this, new SpscArrayQueue<>(pf));
-                }
-                subscription.request(pf);
-            }
-        }
-
-        @Override
-        public void onNext(T item) {
-            if (item != null) {
-                queue.offer(item);
-            }
-            parent.drain();
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-            parent.innerError(this, index, throwable);
-        }
-
-        @Override
-        public void onComplete() {
-            DONE.setRelease(this, true);
-            parent.drain();
-        }
-
-        public void request() {
-            if (allowRequest) {
-                int c = consumed + 1;
-                if (c == limit) {
-                    consumed = 0;
-                    getPlain().request(c);
-                } else {
-                    consumed = c;
-                }
-            }
-        }
-
-        public void cancel() {
-            SubscriptionHelper.cancel(this);
-        }
-
-        void clear() {
-            FusedQueue<T> q = getQueue();
-            if (q != null) {
-                q.clear();
-            }
-        }
-
-        FusedQueue<T> getQueue() {
-            return (FusedQueue<T>)QUEUE.getAcquire(this);
-        }
-
-        boolean isDone() {
-            return (boolean)DONE.getAcquire(this);
-        }
-
-        void setDone() {
-            DONE.setRelease(this, true);
         }
     }
 }
