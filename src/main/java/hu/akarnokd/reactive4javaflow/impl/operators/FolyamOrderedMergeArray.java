@@ -66,7 +66,7 @@ public final class FolyamOrderedMergeArray<T> extends Folyam<T> {
             return;
         }
 
-        MergeCoordinator<T> parent = new MergeCoordinator<T>(s, comparator, n, prefetch, delayErrors);
+        MergeCoordinator<T> parent = new MergeCoordinator<>(s, comparator, n, prefetch, delayErrors);
         s.onSubscribe(parent);
         parent.subscribe(array, n);
 
@@ -115,7 +115,7 @@ public final class FolyamOrderedMergeArray<T> extends Folyam<T> {
             this.delayErrors = delayErrors;
             QueuedInnerFolyamSubscriber<T>[] subs = new QueuedInnerFolyamSubscriber[n];
             for (int i = 0; i < n; i++) {
-                subs[i] = new QueuedInnerFolyamSubscriber<T>(this, i, prefetch);
+                subs[i] = new QueuedInnerFolyamSubscriber<>(this, i, prefetch);
             }
             this.subscribers = subs;
             this.latest = new Object[n];

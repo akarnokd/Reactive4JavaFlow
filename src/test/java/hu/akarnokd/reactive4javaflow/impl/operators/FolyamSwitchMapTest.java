@@ -16,19 +16,5 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import hu.akarnokd.reactive4javaflow.*;
-
-public final class FolyamTakeLastOne<T> extends Esetleg<T> {
-
-    final Folyam<T> source;
-
-    public FolyamTakeLastOne(Folyam<T> source) {
-        this.source = source;
-    }
-
-    @Override
-    protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        source.subscribe(new FolyamTakeLastOneFolyam.TakeLastOneSubscriber<>(s));
-    }
-
+public class FolyamSwitchMapTest {
 }

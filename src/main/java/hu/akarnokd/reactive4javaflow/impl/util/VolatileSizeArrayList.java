@@ -32,11 +32,11 @@ public final class VolatileSizeArrayList<T> extends AtomicInteger implements Lis
     final ArrayList<T> list;
 
     public VolatileSizeArrayList() {
-        list = new ArrayList<T>();
+        list = new ArrayList<>();
     }
 
     public VolatileSizeArrayList(int initialCapacity) {
-        list = new ArrayList<T>(initialCapacity);
+        list = new ArrayList<>(initialCapacity);
     }
 
     @Override

@@ -23,8 +23,6 @@ import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 import java.lang.invoke.*;
 import java.util.ArrayDeque;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
 
 public final class FolyamTakeLast<T> extends Folyam<T> {
 

@@ -43,7 +43,7 @@ public final class ParallelReduceFull<T> extends Esetleg<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        ParallelReduceFullMainSubscriber<T> parent = new ParallelReduceFullMainSubscriber<T>(s, source.parallelism(), reducer);
+        ParallelReduceFullMainSubscriber<T> parent = new ParallelReduceFullMainSubscriber<>(s, source.parallelism(), reducer);
         s.onSubscribe(parent);
 
         source.subscribe(parent.subscribers);
@@ -58,18 +58,18 @@ public final class ParallelReduceFull<T> extends Esetleg<T> {
 
         final CheckedBiFunction<T, T, T> reducer;
 
-        final AtomicReference<SlotPair<T>> current = new AtomicReference<SlotPair<T>>();
+        final AtomicReference<SlotPair<T>> current = new AtomicReference<>();
 
         final AtomicInteger remaining = new AtomicInteger();
 
-        final AtomicReference<Throwable> error = new AtomicReference<Throwable>();
+        final AtomicReference<Throwable> error = new AtomicReference<>();
 
         ParallelReduceFullMainSubscriber(FolyamSubscriber<? super T> subscriber, int n, CheckedBiFunction<T, T, T> reducer) {
             super(subscriber);
             @SuppressWarnings("unchecked")
             ParallelReduceFullInnerSubscriber<T>[] a = new ParallelReduceFullInnerSubscriber[n];
             for (int i = 0; i < n; i++) {
-                a[i] = new ParallelReduceFullInnerSubscriber<T>(this, reducer);
+                a[i] = new ParallelReduceFullInnerSubscriber<>(this, reducer);
             }
             this.subscribers = a;
             this.reducer = reducer;
@@ -81,7 +81,7 @@ public final class ParallelReduceFull<T> extends Esetleg<T> {
                 SlotPair<T> curr = current.get();
 
                 if (curr == null) {
-                    curr = new SlotPair<T>();
+                    curr = new SlotPair<>();
                     if (!current.compareAndSet(null, curr)) {
                         continue;
                     }

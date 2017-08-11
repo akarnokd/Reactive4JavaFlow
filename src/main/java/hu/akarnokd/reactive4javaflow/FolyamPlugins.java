@@ -15,7 +15,6 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
-import java.util.concurrent.Flow;
 import java.util.function.*;
 
 public final class FolyamPlugins {

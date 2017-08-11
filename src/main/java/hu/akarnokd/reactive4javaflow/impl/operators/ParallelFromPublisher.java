@@ -131,7 +131,7 @@ public final class ParallelFromPublisher<T> extends ParallelFolyam<T> {
                 }
             }
 
-            queue = new SpscArrayQueue<T>(prefetch);
+            queue = new SpscArrayQueue<>(prefetch);
 
             setupSubscribers();
 

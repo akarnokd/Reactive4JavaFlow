@@ -20,9 +20,7 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.util.*;
 
-import java.io.IOException;
 import java.lang.invoke.*;
 import java.util.*;
 import java.util.concurrent.Flow;

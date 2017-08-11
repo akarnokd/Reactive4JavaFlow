@@ -48,9 +48,9 @@ public final class ParallelFilter<T> extends ParallelFolyam<T> {
         for (int i = 0; i < n; i++) {
             FolyamSubscriber<? super T> a = subscribers[i];
             if (a instanceof ConditionalSubscriber) {
-                parents[i] = new ParallelFilterConditionalSubscriber<T>((ConditionalSubscriber<? super T>)a, predicate);
+                parents[i] = new ParallelFilterConditionalSubscriber<>((ConditionalSubscriber<? super T>) a, predicate);
             } else {
-                parents[i] = new ParallelFilterSubscriber<T>(a, predicate);
+                parents[i] = new ParallelFilterSubscriber<>(a, predicate);
             }
         }
 

@@ -926,8 +926,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> switchMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSwitchMap<>(this, mapper, prefetch, false));
     }
 
     public final <R> Folyam<R> switchMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -936,8 +935,16 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final <R> Folyam<R> switchMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSwitchMap<>(this, mapper, prefetch, true));
+    }
+
+    public final <R> Folyam<R> switchFlatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency) {
+        return switchFlatMap(mapper, maxConcurrency, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final <R> Folyam<R> switchFlatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch) {
+        Objects.requireNonNull(mapper, "mapper == null");
+        return FolyamPlugins.onAssembly(new FolyamSwitchFlatMap<>(this, mapper, maxConcurrency, prefetch));
     }
 
     public final <R> Folyam<R> flatMapIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
@@ -1000,6 +1007,47 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final Folyam<T> valve(Flow.Publisher<Boolean> openClose, int prefetch, boolean defaultOpen) {
         Objects.requireNonNull(openClose, "mapper == null");
         return FolyamPlugins.onAssembly(new FolyamValve<>(this, openClose, prefetch, defaultOpen));
+    }
+
+    /**
+     * Emits elements from the source and then expands them into another layer of Publishers, emitting
+     * those items recursively until all Publishers become empty in a depth-first manner.
+     * @param expander the function that converts an element into a Publisher to be expanded
+     * @return the new Folyam instance
+     */
+    public final Folyam<T> expand(CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander) {
+        return expand(expander, true, FolyamPlugins.defaultBufferSize());
+    }
+
+    /**
+     * Emits elements from the source and then expands them into another layer of Publishers, emitting
+     * those items recursively until all Publishers become empty with the specified strategy.
+     * @param expander the function that converts an element into a Publisher to be expanded
+     * @param depthFirst the expansion strategy; depth-first (true) will recursively expand the first item until there is no
+     *                 more expansion possible, then the second items, and so on;
+     *                 breath-first (false) will first expand the main source, then runs the expanded
+     *                 Publishers in sequence, then the 3rd level, and so on.
+     * @return the new Folyam instance
+     */
+    public final Folyam<T> expand(CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander, boolean depthFirst) {
+        return expand(expander, depthFirst, FolyamPlugins.defaultBufferSize());
+    }
+
+    /**
+     * Emits elements from the source and then expands them into another layer of Publishers, emitting
+     * those items recursively until all Publishers become empty with the specified strategy.
+     * @param expander the function that converts an element into a Publisher to be expanded
+     * @param depthFirst the expansion strategy; depth-first (true) will recursively expand the first item until there is no
+     *                 more expansion possible, then the second items, and so on;
+     *                 breath-first (false) will first expand the main source, then runs the expanded
+     *                 Publishers in sequence, then the 3rd level, and so on.
+     * @param capacityHint the capacity hint for the breath-first expansion
+     * @return the new Folyam instance
+     */
+    public final Folyam<T> expand(CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander, boolean depthFirst, int capacityHint) {
+        Objects.requireNonNull(expander, "expander is null");
+        //Objects.verifyPositive(capacityHint, "capacityHint");
+        return FolyamPlugins.onAssembly(new FolyamExpand<>(this, expander, depthFirst, capacityHint));
     }
 
     // async-introducing operators
@@ -1156,19 +1204,26 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         return FolyamPlugins.onAssembly(new FolyamOnBackpressureBufferAll<>(this, capacity, true));
     }
 
+    public final Folyam<T> onBackpressureTimeout(long timeout, TimeUnit unit, SchedulerService executor) {
+        return onBackpressureTimeout(Integer.MAX_VALUE, timeout, unit, executor);
+    }
+
     public final Folyam<T> onBackpressureTimeout(int capacity, long timeout, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureTimeout<>(this, capacity, timeout, unit, executor, null));
     }
 
-    public final Folyam<T> onBackpressureTimeout(int capacity, long timeout, TimeUnit unit, SchedulerService executor, CheckedConsumer<? super T> handler) {
+
+    public final Folyam<T> onBackpressureTimeout(long timeout, TimeUnit unit, SchedulerService executor, CheckedConsumer<? super T> onEvict) {
+        return onBackpressureTimeout(Integer.MAX_VALUE, timeout, unit, executor, onEvict);
+    }
+
+    public final Folyam<T> onBackpressureTimeout(int capacity, long timeout, TimeUnit unit, SchedulerService executor, CheckedConsumer<? super T> onEvict) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(onEvict, "onEvict == null");
+        return FolyamPlugins.onAssembly(new FolyamOnBackpressureTimeout<>(this, capacity, timeout, unit, executor, onEvict));
     }
 
     // resilience operators

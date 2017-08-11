@@ -35,9 +35,9 @@ public final class WorkerTask implements Callable<Void>, Runnable, AutoDisposabl
 
     Thread runner;
 
-    static final Future<Void> DONE = new FutureTask<Void>(() -> null);
+    static final Future<Void> DONE = new FutureTask<>(() -> null);
 
-    static final Future<Void> CLOSED = new FutureTask<Void>(() -> null);
+    static final Future<Void> CLOSED = new FutureTask<>(() -> null);
 
     static {
         try {

@@ -16,8 +16,6 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
-
 public final class QueueHelper {
 
     private QueueHelper() {

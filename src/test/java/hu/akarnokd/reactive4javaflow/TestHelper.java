@@ -1151,4 +1151,12 @@ public final class TestHelper {
             }
         });
     }
+
+    @SafeVarargs
+    public static <T> void emit(FolyamSubscriber<? super T> target, T... items) {
+        for (T t : items) {
+            target.onNext(t);
+        }
+        target.onComplete();
+    }
 }

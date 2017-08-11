@@ -52,7 +52,7 @@ public final class SchedulerServices {
     }
 
     static final class NewThreadHolder {
-        static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true);; // FIXME implement
+        static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true); // FIXME implement
     }
 
     static {

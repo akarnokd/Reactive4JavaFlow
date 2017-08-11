@@ -55,9 +55,9 @@ public final class ParallelDoOnNextTry<T> extends ParallelFolyam<T> {
         for (int i = 0; i < n; i++) {
             FolyamSubscriber<? super T> a = subscribers[i];
             if (a instanceof ConditionalSubscriber) {
-                parents[i] = new ParallelDoOnNextConditionalSubscriber<T>((ConditionalSubscriber<? super T>)a, onNext, errorHandler);
+                parents[i] = new ParallelDoOnNextConditionalSubscriber<>((ConditionalSubscriber<? super T>) a, onNext, errorHandler);
             } else {
-                parents[i] = new ParallelDoOnNextSubscriber<T>(a, onNext, errorHandler);
+                parents[i] = new ParallelDoOnNextSubscriber<>(a, onNext, errorHandler);
             }
         }
 

@@ -46,7 +46,7 @@ public final class FolyamValve<T> extends Folyam<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        ValveMainSubscriber<T> parent = new ValveMainSubscriber<T>(s, bufferSize, defaultOpen);
+        ValveMainSubscriber<T> parent = new ValveMainSubscriber<>(s, bufferSize, defaultOpen);
         s.onSubscribe(parent);
         other.subscribe(parent.other);
         source.subscribe(parent);

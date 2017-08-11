@@ -48,9 +48,9 @@ public final class ParallelJoin<T> extends Folyam<T> {
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
         JoinSubscriptionBase<T> parent;
         if (delayErrors) {
-            parent = new JoinSubscriptionDelayError<T>(s, source.parallelism(), prefetch);
+            parent = new JoinSubscriptionDelayError<>(s, source.parallelism(), prefetch);
         } else {
-            parent = new JoinSubscription<T>(s, source.parallelism(), prefetch);
+            parent = new JoinSubscription<>(s, source.parallelism(), prefetch);
         }
         s.onSubscribe(parent);
         source.subscribe(parent.subscribers);
@@ -79,7 +79,7 @@ public final class ParallelJoin<T> extends Folyam<T> {
             JoinInnerSubscriber<T>[] a = new JoinInnerSubscriber[n];
 
             for (int i = 0; i < n; i++) {
-                a[i] = new JoinInnerSubscriber<T>(this, prefetch);
+                a[i] = new JoinInnerSubscriber<>(this, prefetch);
             }
 
             this.subscribers = a;
@@ -559,7 +559,7 @@ public final class ParallelJoin<T> extends Folyam<T> {
         PlainQueue<T> getQueue() {
             PlainQueue<T> q = queue;
             if (q == null) {
-                q = new SpscArrayQueue<T>(prefetch);
+                q = new SpscArrayQueue<>(prefetch);
                 this.queue = q;
             }
             return q;

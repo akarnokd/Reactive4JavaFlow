@@ -141,7 +141,7 @@ public abstract class ParallelFolyam<T> {
         Objects.requireNonNull(scheduler, "scheduler");
         // FIXME parameter validation
         // Objects.verifyPositive(prefetch, "prefetch");
-        return FolyamPlugins.onAssembly(new ParallelRunOn<T>(this, scheduler, prefetch));
+        return FolyamPlugins.onAssembly(new ParallelRunOn<>(this, scheduler, prefetch));
     }
 
 
@@ -405,7 +405,7 @@ public abstract class ParallelFolyam<T> {
         ParallelFolyam<List<T>> railReduced = reduce(() -> (List<T>)new ArrayList<T>(capacityHint), (a, b) -> { a.add(b); return a; });
         ParallelFolyam<List<T>> railSorted = railReduced.map(list -> { list.sort(comparator); return list; });
 
-        return FolyamPlugins.onAssembly(new ParallelSortedJoin<T>(railSorted, comparator));
+        return FolyamPlugins.onAssembly(new ParallelSortedJoin<>(railSorted, comparator));
     }
 
     // aggregators

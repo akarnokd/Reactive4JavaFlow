@@ -51,7 +51,7 @@ public final class FolyamSpanout<T> extends Folyam<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        source.subscribe(new SpanoutSubscriber<T>(s, initialSpan, betweenSpan,
+        source.subscribe(new SpanoutSubscriber<>(s, initialSpan, betweenSpan,
                 scheduler.worker(), delayError, bufferSize));
     }
 
@@ -83,7 +83,7 @@ public final class FolyamSpanout<T> extends Folyam<T> {
             this.worker = worker;
             this.delayError = delayError;
             this.lastEvent = -1L;
-            this.queue = new SpscLinkedArrayQueue<T>(bufferSize);
+            this.queue = new SpscLinkedArrayQueue<>(bufferSize);
         }
 
         @Override

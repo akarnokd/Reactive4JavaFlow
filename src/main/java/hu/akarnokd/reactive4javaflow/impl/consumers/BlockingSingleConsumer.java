@@ -18,8 +18,6 @@ package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 
-import java.util.NoSuchElementException;
-
 public final class BlockingSingleConsumer<T> extends AbstractBlockingConsumer<T> {
     @Override
     public void onNext(T item) {

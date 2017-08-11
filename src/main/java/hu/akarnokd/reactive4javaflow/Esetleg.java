@@ -37,7 +37,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         if (s instanceof FolyamSubscriber) {
             subscribe((FolyamSubscriber<? super T>)s);
         } else {
-            subscribe(new StrictSubscriber<T>(s));
+            subscribe(new StrictSubscriber<>(s));
         }
     }
 

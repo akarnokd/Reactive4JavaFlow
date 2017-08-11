@@ -20,9 +20,6 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedRunnable;
 import hu.akarnokd.reactive4javaflow.fused.*;
 
-import java.lang.invoke.*;
-import java.util.concurrent.Flow;
-
 public final class EsetlegDoFinally<T> extends Esetleg<T> {
 
     final Esetleg<T> source;

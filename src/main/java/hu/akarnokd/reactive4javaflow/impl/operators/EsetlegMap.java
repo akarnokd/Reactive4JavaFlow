@@ -20,9 +20,6 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.*;
 
-import java.util.Objects;
-import java.util.concurrent.Flow;
-
 public final class EsetlegMap<T, R> extends Esetleg<R> {
 
     final Esetleg<T> source;

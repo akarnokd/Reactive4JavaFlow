@@ -16,8 +16,6 @@
 
 package hu.akarnokd.reactive4javaflow.impl.consumers;
 
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-
 public final class BlockingLastConsumer<T> extends AbstractBlockingConsumer<T> {
     @Override
     public void onNext(T item) {

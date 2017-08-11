@@ -16,19 +16,31 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 
-public final class FolyamTakeLastOne<T> extends Esetleg<T> {
+import java.util.concurrent.Flow;
+
+public final class FolyamSwitchMap<T, R> extends Folyam<R> {
 
     final Folyam<T> source;
 
-    public FolyamTakeLastOne(Folyam<T> source) {
+    final CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper;
+
+    final int prefetch;
+
+    final boolean delayError;
+
+    public FolyamSwitchMap(Folyam<T> source, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch, boolean delayError) {
         this.source = source;
+        this.mapper = mapper;
+        this.prefetch = prefetch;
+        this.delayError = delayError;
     }
 
     @Override
-    protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        source.subscribe(new FolyamTakeLastOneFolyam.TakeLastOneSubscriber<>(s));
-    }
+    protected void subscribeActual(FolyamSubscriber<? super R> s) {
 
+    }
 }

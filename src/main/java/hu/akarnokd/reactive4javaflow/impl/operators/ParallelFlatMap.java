@@ -20,7 +20,6 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 
 import java.util.concurrent.Flow;
-import java.util.function.Function;
 
 /**
  * Flattens the generated Publishers on each rail.

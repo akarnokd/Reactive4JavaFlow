@@ -20,7 +20,6 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedDynamicSource;
 import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
 
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 public final class FolyamCallableAllowEmpty<T> extends Folyam<T> implements FusedDynamicSource<T> {

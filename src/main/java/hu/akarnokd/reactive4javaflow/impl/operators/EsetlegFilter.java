@@ -20,8 +20,6 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedPredicate;
 import hu.akarnokd.reactive4javaflow.fused.*;
 
-import java.util.concurrent.Flow;
-
 public final class EsetlegFilter<T> extends Esetleg<T> {
 
     final Esetleg<T> source;

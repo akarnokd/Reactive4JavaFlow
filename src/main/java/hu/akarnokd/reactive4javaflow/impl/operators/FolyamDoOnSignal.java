@@ -22,7 +22,6 @@ import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-import java.lang.invoke.*;
 import java.util.concurrent.Flow;
 
 public final class FolyamDoOnSignal<T> extends Folyam<T> {

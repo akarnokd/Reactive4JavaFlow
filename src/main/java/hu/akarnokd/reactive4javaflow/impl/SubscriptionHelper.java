@@ -16,7 +16,6 @@
 package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
 import java.lang.invoke.VarHandle;

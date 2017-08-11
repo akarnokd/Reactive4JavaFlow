@@ -51,7 +51,7 @@ public final class FolyamZipLatestArray<T, R> extends Folyam<R> {
         if (n == 0) {
             EmptySubscription.complete(s);
         } else {
-            ZipLatestCoordinator<T, R> zc = new ZipLatestCoordinator<T, R>(s, n, zipper);
+            ZipLatestCoordinator<T, R> zc = new ZipLatestCoordinator<>(s, n, zipper);
             s.onSubscribe(zc);
 
             zc.subscribe(srcs, n);
@@ -99,7 +99,7 @@ public final class FolyamZipLatestArray<T, R> extends Folyam<R> {
             this.actual = actual;
             this.subscribers = new InnerSubscriber[n];
             for (int i = 0; i < n; i++) {
-                subscribers[i] = new InnerSubscriber<T>(this, i);
+                subscribers[i] = new InnerSubscriber<>(this, i);
             }
             this.zipper = zipper;
         }
