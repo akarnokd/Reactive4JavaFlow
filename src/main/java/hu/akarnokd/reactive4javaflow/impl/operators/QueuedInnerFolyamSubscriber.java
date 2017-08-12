@@ -27,124 +27,124 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class QueuedInnerFolyamSubscriber<T> extends AtomicReference<Flow.Subscription> implements FolyamSubscriber<T> {
 
-        final QueuedFolyamSubscriberSupport<T> parent;
+    final QueuedFolyamSubscriberSupport<T> parent;
 
-        final int index;
+    final int index;
 
-        final int prefetch;
+    final int prefetch;
 
-        final int limit;
+    final int limit;
 
-        boolean done;
-        static final VarHandle DONE;
+    boolean done;
+    static final VarHandle DONE;
 
-        FusedQueue<T> queue;
-        static final VarHandle QUEUE;
+    FusedQueue<T> queue;
+    static final VarHandle QUEUE;
 
-        int consumed;
+    int consumed;
 
-        boolean allowRequest;
+    boolean allowRequest;
 
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "done", Boolean.TYPE);
-                QUEUE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "queue", FusedQueue.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
-        public QueuedInnerFolyamSubscriber(QueuedFolyamSubscriberSupport<T> parent, int index, int prefetch) {
-            this.parent = parent;
-            this.index = index;
-            this.prefetch = prefetch;
-            this.limit = prefetch - (prefetch >> 2);
-        }
-
-        @Override
-        public void onSubscribe(Flow.Subscription subscription) {
-            if (SubscriptionHelper.replace(this, subscription)) {
-                if (subscription instanceof FusedSubscription) {
-                    FusedSubscription fs = (FusedSubscription) subscription;
-                    int m = fs.requestFusion(FusedSubscription.ANY | FusedSubscription.BOUNDARY);
-                    if (m == FusedSubscription.SYNC) {
-                        QUEUE.setRelease(this, fs);
-                        DONE.setRelease(this, true);
-                        parent.drain();
-                        return;
-                    }
-                    if (m == FusedSubscription.ASYNC) {
-                        allowRequest = true;
-                        QUEUE.setRelease(this, fs);
-                        subscription.request(prefetch);
-                        return;
-                    }
-                }
-
-                allowRequest = true;
-                int pf = prefetch;
-                if (pf == 1) {
-                    QUEUE.setRelease(this, new SpscOneQueue<>());
-                } else {
-                    QUEUE.setRelease(this, new SpscArrayQueue<>(pf));
-                }
-                subscription.request(pf);
-            }
-        }
-
-        @Override
-        public void onNext(T item) {
-            if (item != null) {
-                queue.offer(item);
-            }
-            parent.drain();
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-            setPlain(SubscriptionHelper.CANCELLED);
-            parent.innerError(this, index, throwable);
-        }
-
-        @Override
-        public void onComplete() {
-            setPlain(SubscriptionHelper.CANCELLED);
-            DONE.setRelease(this, true);
-            parent.drain();
-        }
-
-        public void request() {
-            if (allowRequest) {
-                int c = consumed + 1;
-                if (c == limit) {
-                    consumed = 0;
-                    getPlain().request(c);
-                } else {
-                    consumed = c;
-                }
-            }
-        }
-
-        public void cancel() {
-            SubscriptionHelper.cancel(this);
-        }
-
-        public void clear() {
-            FusedQueue<T> q = getQueue();
-            if (q != null) {
-                q.clear();
-            }
-        }
-
-        public FusedQueue<T> getQueue() {
-            return (FusedQueue<T>)QUEUE.getAcquire(this);
-        }
-
-        public boolean isDone() {
-            return (boolean)DONE.getAcquire(this);
-        }
-
-        public void setDone() {
-            DONE.setRelease(this, true);
+    static {
+        try {
+            DONE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "done", Boolean.TYPE);
+            QUEUE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "queue", FusedQueue.class);
+        } catch (Throwable ex) {
+            throw new InternalError(ex);
         }
     }
+
+    public QueuedInnerFolyamSubscriber(QueuedFolyamSubscriberSupport<T> parent, int index, int prefetch) {
+        this.parent = parent;
+        this.index = index;
+        this.prefetch = prefetch;
+        this.limit = prefetch - (prefetch >> 2);
+    }
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        if (SubscriptionHelper.replace(this, subscription)) {
+            if (subscription instanceof FusedSubscription) {
+                FusedSubscription fs = (FusedSubscription) subscription;
+                int m = fs.requestFusion(FusedSubscription.ANY | FusedSubscription.BOUNDARY);
+                if (m == FusedSubscription.SYNC) {
+                    QUEUE.setRelease(this, fs);
+                    DONE.setRelease(this, true);
+                    parent.drain();
+                    return;
+                }
+                if (m == FusedSubscription.ASYNC) {
+                    allowRequest = true;
+                    QUEUE.setRelease(this, fs);
+                    subscription.request(prefetch);
+                    return;
+                }
+            }
+
+            allowRequest = true;
+            int pf = prefetch;
+            if (pf == 1) {
+                QUEUE.setRelease(this, new SpscOneQueue<>());
+            } else {
+                QUEUE.setRelease(this, new SpscArrayQueue<>(pf));
+            }
+            subscription.request(pf);
+        }
+    }
+
+    @Override
+    public void onNext(T item) {
+        if (item != null) {
+            queue.offer(item);
+        }
+        parent.drain();
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        setPlain(SubscriptionHelper.CANCELLED);
+        parent.innerError(this, index, throwable);
+    }
+
+    @Override
+    public void onComplete() {
+        setPlain(SubscriptionHelper.CANCELLED);
+        DONE.setRelease(this, true);
+        parent.drain();
+    }
+
+    public void request() {
+        if (allowRequest) {
+            int c = consumed + 1;
+            if (c == limit) {
+                consumed = 0;
+                getPlain().request(c);
+            } else {
+                consumed = c;
+            }
+        }
+    }
+
+    public void cancel() {
+        SubscriptionHelper.cancel(this);
+    }
+
+    public void clear() {
+        FusedQueue<T> q = getQueue();
+        if (q != null) {
+            q.clear();
+        }
+    }
+
+    public FusedQueue<T> getQueue() {
+        return (FusedQueue<T>)QUEUE.getAcquire(this);
+    }
+
+    public boolean isDone() {
+        return (boolean)DONE.getAcquire(this);
+    }
+
+    public void setDone() {
+        DONE.setRelease(this, true);
+    }
+}

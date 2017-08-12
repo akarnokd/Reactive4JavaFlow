@@ -583,9 +583,21 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public static <T> Folyam<T> switchNext(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
+        return switchNext(sources, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> switchNext(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSwitchNext<>(sources, prefetch, false));
+    }
+
+    public static <T> Folyam<T> switchNextDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
+        return switchNextDelayError(sources, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> switchNextDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int prefetch) {
+        Objects.requireNonNull(sources, "sources == null");
+        return FolyamPlugins.onAssembly(new FolyamSwitchNext<>(sources, prefetch, true));
     }
 
     public static <T> Folyam<T> concatEager(Iterable<? extends Flow.Publisher<? extends T>> sources) {
@@ -1357,13 +1369,15 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Esetleg<T> first() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return elementAt(0L);
     }
 
     public final Esetleg<T> single() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSingle<>(this, false));
+    }
+
+    public final Esetleg<T> esetleg() {
+        return FolyamPlugins.onAssembly(new FolyamSingle<>(this, true));
     }
 
     public final Esetleg<T> last() {
@@ -1371,8 +1385,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Esetleg<T> elementAt(long index) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamElementAt<>(this, index));
     }
 
     public final <C> Esetleg<C> collect(Callable<C> collectionSupplier, CheckedBiConsumer<C, ? super T> collector) {
@@ -1463,22 +1476,35 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final Folyam<List<T>> bufferWhile(Predicate<? super T> predicate) {
-        Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Folyam<List<T>> bufferWhile(CheckedPredicate<? super T> predicate) {
+        return bufferWhile(predicate, ArrayList::new);
     }
 
-    public final Folyam<List<T>> bufferUntil(Predicate<? super T> predicate) {
+    public final <C extends Collection<? super T>> Folyam<C> bufferWhile(CheckedPredicate<? super T> predicate, Callable<C> bufferSupplier) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(bufferSupplier, "bufferSupplier == null");
+        return FolyamPlugins.onAssembly(new FolyamBufferPredicate<>(this, predicate, FolyamBufferPredicate.BufferPredicateMode.BEFORE, bufferSupplier));
     }
 
-    public final Folyam<List<T>> bufferSplit(Predicate<? super T> predicate) {
+    public final Folyam<List<T>> bufferUntil(CheckedPredicate<? super T> predicate) {
+        return bufferUntil(predicate, ArrayList::new);
+    }
+
+    public final <C extends Collection<? super T>> Folyam<C> bufferUntil(CheckedPredicate<? super T> predicate, Callable<C> bufferSupplier) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(bufferSupplier, "bufferSupplier == null");
+        return FolyamPlugins.onAssembly(new FolyamBufferPredicate<>(this, predicate, FolyamBufferPredicate.BufferPredicateMode.AFTER, bufferSupplier));
+    }
+
+    public final Folyam<List<T>> bufferSplit(CheckedPredicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate == null");
+        return bufferSplit(predicate, ArrayList::new);
+    }
+
+    public final <C extends Collection<? super T>> Folyam<C> bufferSplit(CheckedPredicate<? super T> predicate, Callable<C> bufferSupplier) {
+        Objects.requireNonNull(predicate, "predicate == null");
+        Objects.requireNonNull(bufferSupplier, "bufferSupplier == null");
+        return FolyamPlugins.onAssembly(new FolyamBufferPredicate<>(this, predicate, FolyamBufferPredicate.BufferPredicateMode.SPLIT, bufferSupplier));
     }
 
     public final Folyam<Folyam<T>> window(int size) {
