@@ -354,6 +354,19 @@ public enum SubscriptionHelper implements Flow.Subscription {
         }
     }
 
+    public static long produced(Object target, VarHandle requested, long n) {
+        for (;;) {
+            long r = (long)requested.getAcquire(target);
+            if (r == Long.MAX_VALUE) {
+                return Long.MAX_VALUE;
+            }
+            long u = Math.max(0L, r - n);
+            if (requested.compareAndSet(target, r, u)) {
+                return u;
+            }
+        }
+    }
+
     @Override
     public void cancel() {
         // deliberately no-op

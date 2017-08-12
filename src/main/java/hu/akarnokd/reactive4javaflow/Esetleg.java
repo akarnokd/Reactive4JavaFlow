@@ -227,12 +227,19 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return sequenceEqual(first, second, Objects::equals);
     }
 
+    public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second, int prefetch) {
+        return sequenceEqual(first, second, Objects::equals, prefetch);
+    }
+
     public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second, CheckedBiPredicate<? super T, ? super T> isEqual) {
+        return sequenceEqual(first, second, isEqual, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second, CheckedBiPredicate<? super T, ? super T> isEqual, int prefetch) {
         Objects.requireNonNull(first, "first == null");
         Objects.requireNonNull(second, "second == null");
         Objects.requireNonNull(isEqual, "isEqual == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegSequenceEqual<>(first, second, isEqual, prefetch));
     }
 
     // -----------------------------------------------------------------------------------

@@ -1424,54 +1424,44 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     // buffering operators
 
     public final Folyam<List<T>> buffer(int size) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(size, size, ArrayList::new);
     }
 
     public final Folyam<List<T>> buffer(int size, int skip) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(size, skip, ArrayList::new);
     }
 
     public final <C extends Collection<? super T>> Folyam<C> buffer(int size, int skip, Callable<C> collectionSupplier) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
+        return FolyamPlugins.onAssembly(new FolyamBufferSize<>(this, size, skip, collectionSupplier));
     }
 
     public final Folyam<List<T>> buffer(Flow.Publisher<?> boundary) {
-        Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(boundary, ArrayList::new, Integer.MAX_VALUE);
     }
 
     public final <C extends Collection<? super T>> Folyam<C> buffer(Flow.Publisher<?> boundary, Callable<C> collectionSupplier) {
-        Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(boundary, collectionSupplier, Integer.MAX_VALUE);
     }
 
     public final Folyam<List<T>> buffer(Flow.Publisher<?> boundary, int maxSize) {
-        Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(boundary, ArrayList::new, maxSize);
     }
 
     public final <C extends Collection<? super T>> Folyam<C> buffer(Flow.Publisher<?> boundary, Callable<C> collectionSupplier, int maxSize) {
         Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
+        return FolyamPlugins.onAssembly(new FolyamBufferBoundary<>(this, boundary, collectionSupplier, maxSize));
     }
 
     public final <U> Folyam<List<T>> buffer(Flow.Publisher<U> start, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end) {
-        Objects.requireNonNull(start, "start == null");
-        Objects.requireNonNull(end, "end == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return buffer(start, end, ArrayList::new);
     }
 
     public final <U, C extends Collection<? super T>> Folyam<C> buffer(Flow.Publisher<U> start, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end, Callable<C> collectionSupplier) {
         Objects.requireNonNull(start, "start == null");
         Objects.requireNonNull(end, "end == null");
+        Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }

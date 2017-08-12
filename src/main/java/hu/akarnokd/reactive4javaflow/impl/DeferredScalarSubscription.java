@@ -64,7 +64,7 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
     }
 
     @Override
-    public final void clear() {
+    public void clear() {
         if (compareAndSet(FUSED_READY, FUSED_CONSUMED)) {
             value = null;
         }
