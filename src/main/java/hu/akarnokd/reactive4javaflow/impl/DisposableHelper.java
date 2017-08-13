@@ -27,10 +27,30 @@ public enum DisposableHelper implements AutoDisposable {
         for (;;) {
             AutoDisposable a = field.get();
             if (a == DISPOSED) {
-                d.close();
+                if (d != null) {
+                    d.close();
+                }
                 return false;
             }
             if (field.compareAndSet(a, d)) {
+                return true;
+            }
+        }
+    }
+
+    public static boolean update(AtomicReference<AutoDisposable> field, AutoDisposable d) {
+        for (;;) {
+            AutoDisposable a = field.get();
+            if (a == DISPOSED) {
+                if (d != null) {
+                    d.close();
+                }
+                return false;
+            }
+            if (field.compareAndSet(a, d)) {
+                if (a != null) {
+                    a.close();
+                }
                 return true;
             }
         }
@@ -68,7 +88,9 @@ public enum DisposableHelper implements AutoDisposable {
         for (;;) {
             AutoDisposable a = (AutoDisposable)FIELD.getAcquire(target);
             if (a == DISPOSED) {
-                d.close();
+                if (d != null) {
+                    d.close();
+                }
                 return false;
             }
             if (FIELD.compareAndSet(target, a, d)) {

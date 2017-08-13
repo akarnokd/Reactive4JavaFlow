@@ -51,6 +51,9 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
     boolean cancelled;
     static final VarHandle CANCELLED;
 
+    Runnable onTerminate;
+    static final VarHandle ON_TERMINATE;
+
     boolean outputFused;
 
     long emitted;
@@ -63,6 +66,7 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
             ACTUAL = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "actual", FolyamSubscriber.class);
             ONCE = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "once", Boolean.TYPE);
             CANCELLED = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "cancelled", Boolean.TYPE);
+            ON_TERMINATE = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "onTerminate", Runnable.class);
         } catch (Throwable ex) {
             throw new InternalError(ex);
         }
@@ -72,8 +76,13 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
         this(FolyamPlugins.defaultBufferSize());
     }
 
-    public SolocastProcessor(int bufferSize) {
-        this.queue = new SpscLinkedArrayQueue<>(bufferSize);
+    public SolocastProcessor(int capacityHint) {
+        this.queue = new SpscLinkedArrayQueue<>(capacityHint);
+    }
+
+    public SolocastProcessor(int capacityHint, Runnable onTerminate) {
+        this(capacityHint);
+        ON_TERMINATE.setRelease(this, onTerminate);
     }
 
     @Override
@@ -113,6 +122,16 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
         }
     }
 
+    void terminate() {
+        Runnable r = (Runnable)ON_TERMINATE.getAcquire(this);
+        if (r != null) {
+            r = (Runnable)ON_TERMINATE.getAndSet(this, null);
+            if (r != null) {
+                r.run();
+            }
+        }
+    }
+
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
         if (!done && !(boolean)CANCELLED.getAcquire(this)) {
@@ -141,6 +160,7 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
         } else {
             FolyamPlugins.onError(throwable);
         }
+        terminate();
     }
 
     @Override
@@ -149,6 +169,7 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
             DONE.setRelease(this, true);
             drain();
         }
+        terminate();
     }
 
     @SuppressWarnings("unchecked")
@@ -280,6 +301,7 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
         if ((int)WIP.getAndAdd(this, 1) == 0) {
             queue.clear();
         }
+        terminate();
     }
 
     static final class SolocastSubscription<T> implements FusedSubscription<T> {

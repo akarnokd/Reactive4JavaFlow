@@ -23,10 +23,14 @@ import java.util.function.Consumer;
 
 public abstract class ConnectableFolyam<T> extends Folyam<T> {
 
-    public abstract AutoDisposable connect(Consumer<? super AutoDisposable> connectionHandler);
+    protected abstract AutoDisposable connectActual(Consumer<? super AutoDisposable> connectionHandler);
+
+    public final void connect(Consumer<? super AutoDisposable> connectionHandler) {
+        connectActual(connectionHandler);
+    }
 
     public final AutoDisposable connect() {
-        return connect(v -> { });
+        return connectActual(v -> { });
     }
 
     public final Folyam<T> autoConnect() {

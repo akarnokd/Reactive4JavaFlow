@@ -310,6 +310,7 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
 
                 if (e != r && (q == null || q.isEmpty())) {
                     emitNext(item, e);
+                    sender.produced(1, limit);
                 } else {
                     if (q == null) {
                         q = sender.createQueue();

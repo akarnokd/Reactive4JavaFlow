@@ -44,7 +44,7 @@ public final class SchedulerServices {
     }
 
     static final class ComputationHolder {
-        static final SchedulerService INSTANCE = new ParallelSchedulerService(Runtime.getRuntime().availableProcessors(), "Reactive4JavaFlow.CPU", Thread.NORM_PRIORITY, true); // FIXME implement
+        static final SchedulerService INSTANCE = new ParallelSchedulerService(Runtime.getRuntime().availableProcessors(), "Reactive4JavaFlow.CPU", Thread.NORM_PRIORITY, true);
     }
 
     static final class IOHolder {
@@ -52,7 +52,7 @@ public final class SchedulerServices {
     }
 
     static final class NewThreadHolder {
-        static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true); // FIXME implement
+        static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true);
     }
 
     static {
@@ -161,8 +161,8 @@ public final class SchedulerServices {
     }
 
     public static SchedulerService newShared(SchedulerService.Worker worker) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(worker, "worker == null");
+        return new SharedSchedulerService(worker);
     }
 
     public static SchedulerService newExecutor(Executor exec) {
@@ -174,9 +174,8 @@ public final class SchedulerServices {
         return new ExecutorSchedulerService(exec, trampoline);
     }
 
-    public static ScheduledService newBlocking() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public static BlockingSchedulerService newBlocking() {
+         return new BlockingSchedulerService();
     }
 
 }

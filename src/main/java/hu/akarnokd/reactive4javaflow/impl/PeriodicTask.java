@@ -73,7 +73,7 @@ public final class PeriodicTask implements Runnable, AutoDisposable {
 
         long time = start + (++count) * period;
         long now = w.now(unit);
-        long delay = Math.max(0L, now - time);
+        long delay = Math.max(0L, time - now);
 
         AutoDisposable d = w.schedule(this, delay, unit);
         DisposableHelper.replace(this, NEXT, d);

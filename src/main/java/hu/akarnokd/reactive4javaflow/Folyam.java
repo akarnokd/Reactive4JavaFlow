@@ -1498,8 +1498,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<Folyam<T>> window(int size) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return window(size, size);
     }
 
     public final Folyam<Folyam<T>> window(int size, int skip) {
@@ -1508,9 +1507,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<Folyam<T>> window(Flow.Publisher<?> boundary) {
-        Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return window(boundary, Integer.MAX_VALUE);
     }
 
     public final Folyam<Folyam<T>> window(Flow.Publisher<?> boundary, int maxSize) {
@@ -1526,31 +1523,28 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final <K> Folyam<GroupedFolyam<K, T>> groupBy(CheckedFunction<T, K> keySelector) {
+    public final <K> Folyam<GroupedFolyam<K, T>> groupBy(CheckedFunction<? super T, ? extends K> keySelector) {
         return groupBy(keySelector, v -> v, FolyamPlugins.defaultBufferSize());
     }
 
-    public final <K, V> Folyam<GroupedFolyam<K, V>> groupBy(CheckedFunction<T, K> keySelector, CheckedFunction<? super T, ? extends V> valueSelector) {
+    public final <K, V> Folyam<GroupedFolyam<K, V>> groupBy(CheckedFunction<? super T, ? extends K> keySelector, CheckedFunction<? super T, ? extends V> valueSelector) {
         return groupBy(keySelector, valueSelector, FolyamPlugins.defaultBufferSize());
     }
 
-    public final <K, V> Folyam<GroupedFolyam<K, V>> groupBy(CheckedFunction<T, K> keySelector, CheckedFunction<? super T, ? extends V> valueSelector, int prefetch) {
+    public final <K, V> Folyam<GroupedFolyam<K, V>> groupBy(CheckedFunction<? super T, ? extends K> keySelector, CheckedFunction<? super T, ? extends V> valueSelector, int prefetch) {
         Objects.requireNonNull(keySelector, "keySelector == null");
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamGroupBy<>(this, keySelector, valueSelector, prefetch));
     }
 
     // cold-hot conversion operators
 
     public final ConnectableFolyam<T> publish() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return publish(FolyamPlugins.defaultBufferSize());
     }
 
     public final ConnectableFolyam<T> publish(int prefetch) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamPublish<>(this, prefetch));
     }
 
     public final <R> Folyam<R> publish(CheckedFunction<? super Folyam<T>, ? extends Flow.Publisher<? extends R>> handler) {
