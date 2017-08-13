@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.operators.*;
+import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +27,8 @@ import java.util.function.Consumer;
 public abstract class ConnectableFolyam<T> extends Folyam<T> {
 
     protected abstract AutoDisposable connectActual(Consumer<? super AutoDisposable> connectionHandler);
+
+    public abstract void reset();
 
     public final void connect(Consumer<? super AutoDisposable> connectionHandler) {
         connectActual(connectionHandler);
@@ -42,12 +47,12 @@ public abstract class ConnectableFolyam<T> extends Folyam<T> {
     }
 
     public final Folyam<T> autoConnect(int minSubscribers, Consumer<? super AutoDisposable> connectionHandler) {
+        Objects.requireNonNull(connectionHandler, "connectionHandler == null");
         if (minSubscribers <= 0) {
             connect(connectionHandler);
             return this;
         }
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamAutoConnect<>(this, minSubscribers, connectionHandler));
     }
 
     public final Folyam<T> refCount() {
@@ -55,14 +60,16 @@ public abstract class ConnectableFolyam<T> extends Folyam<T> {
     }
 
     public final Folyam<T> refCount(int minSubscribers) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamRefCount<>(this, minSubscribers, 0, TimeUnit.NANOSECONDS, ImmediateSchedulerService.INSTANCE));
+    }
+
+    public final Folyam<T> refCount(long timeout, TimeUnit unit, SchedulerService executor) {
+        return refCount(1, timeout, unit, executor);
     }
 
     public final Folyam<T> refCount(int minSubscribers, long timeout, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamRefCount<>(this, minSubscribers, timeout, unit, executor));
     }
 }

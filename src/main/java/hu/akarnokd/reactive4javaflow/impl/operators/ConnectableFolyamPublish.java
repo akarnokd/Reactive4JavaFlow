@@ -18,14 +18,31 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.hot.MulticastProcessor;
+import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 
+import java.lang.invoke.*;
+import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 
-public class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
+public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
 
     final Folyam<T> source;
 
     final int prefetch;
+
+    MulticastProcessor<T> processor;
+    static final VarHandle PROCESSOR;
+
+    static final Flow.Subscription CONNECT = new BooleanSubscription();
+
+    static {
+        try {
+            PROCESSOR = MethodHandles.lookup().findVarHandle(ConnectableFolyamPublish.class, "processor", MulticastProcessor.class);
+        } catch (Throwable ex) {
+            throw new InternalError(ex);
+        }
+    }
 
     public ConnectableFolyamPublish(Folyam<T> source, int prefetch) {
         this.source = source;
@@ -34,11 +51,47 @@ public class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
 
     @Override
     protected AutoDisposable connectActual(Consumer<? super AutoDisposable> connectionHandler) {
-        return null;
+        for (;;) {
+            MulticastProcessor<T> mp = (MulticastProcessor<T>)PROCESSOR.getAcquire(this);
+            if (mp == null) {
+                mp = new MulticastProcessor<>(prefetch);
+                if (!PROCESSOR.compareAndSet(this, null, mp)) {
+                    continue;
+                }
+            }
+            if (mp.prepare(CONNECT)) {
+                connectionHandler.accept(mp);
+                source.subscribe(mp);
+            } else {
+                connectionHandler.accept(mp);
+            }
+
+            return mp;
+        }
+    }
+
+    @Override
+    public void reset() {
+        MulticastProcessor<T> mp = (MulticastProcessor<T>)PROCESSOR.getAcquire(this);
+        if (mp != null) {
+            if (mp.hasTerminated()) {
+                PROCESSOR.compareAndSet(this, mp, null);
+            }
+        }
     }
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-
+        for (;;) {
+            MulticastProcessor<T> mp = (MulticastProcessor<T>) PROCESSOR.getAcquire(this);
+            if (mp == null) {
+                mp = new MulticastProcessor<>(prefetch);
+                if (!PROCESSOR.compareAndSet(this, null, mp)) {
+                    continue;
+                }
+            }
+            mp.subscribe(s);
+            break;
+        }
     }
 }

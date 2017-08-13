@@ -178,24 +178,28 @@ public class SharedSchedulerServiceTest implements Runnable {
 
     @Test
     public void taskCrash() {
-        TestSchedulerService test = new TestSchedulerService();
+        TestHelper.withErrorTracking(errors -> {
+            TestSchedulerService test = new TestSchedulerService();
 
-        SharedSchedulerService scheduler = new SharedSchedulerService(test);
+            SharedSchedulerService scheduler = new SharedSchedulerService(test);
 
-        AutoDisposable d = scheduler.worker().schedule(() -> {
-            throw new IllegalArgumentException();
+            AutoDisposable d = scheduler.worker().schedule(() -> {
+                throw new IllegalArgumentException();
+            });
+
+    //        assertFalse(d.isDisposed());
+
+            try {
+                test.advanceTimeBy(0, TimeUnit.SECONDS);
+            } catch (IllegalArgumentException ex) {
+                // expected
+            }
+
+            assertNotSame(SchedulerService.REJECTED, d);
+    //        assertTrue(d.isDisposed());
+
+            TestHelper.assertError(errors, 0, IllegalArgumentException.class);
         });
-
-//        assertFalse(d.isDisposed());
-
-        try {
-            test.advanceTimeBy(0, TimeUnit.SECONDS);
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        assertNotSame(SchedulerService.REJECTED, d);
-//        assertTrue(d.isDisposed());
     }
 
     @Test(timeout = 5000)

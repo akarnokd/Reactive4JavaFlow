@@ -27,9 +27,9 @@ public final class ExceptionHelper {
         throw new IllegalStateException("No instances!");
     }
 
-    public static final Terminated TERMINATED = new Terminated();
+    public static final Throwable TERMINATED = new Terminated();
 
-    static final class Terminated extends RuntimeException {
+    static final class Terminated extends Error {
 
         Terminated() {
             super("No further exceptions can be emitted through onError. Seeing this error indicates a bug in an operator.");
