@@ -1548,9 +1548,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final <R> Folyam<R> publish(CheckedFunction<? super Folyam<T>, ? extends Flow.Publisher<? extends R>> handler) {
+        return publish(handler, FolyamPlugins.defaultBufferSize());
+    }
+
+    public final <R> Folyam<R> publish(CheckedFunction<? super Folyam<T>, ? extends Flow.Publisher<? extends R>> handler, int prefetch) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamPublish<>(this, handler, prefetch));
     }
 
     public final Folyam<T> cache() {
@@ -1591,8 +1594,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final <U, R> Folyam<R> multicast(CheckedFunction<? super Folyam<T>, ? extends ConnectableFolyam<U>> multicaster, CheckedFunction<? super Folyam<U>, ? extends Flow.Publisher<? extends R>> handler) {
         Objects.requireNonNull(multicaster, "multicaster == null");
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamMulticast<>(this, multicaster, handler));
     }
 
     // emission reducing operators

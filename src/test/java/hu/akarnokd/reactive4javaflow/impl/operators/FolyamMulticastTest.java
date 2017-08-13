@@ -22,15 +22,14 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-public class FolyamPublishTest {
+public class FolyamMulticastTest {
 
     @Test
     public void standard() {
         TestHelper.assertResult(
-                Folyam.range(1, 5).publish(f -> f),
+                Folyam.range(1, 5).multicast(Folyam::publish, f -> f),
                 1, 2, 3, 4, 5
         );
     }
@@ -39,7 +38,7 @@ public class FolyamPublishTest {
     @Test
     public void standardHidden() {
         TestHelper.assertResult(
-                Folyam.range(1, 5).hide().publish(f -> f),
+                Folyam.range(1, 5).hide().multicast(Folyam::publish, f -> f),
                 1, 2, 3, 4, 5
         );
     }
@@ -47,7 +46,7 @@ public class FolyamPublishTest {
     @Test
     public void error() {
         TestHelper.assertFailureComposed(-1,
-                f -> f.publish(v -> v), IOException.class
+                f -> f.multicast(Folyam::publish, v -> v), IOException.class
         );
     }
 
@@ -55,7 +54,7 @@ public class FolyamPublishTest {
     public void cancel() {
         DirectProcessor<Integer> dp = new DirectProcessor<>();
 
-        TestConsumer<Integer> tc = dp.publish(v -> v).test();
+        TestConsumer<Integer> tc = dp.multicast(Folyam::publish, v -> v).test();
 
         assertTrue(dp.hasSubscribers());
 
@@ -68,7 +67,7 @@ public class FolyamPublishTest {
     public void cancelDisconnect() {
         DirectProcessor<Integer> dp = new DirectProcessor<>();
 
-        TestConsumer<Integer> tc = dp.publish(v -> Folyam.range(1, 5)).test(0);
+        TestConsumer<Integer> tc = dp.multicast(Folyam::publish, v -> Folyam.range(1, 5)).test(0);
 
         assertTrue(dp.hasSubscribers());
 
@@ -80,7 +79,7 @@ public class FolyamPublishTest {
     @Test
     public void handlerCrash() {
         Folyam.range(1, 5)
-                .publish(f -> { throw new IOException(); })
+                .multicast(Folyam::publish, f -> { throw new IOException(); })
                 .test()
                 .assertFailure(IOException.class);
     }
@@ -89,7 +88,7 @@ public class FolyamPublishTest {
     public void disconnectConditional() {
         DirectProcessor<Integer> dp = new DirectProcessor<>();
 
-        TestConsumer<Integer> tc = dp.publish(v -> Folyam.range(1, 5))
+        TestConsumer<Integer> tc = dp.multicast(Folyam::publish, v -> Folyam.range(1, 5))
                 .filter(v -> true)
                 .test();
 
@@ -101,7 +100,7 @@ public class FolyamPublishTest {
     @Test
     public void concat() {
         Folyam.range(1, 5)
-                .publish(f -> f.take(3).concatWith(f.takeLast(3)))
+                .multicast(Folyam::publish, f -> f.take(3).concatWith(f.takeLast(3)))
                 .test()
                 .assertResult(1, 2, 3, 4, 5);
     }
