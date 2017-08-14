@@ -1369,4 +1369,34 @@ public class ParallelFolyamTest {
     public void fromArraySubscriberCount() {
         ParallelFolyamTest.checkSubscriberCount(ParallelFolyam.fromArray(new Flow.Publisher[] { Folyam.just(1) }));
     }
+
+    @Test
+    public void flatMapMaxConcurrency() {
+        Folyam.range(1, 10)
+                .parallel()
+                .flatMap(Esetleg::just, 1)
+                .sequential()
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    }
+
+    @Test
+    public void fromPublisher() {
+        SubmissionPublisher<Integer> sp = new SubmissionPublisher<>();
+        TestConsumer<Integer> tc = ParallelFolyam
+                .fromPublisher(sp)
+                .sequential()
+                .test();
+
+        sp.submit(1);
+        sp.submit(2);
+        sp.submit(3);
+        sp.submit(4);
+        sp.submit(5);
+        sp.close();
+
+        tc.awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1, 2, 3, 4, 5);
+    }
+
 }

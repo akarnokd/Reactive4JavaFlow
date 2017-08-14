@@ -24,6 +24,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
+import static hu.akarnokd.reactive4javaflow.impl.ParameterHelper.verifyPositive;
+
 public abstract class ParallelFolyam<T> {
 
     public abstract int parallelism();
@@ -68,11 +70,14 @@ public abstract class ParallelFolyam<T> {
 
     public static <T> ParallelFolyam<T> fromPublisher(Flow.Publisher<? extends T> source, int parallelism) {
         Objects.requireNonNull(source, "source == null");
+        verifyPositive(parallelism, "parallelism");
         return FolyamPlugins.onAssembly(new ParallelFromPublisher<>(source, parallelism, FolyamPlugins.defaultBufferSize()));
     }
 
     public static <T> ParallelFolyam<T> fromPublisher(Flow.Publisher<? extends T> source, int parallelism, int prefetch) {
         Objects.requireNonNull(source, "source == null");
+        verifyPositive(parallelism, "parallelism");
+        verifyPositive(prefetch, "prefetch");
         return FolyamPlugins.onAssembly(new ParallelFromPublisher<>(source, parallelism, prefetch));
     }
 
@@ -83,12 +88,6 @@ public abstract class ParallelFolyam<T> {
             throw new IllegalArgumentException("sources.length == 0");
         }
         return FolyamPlugins.onAssembly(new ParallelFromArray<>(sources));
-    }
-
-    public static <T> ParallelFolyam<T> defer(Callable<? extends ParallelFolyam<? extends T>> callable, int parallelism) {
-        Objects.requireNonNull(callable, "callable == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     // ------------------------------------------------------------------------
@@ -139,8 +138,7 @@ public abstract class ParallelFolyam<T> {
      */
     public final ParallelFolyam<T> runOn(SchedulerService scheduler, int prefetch) {
         Objects.requireNonNull(scheduler, "scheduler");
-        // FIXME parameter validation
-        // Objects.verifyPositive(prefetch, "prefetch");
+        verifyPositive(prefetch, "prefetch");
         return FolyamPlugins.onAssembly(new ParallelRunOn<>(this, scheduler, prefetch));
     }
 
@@ -164,14 +162,19 @@ public abstract class ParallelFolyam<T> {
 
     public final <R> ParallelFolyam<R> mapOptional(CheckedFunction<? super T, ? extends Optional<R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelMapOptional<>(this, mapper));
     }
 
     public final <R> ParallelFolyam<R> mapOptional(CheckedFunction<? super T, ? extends Optional<R>> mapper, ParallelFailureHandling failureHandling) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(failureHandling, "failureHandling == null");
+        return FolyamPlugins.onAssembly(new ParallelMapOptionalTry<>(this, mapper, failureHandling));
+    }
+
+    public final <R> ParallelFolyam<R> mapOptional(CheckedFunction<? super T, ? extends Optional<R>> mapper, CheckedBiFunction<? super Long, ? super Throwable, ParallelFailureHandling> failureHandling) {
+        Objects.requireNonNull(mapper, "mapper == null");
+        Objects.requireNonNull(failureHandling, "failureHandling == null");
+        return FolyamPlugins.onAssembly(new ParallelMapOptionalTry<>(this, mapper, failureHandling));
     }
 
     public final <R> ParallelFolyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -179,9 +182,7 @@ public abstract class ParallelFolyam<T> {
     }
 
     public final <R> ParallelFolyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
-        Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return mapWhen(mapper, (a, b) -> b, prefetch);
     }
 
     public final <U, R> ParallelFolyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
@@ -190,8 +191,9 @@ public abstract class ParallelFolyam<T> {
 
     public final <U, R> ParallelFolyam<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(mapper, "combiner == null");
+        verifyPositive(prefetch, "prefetch");
+        return FolyamPlugins.onAssembly(new ParallelMapWhen<>(this, mapper, combiner, prefetch));
     }
 
     public final ParallelFolyam<T> filter(CheckedPredicate<? super T> predicate) {
@@ -217,8 +219,8 @@ public abstract class ParallelFolyam<T> {
 
     public final ParallelFolyam<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> predicate, int prefetch) {
         Objects.requireNonNull(predicate, "predicate == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        verifyPositive(prefetch, "prefetch");
+        return FolyamPlugins.onAssembly(new ParallelFilterWhen<>(this, predicate, prefetch));
     }
 
     public final <R> R to(Function<? super ParallelFolyam<T>, ? extends R> converter) {
@@ -278,13 +280,7 @@ public abstract class ParallelFolyam<T> {
         return FolyamPlugins.onAssembly(new ParallelPeek<>(this, v -> { }, v -> { }, e -> { }, () -> { }, s -> { }, handler, () -> { }));
     }
 
-    public final ParallelFolyam<T> doFinally(CheckedRunnable handler) {
-        Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    // // mappers of inner flows
+    // mappers of inner flows
 
     public final <R> ParallelFolyam<R> concatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
         return concatMap(mapper, FolyamPlugins.defaultBufferSize());
@@ -356,7 +352,6 @@ public abstract class ParallelFolyam<T> {
         return FolyamPlugins.onAssembly(new ParallelJoin<>(this, prefetch, false));
     }
 
-
     public final Folyam<T> sequentialDelayError() {
         return sequentialDelayError(FolyamPlugins.defaultBufferSize());
     }
@@ -371,8 +366,7 @@ public abstract class ParallelFolyam<T> {
 
     public final Folyam<T> sequential(SchedulerService executor, int prefetch) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelJoinAsync<>(this, prefetch, false, executor));
     }
 
     public final Folyam<T> sequentialDelayError(SchedulerService executor) {
@@ -381,13 +375,11 @@ public abstract class ParallelFolyam<T> {
 
     public final Folyam<T> sequentialDelayError(SchedulerService executor, int prefetch) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelJoinAsync<>(this, prefetch, true, executor));
     }
 
     public final Esetleg<T> ignoreElements() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelIgnoreElements<>(this));
     }
 
     public final Esetleg<T> reduce(CheckedBiFunction<T, T, T> reducer) {
@@ -402,7 +394,7 @@ public abstract class ParallelFolyam<T> {
     public final Folyam<T> sorted(Comparator<? super T> comparator, int capacityHint) {
         Objects.requireNonNull(comparator, "comparator == null");
         int ch = capacityHint / parallelism() + 1;
-        ParallelFolyam<List<T>> railReduced = reduce(() -> (List<T>)new ArrayList<T>(capacityHint), (a, b) -> { a.add(b); return a; });
+        ParallelFolyam<List<T>> railReduced = reduce(() -> (List<T>)new ArrayList<T>(ch), (a, b) -> { a.add(b); return a; });
         ParallelFolyam<List<T>> railSorted = railReduced.map(list -> { list.sort(comparator); return list; });
 
         return FolyamPlugins.onAssembly(new ParallelSortedJoin<>(railSorted, comparator));
@@ -412,51 +404,31 @@ public abstract class ParallelFolyam<T> {
 
     public final Esetleg<T> min(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final <K> Esetleg<T> min(CheckedFunction<? super T, ? extends K> keySelector, Comparator<? super K> comparator) {
-        Objects.requireNonNull(keySelector, "keySelector == null");
-        Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return reduce((a, b) -> comparator.compare(a, b) < 0 ? a : b);
     }
 
     public final Esetleg<T> max(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final <K> Esetleg<T> max(CheckedFunction<? super T, ? extends K> keySelector, Comparator<? super K> comparator) {
-        Objects.requireNonNull(keySelector, "keySelector == null");
-        Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return reduce((a, b) -> comparator.compare(a, b) >= 0 ? a : b);
     }
 
     public final Esetleg<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelSumInt<>(this, valueSelector));
     }
 
     public final Esetleg<Long> sumLong(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelSumLong<>(this, valueSelector));
     }
 
     public final Esetleg<Float> sumFloat(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelSumFloat<>(this, valueSelector));
     }
 
     public final Esetleg<Double> sumDouble(CheckedFunction<? super T, ? extends Number> valueSelector) {
         Objects.requireNonNull(valueSelector, "valueSelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ParallelSumDouble<>(this, valueSelector));
     }
 }

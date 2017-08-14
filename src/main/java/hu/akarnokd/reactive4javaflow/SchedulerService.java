@@ -49,7 +49,7 @@ public interface SchedulerService {
         AutoDisposable d = w.schedulePeriodically(() -> {
             try {
                 task.run();
-            } finally {
+            } catch (Throwable ex) {
                 w.close();
             }
         }, initialDelay, period, unit);

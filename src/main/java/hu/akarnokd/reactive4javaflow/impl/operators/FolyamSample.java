@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -39,7 +39,7 @@ public final class FolyamSample<T> extends Folyam<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        SampleSubscriber<T> parent = new SampleSubscriber<>(s);
+        SampleSubscriber<T> parent = new SampleSubscriber<>(s, emitLast);
         s.onSubscribe(parent);
         sampler.subscribe(parent.sampler);
         source.subscribe(parent);
@@ -51,6 +51,8 @@ public final class FolyamSample<T> extends Folyam<T> {
 
         final SamplerSubscriber sampler;
 
+        final boolean emitLast;
+
         T value;
         static final VarHandle VALUE;
 
@@ -60,24 +62,39 @@ public final class FolyamSample<T> extends Folyam<T> {
         long requested;
         static final VarHandle REQUESTED;
 
+        int wip;
+        static final VarHandle WIP;
+
+        Throwable error;
+        static final VarHandle ERROR;
+
+        boolean done;
+        static final VarHandle DONE;
+
+        volatile boolean cancelled;
+
         static {
             try {
                 VALUE = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "value", Object.class);
                 UPSTREAM = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "upstream", Flow.Subscription.class);
                 REQUESTED = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "requested", long.class);
+                WIP = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "wip", int.class);
+                ERROR = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "error", Throwable.class);
+                DONE = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "done", boolean.class);
             } catch (Throwable ex) {
                 throw new InternalError(ex);
             }
         }
 
-        SampleSubscriber(FolyamSubscriber<? super T> actual) {
+        SampleSubscriber(FolyamSubscriber<? super T> actual, boolean emitLast) {
             this.actual = actual;
+            this.emitLast = emitLast;
             this.sampler = new SamplerSubscriber(this);
         }
 
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
-            SubscriptionHelper.replace(this, UPSTREAM, subscription);
+            SubscriptionHelper.deferredReplace(this, UPSTREAM, REQUESTED, subscription);
         }
 
         @Override
@@ -94,36 +111,93 @@ public final class FolyamSample<T> extends Folyam<T> {
 
         @Override
         public void onError(Throwable throwable) {
-            // TODO implement
+            sampler.cancel();
+            if (ExceptionHelper.addThrowable(this, ERROR, throwable)) {
+                DONE.setRelease(this, true);
+                drain();
+            } else {
+                FolyamPlugins.onError(throwable);
+            }
         }
 
         @Override
         public void onComplete() {
-            // TODO implement
+            sampler.cancel();
+            DONE.setRelease(this, true);
+            drain();
         }
 
         @Override
         public void request(long n) {
-            SubscriptionHelper.addRequested(this, REQUESTED, n);
+            SubscriptionHelper.deferredRequest(this, UPSTREAM, REQUESTED, n);
             sampler.request(n);
         }
 
         @Override
         public void cancel() {
+            cancelled = true;
             SubscriptionHelper.cancel(this, UPSTREAM);
             sampler.cancel();
         }
 
         void samplerNext() {
-            // TODO implement
+            drain();
         }
 
-        void samplerError(Throwable ex) {
-            // TODO implement
+        void samplerError(Throwable throwable) {
+            SubscriptionHelper.cancel(this, UPSTREAM);
+            if (ExceptionHelper.addThrowable(this, ERROR, throwable)) {
+                DONE.setRelease(this, true);
+                drain();
+            } else {
+                FolyamPlugins.onError(throwable);
+            }
         }
 
         void samplerComplete() {
-            // TODO implement
+            SubscriptionHelper.cancel(this, UPSTREAM);
+            DONE.setRelease(this, true);
+            drain();
+        }
+
+        void drain() {
+            if ((int)WIP.getAndAdd(this, 1) != 0) {
+                return;
+            }
+
+            int missed = 1;
+
+            while (missed != 0) {
+
+                if (cancelled) {
+                    VALUE.set(this, null);
+                    return;
+                }
+
+                if (ERROR.getAcquire(this) != null) {
+                    VALUE.set(this, null);
+                    Throwable ex = ExceptionHelper.terminate(this, ERROR);
+                    actual.onError(ex);
+                    return;
+                }
+
+                boolean d = (boolean)DONE.getAcquire(this);
+                T v = (T)VALUE.getAndSet(this, null);
+
+                if (d) {
+                    if (emitLast && v != null) {
+                        actual.onNext(v);
+                    }
+                    actual.onComplete();
+                    return;
+                }
+
+                if (v != null) {
+                    actual.onNext(v);
+                }
+
+                missed = (int)WIP.getAndAdd(this, -missed) - missed;
+            }
         }
 
         static final class SamplerSubscriber implements FolyamSubscriber<Object>, Flow.Subscription {

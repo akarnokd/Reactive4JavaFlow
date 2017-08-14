@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
 public final class TestSchedulerService implements SchedulerService {
 
@@ -31,9 +31,13 @@ public final class TestSchedulerService implements SchedulerService {
     long index;
     static final VarHandle INDEX;
 
+    long workers;
+    static final VarHandle WORKERS;
+
     static {
         try {
             INDEX = MethodHandles.lookup().findVarHandle(TestSchedulerService.class, "index", Long.TYPE);
+            WORKERS = MethodHandles.lookup().findVarHandle(TestSchedulerService.class, "workers", Long.TYPE);
         } catch (Throwable ex) {
             throw new InternalError(ex);
         }
@@ -63,6 +67,7 @@ public final class TestSchedulerService implements SchedulerService {
 
     @Override
     public Worker worker() {
+        WORKERS.getAndAdd(this, 1);
         return new TestWorker();
     }
 
@@ -73,6 +78,18 @@ public final class TestSchedulerService implements SchedulerService {
 
     public void advanceTimeBy(long time, TimeUnit unit) {
         drainUntil(timeNanos + unit.toNanos(time));
+    }
+
+    /**
+     * Returns the number of active workers of this TestSchedulerService.
+     * @return the number of active workers
+     */
+    public long activeWorkers() {
+        return (long)WORKERS.getAcquire(this);
+    }
+
+    void decrementWorker() {
+        WORKERS.getAndAdd(this, -1);
     }
 
     void drainUntil(long upToNanos) {
@@ -94,16 +111,14 @@ public final class TestSchedulerService implements SchedulerService {
         queue.removeIf(tt -> tt.parent == tag);
     }
 
-    final class TestWorker implements SchedulerService.Worker {
-
-        volatile boolean closed;
+    final class TestWorker extends AtomicBoolean implements SchedulerService.Worker {
 
         @Override
         public AutoDisposable schedule(Runnable task) {
-            if (!closed) {
+            if (!getAcquire()) {
                 TestTask tt = new TestTask(task, timeNanos, nextIndex(), this);
                 queue.offer(tt);
-                if (closed) {
+                if (getAcquire()) {
                     queue.remove(tt);
                     return REJECTED;
                 }
@@ -114,10 +129,10 @@ public final class TestSchedulerService implements SchedulerService {
 
         @Override
         public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
-            if (!closed) {
+            if (!getAcquire()) {
                 TestTask tt = new TestTask(task, timeNanos + unit.toNanos(delay), nextIndex(), this);
                 queue.offer(tt);
-                if (closed) {
+                if (getAcquire()) {
                     queue.remove(tt);
                     return REJECTED;
                 }
@@ -128,7 +143,10 @@ public final class TestSchedulerService implements SchedulerService {
 
         @Override
         public void close() {
-            clear(this);
+            if (compareAndSet(false, true)) {
+                decrementWorker();
+                clear(this);
+            }
         }
 
         @Override

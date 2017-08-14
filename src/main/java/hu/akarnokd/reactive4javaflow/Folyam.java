@@ -1604,8 +1604,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> debounce(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemDebouncer) {
         Objects.requireNonNull(itemDebouncer, "itemDebouncer == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamDebounce<>(this, itemDebouncer));
     }
 
     public final Folyam<T> throttleFirst(long time, TimeUnit unit, SchedulerService executor) {
