@@ -107,6 +107,10 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         return manager.toArray(array);
     }
 
+    public boolean hasTerminated() {
+        return ERROR.getAcquire(this) != null;
+    }
+
     @SuppressWarnings("unchecked")
     boolean add(CachingSubscription<T> ds) {
         for (;;) {
@@ -311,7 +315,7 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
                 t[to] = item;
                 tailOffset = to + 1;
             }
-            AVAILABLE.setRelease(this, available + 1);
+            AVAILABLE.setVolatile(this, available + 1);
         }
 
         @Override
@@ -527,10 +531,10 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         public void onNext(T item) {
             Node<T> n = new Node<>(item);
             tail.setRelease(n);
-            TAIL.setRelease(this, n);
+            TAIL.setVolatile(this, n);
             int s = size;
             if (s == maxSize) {
-                HEAD.setRelease(this, head.getPlain());
+                HEAD.setVolatile(this, head.getPlain());
             } else {
                 size = s + 1;
             }
@@ -758,10 +762,10 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         public void onNext(T item) {
             Node<T> n = new Node<>(item, executor.now(unit));
             tail.setRelease(n);
-            TAIL.setRelease(this, n);
+            TAIL.setVolatile(this, n);
             int s = size;
             if (s == maxSize) {
-                HEAD.setRelease(this, head.getPlain());
+                HEAD.setVolatile(this, head.getPlain());
             } else {
                 size = s + 1;
             }

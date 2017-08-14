@@ -18,43 +18,43 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.hot.MulticastProcessor;
+import hu.akarnokd.reactive4javaflow.hot.CachingProcessor;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 
-public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
+public final class ConnectableFolyamReplaySizeBound<T> extends ConnectableFolyam<T> {
 
     final Folyam<T> source;
 
-    final int prefetch;
+    final int maxSize;
 
-    MulticastProcessor<T> processor;
+    CachingProcessor<T> processor;
     static final VarHandle PROCESSOR;
 
     static final Flow.Subscription CONNECT = new BooleanSubscription();
 
     static {
         try {
-            PROCESSOR = MethodHandles.lookup().findVarHandle(ConnectableFolyamPublish.class, "processor", MulticastProcessor.class);
+            PROCESSOR = MethodHandles.lookup().findVarHandle(ConnectableFolyamReplaySizeBound.class, "processor", CachingProcessor.class);
         } catch (Throwable ex) {
             throw new InternalError(ex);
         }
     }
 
-    public ConnectableFolyamPublish(Folyam<T> source, int prefetch) {
+    public ConnectableFolyamReplaySizeBound(Folyam<T> source, int maxSize) {
         this.source = source;
-        this.prefetch = prefetch;
+        this.maxSize = maxSize;
     }
 
     @Override
     protected AutoDisposable connectActual(Consumer<? super AutoDisposable> connectionHandler) {
-        for (;;) {
-            MulticastProcessor<T> mp = (MulticastProcessor<T>)PROCESSOR.getAcquire(this);
+        for (; ; ) {
+            CachingProcessor<T> mp = (CachingProcessor<T>) PROCESSOR.getAcquire(this);
             if (mp == null) {
-                mp = new MulticastProcessor<>(prefetch);
+                mp = new CachingProcessor<>(maxSize);
                 if (!PROCESSOR.compareAndSet(this, null, mp)) {
                     continue;
                 }
@@ -71,7 +71,7 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
 
     @Override
     public void reset() {
-        MulticastProcessor<T> mp = (MulticastProcessor<T>)PROCESSOR.getAcquire(this);
+        CachingProcessor<T> mp = (CachingProcessor<T>) PROCESSOR.getAcquire(this);
         if (mp != null) {
             if (mp.hasTerminated()) {
                 PROCESSOR.compareAndSet(this, mp, null);
@@ -81,10 +81,10 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        for (;;) {
-            MulticastProcessor<T> mp = (MulticastProcessor<T>) PROCESSOR.getAcquire(this);
+        for (; ; ) {
+            CachingProcessor<T> mp = (CachingProcessor<T>) PROCESSOR.getAcquire(this);
             if (mp == null) {
-                mp = new MulticastProcessor<>(prefetch);
+                mp = new CachingProcessor<>(maxSize);
                 if (!PROCESSOR.compareAndSet(this, null, mp)) {
                     continue;
                 }
@@ -93,4 +93,5 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
             break;
         }
     }
+
 }

@@ -1557,38 +1557,32 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> cache() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return replay().autoConnect();
     }
 
     public final ConnectableFolyam<T> replay() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamReplayUnbounded<>(this, 16));
     }
 
     public final ConnectableFolyam<T> replayLast(int count) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamReplaySizeBound<>(this, count));
     }
 
     public final ConnectableFolyam<T> replayLast(long time, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamReplaySizeAndTimeBound<>(this, Integer.MAX_VALUE, time, unit, executor));
     }
 
     public final ConnectableFolyam<T> replayLast(int count, long time, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamReplaySizeAndTimeBound<>(this, count, time, unit, executor));
     }
 
     public final <R> Folyam<R> replay(CheckedFunction<? super Folyam<T>, ? extends Flow.Publisher<? extends R>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamReplay<>(this, handler, 16));
     }
 
     public final <U, R> Folyam<R> multicast(CheckedFunction<? super Folyam<T>, ? extends ConnectableFolyam<U>> multicaster, CheckedFunction<? super Folyam<U>, ? extends Flow.Publisher<? extends R>> handler) {
@@ -1600,9 +1594,12 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     // emission reducing operators
 
     public final Folyam<T> sample(Flow.Publisher<?> sampler) {
+        return sample(sampler, true);
+    }
+
+    public final Folyam<T> sample(Flow.Publisher<?> sampler, boolean emitLast) {
         Objects.requireNonNull(sampler, "sampler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamSample<>(this, sampler, emitLast));
     }
 
     public final Folyam<T> debounce(CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemDebouncer) {
@@ -1614,22 +1611,20 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
     public final Folyam<T> throttleFirst(long time, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamThrottleFirstTime<>(this, time, unit, executor));
     }
 
     public final Folyam<T> throttleLast(long time, TimeUnit unit, SchedulerService executor) {
-        Objects.requireNonNull(unit, "unit == null");
-        Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return sample(interval(time, unit, executor));
+    }
+
+    public final Folyam<T> throttleLast(long time, TimeUnit unit, SchedulerService executor, boolean emitLast) {
+        return sample(interval(time, unit, executor), emitLast);
     }
 
     public final Folyam<T> throttleWithTimeout(long time, TimeUnit unit, SchedulerService executor) {
-        Objects.requireNonNull(unit, "unit == null");
-        Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Folyam<Long> timer = timer(time, unit, executor);
+        return debounce(v -> timer);
     }
 
     public final Folyam<T> distinct() {

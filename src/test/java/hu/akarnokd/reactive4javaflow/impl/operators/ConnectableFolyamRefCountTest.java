@@ -145,7 +145,6 @@ public class ConnectableFolyamRefCountTest {
     }
 
     @Test
-    @Ignore("Implement replay() first") // TODO implement
     public void unsubscribeSubscribeRace() {
         for (int i = 0; i < 1000; i++) {
 

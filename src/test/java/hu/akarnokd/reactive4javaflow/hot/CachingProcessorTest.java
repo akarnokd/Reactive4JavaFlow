@@ -367,4 +367,91 @@ public class CachingProcessorTest {
                     .assertComplete();
         }
     }
+
+    @Test
+    public void onNextSubscribeRaceUnbounded() {
+        for (int i = 0; i < 100000; i++) {
+            TestConsumer<Integer> tc = new TestConsumer<>();
+
+            CachingProcessor<Integer> cp = new CachingProcessor<>();
+
+            Runnable r1 = () -> cp.onNext(1);
+
+            Runnable r2 = () -> cp.subscribe(tc);
+
+            TestHelper.race(r1, r2);
+
+            tc.assertValues(1);
+        }
+    }
+
+
+    @Test
+    public void onCompleteSubscribeRaceUnbounded() {
+        for (int i = 0; i < 100000; i++) {
+            TestConsumer<Integer> tc = new TestConsumer<>();
+
+            CachingProcessor<Integer> cp = new CachingProcessor<>();
+
+            Runnable r1 = cp::onComplete;
+
+            Runnable r2 = () -> cp.subscribe(tc);
+
+            TestHelper.race(r1, r2);
+
+            tc.assertResult();
+        }
+    }
+
+    @Test
+    public void onNextSubscribeRaceSizeBound() {
+        for (int i = 0; i < 100000; i++) {
+            TestConsumer<Integer> tc = new TestConsumer<>();
+
+            CachingProcessor<Integer> cp = new CachingProcessor<>(10);
+
+            Runnable r1 = () -> cp.onNext(1);
+
+            Runnable r2 = () -> cp.subscribe(tc);
+
+            TestHelper.race(r1, r2);
+
+            tc.assertValues(1);
+        }
+    }
+
+    @Test
+    public void onNextSubscribeRaceSizeBound2() {
+        for (int i = 0; i < 100000; i++) {
+            TestConsumer<Integer> tc = new TestConsumer<>();
+
+            CachingProcessor<Integer> cp = new CachingProcessor<>(10);
+            cp.onNext(0);
+
+            Runnable r1 = () -> cp.onNext(1);
+
+            Runnable r2 = () -> cp.subscribe(tc);
+
+            TestHelper.race(r1, r2);
+
+            tc.assertValues(0, 1);
+        }
+    }
+
+    @Test
+    public void onNextSubscribeRaceTimeBound() {
+        for (int i = 0; i < 100000; i++) {
+            TestConsumer<Integer> tc = new TestConsumer<>();
+
+            CachingProcessor<Integer> cp = new CachingProcessor<>(10, TimeUnit.SECONDS, SchedulerServices.single());
+
+            Runnable r1 = () -> cp.onNext(1);
+
+            Runnable r2 = () -> cp.subscribe(tc);
+
+            TestHelper.race(r1, r2);
+
+            tc.assertValues(1);
+        }
+    }
 }
