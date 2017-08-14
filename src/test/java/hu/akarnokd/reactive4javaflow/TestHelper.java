@@ -772,7 +772,7 @@ public final class TestHelper {
                     && ex.getCause().getMessage().equals("No instances!")) {
                 return;
             }
-            throw new AssertionError(ex);
+            throw new AssertionError("Wrong exception type or message", ex);
         }
         throw new AssertionError("Not an utility class!");
     }

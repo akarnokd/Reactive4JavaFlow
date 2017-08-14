@@ -17,7 +17,6 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.impl.schedulers.*;
-import javafx.concurrent.ScheduledService;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -40,18 +39,35 @@ public final class SchedulerServices {
     static final SchedulerService TRAMPOLINE;
 
     static final class SingleHolder {
+
+        private SingleHolder() {
+            throw new IllegalStateException("No instances!");
+        }
+
         static final SchedulerService INSTANCE = new SingleSchedulerService("Reactive4JavaFlow.Single", Thread.NORM_PRIORITY, true);
     }
 
     static final class ComputationHolder {
+        private ComputationHolder() {
+            throw new IllegalStateException("No instances!");
+        }
+
         static final SchedulerService INSTANCE = new ParallelSchedulerService(Runtime.getRuntime().availableProcessors(), "Reactive4JavaFlow.CPU", Thread.NORM_PRIORITY, true);
     }
 
     static final class IOHolder {
-        static final SchedulerService INSTANCE = SingleHolder.INSTANCE; // FIXME implement
+        private IOHolder() {
+            throw new IllegalStateException("No instances!");
+        }
+
+        static final SchedulerService INSTANCE = new IOSchedulerService("Reactive4JavaFlow.IO", Thread.NORM_PRIORITY, true);
     }
 
     static final class NewThreadHolder {
+        private NewThreadHolder() {
+            throw new IllegalStateException("No instances!");
+        }
+
         static final SchedulerService INSTANCE = new NewThreadSchedulerService("Reactive4JavaFlow.NewThread", Thread.NORM_PRIORITY, true);
     }
 
@@ -148,8 +164,7 @@ public final class SchedulerServices {
     }
 
     public static SchedulerService newIO(String name, int priority, boolean daemon) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return new IOSchedulerService(name, priority, daemon);
     }
 
     public static SchedulerService newThread(String name) {

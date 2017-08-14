@@ -23,4 +23,24 @@ public class SchedulerServicesTest {
     public void utilityClass() {
         TestHelper.checkUtilityClass(SchedulerServices.class);
     }
+
+    @Test
+    public void computationHolderUtility() {
+        TestHelper.checkUtilityClass(SchedulerServices.ComputationHolder.class);
+    }
+
+    @Test
+    public void singleHolderUtility() {
+        TestHelper.checkUtilityClass(SchedulerServices.SingleHolder.class);
+    }
+
+    @Test
+    public void ioHolderUtility() {
+        TestHelper.checkUtilityClass(SchedulerServices.IOHolder.class);
+    }
+
+    @Test
+    public void newThreadHolderUtility() {
+        TestHelper.checkUtilityClass(SchedulerServices.NewThreadHolder.class);
+    }
 }
