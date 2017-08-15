@@ -13,13 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package hu.akarnokd.reactive4javaflow;
 
-public interface Emitter<T> {
+package hu.akarnokd.reactive4javaflow.impl.operators;
 
-    void onNext(T item);
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
 
-    void onError(Throwable throwable);
+import java.util.NoSuchElementException;
+import java.util.concurrent.Flow;
 
-    void onComplete();
+public final class EsetlegWrap<T> extends Esetleg<T> {
+
+    final Flow.Publisher<? extends T> source;
+
+    public EsetlegWrap(Flow.Publisher<? extends T> source) {
+        this.source = source;
+    }
+
+    @Override
+    protected void subscribeActual(FolyamSubscriber<? super T> s) {
+        source.subscribe(new FolyamSingle.SingleSubscriber<>(s, true));
+    }
 }

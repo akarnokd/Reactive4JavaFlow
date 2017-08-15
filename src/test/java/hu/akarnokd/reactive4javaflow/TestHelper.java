@@ -806,6 +806,8 @@ public final class TestHelper {
         List<Throwable> errors = trackErrors();
         try {
             test.accept(errors);
+        } catch (AssertionError ex) {
+            throw ex;
         } catch (Throwable ex) {
             throw new AssertionError(ex);
         } finally {

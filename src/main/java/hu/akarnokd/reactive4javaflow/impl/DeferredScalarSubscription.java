@@ -97,7 +97,7 @@ public class DeferredScalarSubscription<T> extends AtomicInteger implements Fuse
         setRelease(CANCELLED);
     }
 
-    public final boolean isCancelled() {
+    public boolean isCancelled() {
         return getAcquire() == CANCELLED;
     }
 

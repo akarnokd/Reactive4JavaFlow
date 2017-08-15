@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.fail;
 
-public class FolyamFromFutureTest {
+public class FolyamFutureTest {
 
     @Test
     public void normal() {

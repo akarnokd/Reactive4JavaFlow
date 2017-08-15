@@ -18,6 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
+import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
+
+import java.lang.invoke.*;
 
 public final class EsetlegCreate<T> extends Esetleg<T> {
 
@@ -29,6 +32,139 @@ public final class EsetlegCreate<T> extends Esetleg<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        // TODO implement
+        CreateEmitter<T> emitter = new CreateEmitter<>(s);
+        s.onSubscribe(emitter);
+        try {
+            onSubscribe.accept(emitter);
+        } catch (Throwable ex) {
+            emitter.onError(ex);
+        }
+    }
+
+    static final class CreateEmitter<T> extends DeferredScalarSubscription<T> implements FolyamEmitter<T> {
+
+        boolean once;
+        static final VarHandle ONCE;
+
+        AutoCloseable resource;
+        static final VarHandle RESOURCE;
+
+        static final AutoCloseable CLOSED = () -> { };
+
+        static {
+            try {
+                ONCE = MethodHandles.lookup().findVarHandle(CreateEmitter.class, "once", boolean.class);
+                RESOURCE = MethodHandles.lookup().findVarHandle(CreateEmitter.class, "resource", AutoCloseable.class);
+            } catch (Throwable ex) {
+                throw new InternalError(ex);
+            }
+        }
+
+        CreateEmitter(FolyamSubscriber<? super T> actual) {
+            super(actual);
+        }
+
+        @Override
+        public void setResource(AutoCloseable resource) {
+            for (;;) {
+                AutoCloseable a = (AutoCloseable)RESOURCE.getAcquire(this);
+                if (a == CLOSED) {
+                    closeSilently(resource);
+                    break;
+                }
+                if (RESOURCE.compareAndSet(this, a, resource)) {
+                    closeSilently(a);
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public long requested() {
+            return getAcquire() == HAS_REQUEST_NO_VALUE ? 1L : 0L;
+        }
+
+        @Override
+        public FolyamEmitter<T> serialized() {
+            return this;
+        }
+
+        void closeSilently(AutoCloseable a) {
+            if (a != null) {
+                try {
+                    a.close();
+                } catch (Throwable ex) {
+                    FolyamPlugins.onError(ex);
+                }
+            }
+        }
+
+        @Override
+        public void onNext(T item) {
+            if (item == null) {
+                onError(new NullPointerException("item == null"));
+                return;
+            }
+            if (ONCE.compareAndSet(this, false, true)) {
+                AutoCloseable a = (AutoCloseable)RESOURCE.getAndSet(this, CLOSED);
+                if (a != CLOSED) {
+                    complete(item);
+                    closeSilently(a);
+                }
+            }
+        }
+
+        @Override
+        public boolean tryOnError(Throwable throwable) {
+            if (throwable == null) {
+                throwable = new NullPointerException("throwable == null");
+            }
+            if (ONCE.compareAndSet(this, false, true)) {
+                AutoCloseable a = (AutoCloseable)RESOURCE.getAndSet(this, CLOSED);
+                if (a != CLOSED) {
+                    error(throwable);
+                    closeSilently(a);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            if (!tryOnError(throwable)) {
+                FolyamPlugins.onError(throwable);
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            if (!(boolean)ONCE.getAcquire(this) && ONCE.compareAndSet(this, false, true)) {
+                AutoCloseable a = (AutoCloseable)RESOURCE.getAndSet(this, CLOSED);
+                if (a != CLOSED) {
+                    complete();
+                    closeSilently(a);
+                }
+            }
+        }
+
+        @Override
+        public void cancel() {
+            if (ONCE.compareAndSet(this, false, true)) {
+                super.cancel();
+                AutoCloseable a = (AutoCloseable) RESOURCE.getAcquire(this);
+                if (a != CLOSED) {
+                    a = (AutoCloseable) RESOURCE.getAndSet(this, CLOSED);
+                    if (a != CLOSED) {
+                        closeSilently(a);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return (boolean)ONCE.getAcquire(this);
+        }
     }
 }

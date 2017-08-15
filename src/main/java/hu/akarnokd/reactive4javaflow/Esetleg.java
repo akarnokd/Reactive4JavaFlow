@@ -28,6 +28,7 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     @SuppressWarnings("unchecked")
@@ -58,6 +59,18 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final <R> Esetleg<R> compose(Function<? super Esetleg<T>, ? extends Esetleg<R>> composer) {
         return to(composer);
+    }
+
+    public final AutoDisposable subscribe() {
+        return subscribe(v -> { }, FolyamPlugins::onError, () -> { });
+    }
+
+    public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext) {
+        return subscribe(onNext, FolyamPlugins::onError, () -> { });
+    }
+
+    public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError) {
+        return subscribe(onNext, onError, () -> { });
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete) {
@@ -111,10 +124,13 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         Objects.requireNonNull(item, "item == null");
         return FolyamPlugins.onAssembly(new EsetlegJust<>(item));
     }
+
+    @SuppressWarnings("unchecked")
     public static <T> Esetleg<T> empty() {
         return FolyamPlugins.onAssembly((Esetleg<T>) EsetlegEmpty.INSTANCE);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Esetleg<T> never() {
         return FolyamPlugins.onAssembly((Esetleg<T>) EsetlegNever.INSTANCE);
     }
@@ -131,32 +147,33 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public static <T> Esetleg<T> create(CheckedConsumer<? super FolyamEmitter<T>> onSubscribe) {
         Objects.requireNonNull(onSubscribe, "onSubscribe == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegCreate<>(onSubscribe));
     }
 
     public static <T> Esetleg<T> fromCallable(Callable<? extends T> call) {
         Objects.requireNonNull(call, "call == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegCallable<>(call));
+    }
+
+    public static <T> Esetleg<T> fromCallableAllowEmpty(Callable<? extends T> call) {
+        Objects.requireNonNull(call, "call == null");
+        return FolyamPlugins.onAssembly(new EsetlegCallableAllowEmpty<>(call));
     }
 
     public static <T> Esetleg<T> fromCompletionStage(CompletionStage<? extends T> stage) {
         Objects.requireNonNull(stage, "stage == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegCompletionStage<>(stage));
     }
 
     public static <T> Esetleg<T> fromFuture(Future<? extends T> future) {
         Objects.requireNonNull(future, "future == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFuture<>(future, 0L, null));
     }
 
     public static <T> Esetleg<T> fromFuture(Future<? extends T> future, long timeout, TimeUnit unit) {
         Objects.requireNonNull(future, "future == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(unit, "unit == null");
+        return FolyamPlugins.onAssembly(new EsetlegFuture<>(future, timeout, unit));
     }
 
     public static <T> Esetleg<T> fromOptional(Optional<? extends T> optional) {
@@ -164,11 +181,15 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         return optional.isPresent() ? just(optional.get()) : empty();
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Esetleg<T> fromPublisher(Flow.Publisher<? extends T> source) {
         Objects.requireNonNull(source, "source == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        if (source instanceof Esetleg) {
+            return (Esetleg<T>)source;
+        }
+        return FolyamPlugins.onAssembly(new EsetlegWrap<>(source));
     }
+
     public static Esetleg<Long> timer(long delay, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
