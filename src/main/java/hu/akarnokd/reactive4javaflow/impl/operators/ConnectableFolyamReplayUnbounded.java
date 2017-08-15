@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 public final class ConnectableFolyamReplayUnbounded<T> extends ConnectableFolyam<T> {
 
-    final Folyam<T> source;
+    final FolyamPublisher<T> source;
 
     final int capacityHint;
 
@@ -44,7 +44,7 @@ public final class ConnectableFolyamReplayUnbounded<T> extends ConnectableFolyam
         }
     }
 
-    public ConnectableFolyamReplayUnbounded(Folyam<T> source, int capacityHint) {
+    public ConnectableFolyamReplayUnbounded(FolyamPublisher<T> source, int capacityHint) {
         this.source = source;
         this.capacityHint = capacityHint;
     }

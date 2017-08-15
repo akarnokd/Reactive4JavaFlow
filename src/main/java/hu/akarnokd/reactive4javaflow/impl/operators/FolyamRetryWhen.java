@@ -63,7 +63,7 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
 
     static abstract class AbstractRetryWhen<T> extends SubscriptionArbiter implements FolyamSubscriber<T> {
 
-        final Folyam<T> source;
+        final FolyamPublisher<T> source;
 
         final FolyamSubscriber<Throwable> signaller;
 
@@ -90,7 +90,7 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
             }
         }
 
-        AbstractRetryWhen(Folyam<T> source, FolyamSubscriber<Throwable> signaller) {
+        AbstractRetryWhen(FolyamPublisher<T> source, FolyamSubscriber<Throwable> signaller) {
             this.source = source;
             this.responder = new HandlerSubscriber(this);
             this.signaller = signaller;
@@ -137,7 +137,7 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        RetryWhenSubscriber(FolyamSubscriber<? super T> actual, Folyam<T> source, FolyamSubscriber<Throwable> signaller) {
+        RetryWhenSubscriber(FolyamSubscriber<? super T> actual, FolyamPublisher<T> source, FolyamSubscriber<Throwable> signaller) {
             super(source, signaller);
             this.actual = actual;
         }
@@ -168,7 +168,7 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        RetryWhenConditionalSubscriber(ConditionalSubscriber<? super T> actual, Folyam<T> source, FolyamSubscriber<Throwable> signaller) {
+        RetryWhenConditionalSubscriber(ConditionalSubscriber<? super T> actual, FolyamPublisher<T> source, FolyamSubscriber<Throwable> signaller) {
             super(source, signaller);
             this.actual = actual;
         }

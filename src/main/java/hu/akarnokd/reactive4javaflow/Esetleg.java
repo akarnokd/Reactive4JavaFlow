@@ -17,9 +17,7 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.consumers.LambdaConsumer;
-import hu.akarnokd.reactive4javaflow.impl.consumers.SafeFolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.consumers.StrictSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
@@ -385,6 +383,10 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         return FolyamPlugins.onAssembly(new EsetlegHide<>(this));
     }
 
+    public final Folyam<T> toFolyam() {
+        return FolyamPlugins.onAssembly(new FolyamWrap<>(this));
+    }
+
     // mappers of inner flows
 
     public final <R> Esetleg<R> flatMap(CheckedFunction<? super T, ? extends Esetleg<? extends R>> mapper) {
@@ -430,46 +432,39 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
     public final Esetleg<T> delay(long time, TimeUnit unit, SchedulerService executor) {
         Objects.requireNonNull(unit, "unit == null");
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegDelayTime<>(this, time, unit, executor));
     }
 
     public final Esetleg<T> delay(CheckedFunction<? super T, ? extends Flow.Publisher<?>> delaySelector) {
         Objects.requireNonNull(delaySelector, "delaySelector == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegDelaySelector<>(this, delaySelector));
     }
 
     // state-peeking operators
 
     public final Esetleg<T> doOnSubscribe(CheckedConsumer<? super Flow.Subscription> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnSubscribe(this, handler));
     }
 
     public final Esetleg<T> doOnNext(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnNext(this, handler));
     }
 
     public final Esetleg<T> doAfterNext(CheckedConsumer<? super T> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnAfterNext(this, handler));
     }
 
     public final Esetleg<T> doOnError(CheckedConsumer<? super Throwable> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnError(this, handler));
     }
 
     public final Esetleg<T> doOnComplete(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnComplete(this, handler));
     }
 
     public final Esetleg<T> doFinally(CheckedRunnable handler) {
@@ -485,50 +480,57 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
     public final Esetleg<T> doOnRequest(CheckedConsumer<? super Long> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnRequest(this, handler));
     }
 
     public final Esetleg<T> doOnCancel(CheckedRunnable handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(EsetlegDoOnSignal.withOnCancel(this, handler));
     }
 
     // resilience operators
 
-    public final Esetleg<T> timeout(Flow.Publisher<?> firstTimeout) {
-        Objects.requireNonNull(firstTimeout, "firstTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Esetleg<T> timeout(long timeout, TimeUnit unit, SchedulerService executor) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
+        return FolyamPlugins.onAssembly(new EsetlegTimeoutTimed<>(this, timeout, unit, executor));
     }
 
-    public final Esetleg<T> timeout(Flow.Publisher<?> firstTimeout, Flow.Publisher<? extends T> fallback) {
+    public final Esetleg<T> timeout(long timeout, TimeUnit unit, SchedulerService executor, Esetleg<? extends T> fallback) {
+        Objects.requireNonNull(unit, "unit == null");
+        Objects.requireNonNull(executor, "executor == null");
+        Objects.requireNonNull(fallback, "fallback == null");
+        return FolyamPlugins.onAssembly(new EsetlegTimeoutTimedFallback<>(this, timeout, unit, executor, fallback));
+    }
+
+    public final Esetleg<T> timeout(Flow.Publisher<?> firstTimeout) {
         Objects.requireNonNull(firstTimeout, "firstTimeout == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegTimeoutSelector<>(this, firstTimeout));
+    }
+
+    public final Esetleg<T> timeout(Flow.Publisher<?> firstTimeout, Esetleg<? extends T> fallback) {
+        Objects.requireNonNull(firstTimeout, "firstTimeout == null");
+        Objects.requireNonNull(fallback, "fallback == null");
+        return FolyamPlugins.onAssembly(new EsetlegTimeoutSelectorFallback<>(this, firstTimeout, fallback));
     }
 
     public final Esetleg<T> onErrorComplete() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegOnErrorComplete<>(this));
     }
 
     public final Esetleg<T> onErrorReturn(T item) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(item, "item == null");
+        return onErrorFallback(Esetleg.just(item));
     }
 
-    public final Esetleg<T> onErrorFallback(Flow.Publisher<? extends T> fallback) {
+    public final Esetleg<T> onErrorFallback(Esetleg<? extends T> fallback) {
         Objects.requireNonNull(fallback, "fallback == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return onErrorResumeNext(e -> fallback);
     }
 
-    public final Esetleg<T> onErrorResumeNext(CheckedFunction<? super Throwable, ? extends Flow.Publisher<? extends T>> handler) {
+    public final Esetleg<T> onErrorResumeNext(CheckedFunction<? super Throwable, ? extends Esetleg<? extends T>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegOnErrorResumeNext<>(this, handler));
     }
 
     public final Esetleg<T> retry() {
@@ -545,14 +547,12 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
     public final Esetleg<T> retry(long times, CheckedPredicate<? super Throwable> condition) {
         Objects.requireNonNull(condition, "condition == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegRetry<>(this, times, condition));
     }
 
-    public final Esetleg<T> retryWhen(Function<? super Folyam<Throwable>, ? extends Flow.Publisher<?>> handler) {
+    public final Esetleg<T> retryWhen(CheckedFunction<? super Folyam<Throwable>, ? extends Flow.Publisher<?>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegRetryWhen<>(this, handler));
     }
     // pair combinators
 
@@ -583,54 +583,34 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
     }
 
-    public final Esetleg<T> minWith(Esetleg<? extends T> other, Comparator<? super T> comparator) {
-        Objects.requireNonNull(other, "other == null");
-        Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final Esetleg<T> maxWith(Esetleg<? extends T> other, Comparator<? super T> comparator) {
-        Objects.requireNonNull(other, "other == null");
-        Objects.requireNonNull(comparator, "comparator == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
     // cold-hot conversion operators
 
     public final ConnectableFolyam<T> publish() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamPublish<>(this, 1));
     }
 
-    public final <R> Esetleg<R> publish(CheckedFunction<? super Esetleg<T>, ? extends Flow.Publisher<? extends R>> handler) {
+    public final <R> Esetleg<R> publish(CheckedFunction<? super Folyam<T>, ? extends Esetleg<? extends R>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegPublish<>(this, handler));
     }
 
     public final Esetleg<T> cache() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegForcedWrap<>(replay().autoConnect()));
     }
 
     public final ConnectableFolyam<T> replay() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new ConnectableFolyamReplayUnbounded<>(this, 1));
     }
 
-    public final <R> Esetleg<R> replay(CheckedFunction<? super Esetleg<T>, ? extends Flow.Publisher<? extends R>> handler) {
+    public final <R> Esetleg<R> replay(CheckedFunction<? super Folyam<T>, ? extends Esetleg<? extends R>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegReplay<>(this, handler));
     }
 
-    public final <U, R> Esetleg<R> multicast(CheckedFunction<? super Esetleg<T>, ? extends ConnectableFolyam<U>> multicaster, CheckedFunction<? super Folyam<U>, ? extends Flow.Publisher<? extends R>> handler) {
+    public final <U, R> Esetleg<R> multicast(CheckedFunction<? super Esetleg<T>, ? extends ConnectableFolyam<U>> multicaster, CheckedFunction<? super Folyam<U>, ? extends Esetleg<? extends R>> handler) {
         Objects.requireNonNull(multicaster, "multicaster == null");
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegMulticast<>(this, multicaster, handler));
     }
 
     // -----------------------------------------------------------------------------------
@@ -638,17 +618,33 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
     // -----------------------------------------------------------------------------------
 
     public final Optional<T> blockingGet() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLastConsumer<T> s = new BlockingLastConsumer<>();
+        subscribe(s);
+        return Optional.ofNullable(s.blockingGet());
+    }
+
+    public final Optional<T> blockingGet(long timeout, TimeUnit unit) {
+        BlockingLastConsumer<T> s = new BlockingLastConsumer<>();
+        subscribe(s);
+        return Optional.ofNullable(s.blockingGet(timeout, unit));
     }
 
     public final T blockingGet(T defaultItem) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLastConsumer<T> s = new BlockingLastConsumer<>();
+        subscribe(s);
+        T v = s.blockingGet();
+        return v != null ? v : defaultItem;
     }
 
     public final void blockingSubscribe() {
-        blockingSubscribe(v -> { }, FolyamPlugins::onError, () -> { });
+        BlockingConsumerIgnore s = new BlockingConsumerIgnore();
+        subscribe(s);
+        try {
+            s.await();
+        } catch (InterruptedException ex) {
+            s.close();
+            FolyamPlugins.onError(ex);
+        }
     }
 
     public final void blockingSubscribe(CheckedConsumer<? super T> onNext) {
@@ -664,27 +660,22 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         Objects.requireNonNull(onError, "onError == null");
         Objects.requireNonNull(onComplete, "onComplete == null");
 
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        BlockingLambdaConsumer<T> s = new BlockingLambdaConsumer<>(onNext, onError, onComplete, 1);
+        subscribe(s);
+        s.run();
     }
 
     public final Iterable<T> blockingIterable() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return new FolyamBlockingIterable<>(this, 1);
     }
 
     public final Stream<T> blockingStream() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamBlockingIterable.toStream(this, 1, false);
     }
 
-    public final CompletionStage<T> toCompletionStage() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final Future<T> toFuture() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Future<T> toCompletableFuture() {
+        CompletionStageConsumer<T> c = new CompletionStageConsumer<>();
+        subscribe(c);
+        return c;
     }
 }

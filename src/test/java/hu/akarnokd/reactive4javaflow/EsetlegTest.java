@@ -19,8 +19,9 @@ package hu.akarnokd.reactive4javaflow;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.concurrent.Flow;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -197,5 +198,236 @@ public class EsetlegTest {
         Esetleg.fromPublisher(Folyam.range(1, 5))
                 .test(1)
                 .assertFailure(IndexOutOfBoundsException.class);
+    }
+
+    @Test
+    public void startWith() {
+        Esetleg.just(1).startWith(Folyam.range(1, 5))
+                .test()
+                .assertResult(1, 2, 3, 4, 5, 1);
+    }
+
+    @Test
+    public void mergeWith() {
+        Esetleg<Integer> e = Esetleg.just(1).subscribeOn(SchedulerServices.computation());
+
+        e.mergeWith(e)
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1, 1);
+    }
+
+    @Test
+    public void toFolyam() {
+        Esetleg.just(1)
+                .toFolyam()
+                .parallel()
+                .map(v -> v + 1)
+                .sequential()
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void blockingGet() {
+        assertEquals(1, Esetleg.just(1).blockingGet().get().intValue());
+    }
+
+    @Test
+    public void blockingGetTimeout() {
+        assertEquals(1, Esetleg.just(1).blockingGet(1, TimeUnit.MINUTES).get().intValue());
+    }
+
+    @Test
+    public void blockingGetDefault() {
+        assertEquals(2, Esetleg.empty().blockingGet(2));
+    }
+
+    @Test
+    public void blockingSubscribe0() {
+        Esetleg.just(1).blockingSubscribe();
+    }
+
+    @Test
+    public void blockingSubscribe0Interrupt() {
+        TestHelper.withErrorTracking(errors -> {
+            Thread.currentThread().interrupt();
+            try {
+                Esetleg.never().blockingSubscribe();
+            } finally {
+                Thread.interrupted();
+            }
+
+            TestHelper.assertError(errors, 0, InterruptedException.class);
+        });
+    }
+
+    @Test
+    public void blockingSubscribe1() {
+        Object[] vals = { null, null, null };
+
+        Esetleg.just(1).blockingSubscribe(v -> vals[0] = v);
+
+        assertEquals(1, vals[0]);
+    }
+
+    @Test
+    public void blockingSubscribe2() {
+        Object[] vals = { null, null, null };
+
+        Esetleg.just(1).blockingSubscribe(v -> vals[0] = v, e -> vals[1] = e);
+
+        assertEquals(1, vals[0]);
+        assertNull(vals[1]);
+    }
+
+
+    @Test
+    public void blockingSubscribe3() {
+        Object[] vals = { null, null, null };
+
+        Esetleg.just(1).blockingSubscribe(v -> vals[0] = v, e -> vals[1] = e, () -> vals[2] = 100);
+
+        assertEquals(1, vals[0]);
+        assertNull(vals[1]);
+        assertEquals(100, vals[2]);
+    }
+
+    @Test
+    public void blockingIterable() {
+        for (Integer v : Esetleg.just(1).blockingIterable()) {
+            assertEquals(1, v.intValue());
+        }
+    }
+
+    @Test
+    public void blockingStream() {
+        List<Integer> list = Esetleg.just(1).blockingStream().collect(Collectors.toList());
+
+        assertEquals(List.of(1), list);
+    }
+
+    @Test
+    public void toCompletableFuture() throws Exception {
+        assertEquals(1, Esetleg.just(1).subscribeOn(SchedulerServices.single())
+                .toCompletableFuture()
+                .get().intValue());
+    }
+
+    @Test
+    public void publish() {
+        ConnectableFolyam<Integer> cf = Esetleg.just(1).publish();
+
+        TestConsumer<Integer> tc1 = cf.test();
+        TestConsumer<Integer> tc2 = cf.test();
+
+        cf.connect();
+
+        tc1.assertResult(1);
+        tc2.assertResult(1);
+    }
+
+    @Test
+    public void replay() {
+        ConnectableFolyam<Integer> cf = Esetleg.just(1).replay();
+
+        TestConsumer<Integer> tc1 = cf.test();
+        TestConsumer<Integer> tc2 = cf.test();
+
+        cf.connect();
+
+        tc1.assertResult(1);
+        tc2.assertResult(1);
+
+        cf.test().assertResult(1);
+    }
+
+    @Test
+    public void cache() {
+        int[] subs = { 0 };
+        Esetleg<Integer> e = Esetleg.just(1)
+                .doOnSubscribe(s -> ++subs[0])
+                .cache();
+
+        e.test().assertResult(1);
+        e.test().assertResult(1);
+        e.test().assertResult(1);
+
+        assertEquals(1, subs[0]);
+    }
+
+    @Test
+    public void publishSelector() {
+        Esetleg.just(1)
+                .publish(f -> f.mergeWith(f).sumInt(v -> v))
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void publishSelectorCrash() {
+        Esetleg.just(1)
+                .publish(f -> { throw new IOException(); })
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void publishSelectorConditional() {
+        Esetleg.just(1)
+                .publish(f -> f.mergeWith(f).sumInt(v -> v))
+                .filter(v -> true)
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void replaySelector() {
+        Esetleg.just(1)
+                .replay(f -> f.concatWith(f).sumInt(v -> v))
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void replaySelectorConditional() {
+        Esetleg.just(1)
+                .replay(f -> f.concatWith(f).sumInt(v -> v))
+                .filter(v -> true)
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void replaySelectorCrash() {
+        Esetleg.just(1)
+                .replay(f -> { throw new IOException(); })
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void multicastSelector() {
+        Esetleg.just(1)
+                .multicast(Esetleg::replay, f -> f.concatWith(f).sumInt(v -> v))
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void multicastSelectorConditional() {
+        Esetleg.just(1)
+                .multicast(Esetleg::replay, f -> f.concatWith(f).sumInt(v -> v))
+                .filter(v -> true)
+                .test()
+                .assertResult(2);
+    }
+
+    @Test
+    public void multicastSelectorCrash() {
+        Esetleg.just(1)
+                .multicast(Esetleg::replay, f -> { throw new IOException(); })
+                .test()
+                .assertFailure(IOException.class);
     }
 }

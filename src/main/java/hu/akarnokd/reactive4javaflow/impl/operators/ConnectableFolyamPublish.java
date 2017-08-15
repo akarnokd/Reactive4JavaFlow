@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
 
-    final Folyam<T> source;
+    final FolyamPublisher<T> source;
 
     final int prefetch;
 
@@ -44,7 +44,7 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
         }
     }
 
-    public ConnectableFolyamPublish(Folyam<T> source, int prefetch) {
+    public ConnectableFolyamPublish(FolyamPublisher<T> source, int prefetch) {
         this.source = source;
         this.prefetch = prefetch;
     }
@@ -72,10 +72,8 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
     @Override
     public void reset() {
         MulticastProcessor<T> mp = (MulticastProcessor<T>)PROCESSOR.getAcquire(this);
-        if (mp != null) {
-            if (mp.hasTerminated()) {
-                PROCESSOR.compareAndSet(this, mp, null);
-            }
+        if (mp != null && mp.hasTerminated()) {
+            PROCESSOR.compareAndSet(this, mp, null);
         }
     }
 

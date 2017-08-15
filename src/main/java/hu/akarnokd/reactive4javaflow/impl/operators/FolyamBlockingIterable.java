@@ -31,11 +31,11 @@ import java.util.stream.*;
 
 public final class FolyamBlockingIterable<T> implements Iterable<T> {
 
-    final Folyam<T> source;
+    final FolyamPublisher<T> source;
 
     final int prefetch;
 
-    public FolyamBlockingIterable(Folyam<T> source, int prefetch) {
+    public FolyamBlockingIterable(FolyamPublisher<T> source, int prefetch) {
         this.source = source;
         this.prefetch = prefetch;
     }
@@ -47,7 +47,7 @@ public final class FolyamBlockingIterable<T> implements Iterable<T> {
         return parent;
     }
 
-    public static <T> Stream<T> toStream(Folyam<T> source, int prefetch, boolean parallel) {
+    public static <T> Stream<T> toStream(FolyamPublisher<T> source, int prefetch, boolean parallel) {
         BlockingIterator<T> parent = new BlockingIterator<>(prefetch);
         source.subscribe(parent);
 
