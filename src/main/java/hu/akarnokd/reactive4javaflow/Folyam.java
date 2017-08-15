@@ -269,6 +269,16 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
         return FolyamPlugins.onAssembly(new FolyamIterable<>(() -> (Iterator<T>)stream.iterator()));
     }
 
+
+    @SuppressWarnings("unchecked")
+    public static <T> Folyam<T> fromStream(Stream<? extends T> stream, boolean close) {
+        Objects.requireNonNull(stream, "stream == null");
+        if (close) {
+            return FolyamPlugins.onAssembly(new FolyamStream<>(stream));
+        }
+        return FolyamPlugins.onAssembly(new FolyamIterable<>(() -> (Iterator<T>)stream.iterator()));
+    }
+
     public static <T> Folyam<T> fromOptional(Optional<? extends T> optional) {
         Objects.requireNonNull(optional, "optional == null");
         return optional.isPresent() ? just(optional.get()) : empty();

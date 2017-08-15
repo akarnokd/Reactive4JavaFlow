@@ -26,7 +26,6 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
     @SuppressWarnings("unchecked")
@@ -391,26 +390,22 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
     public final <R> Esetleg<R> flatMap(CheckedFunction<? super T, ? extends Esetleg<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFlatMap<>(this, mapper));
     }
 
     public final <R> Folyam<R> flatMapPublisher(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFlatMapPublisher<>(this, mapper));
     }
 
     public final <R> Folyam<R> flatMapIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFlatMapIterable<>(this, mapper));
     }
 
     public final <R> Folyam<R> flatMapStream(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFlatMapStream<>(this, mapper));
     }
 
     // async-introducing operators

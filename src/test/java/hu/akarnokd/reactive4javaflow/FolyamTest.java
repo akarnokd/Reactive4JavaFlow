@@ -202,6 +202,16 @@ public class FolyamTest {
         f.test().assertFailure(IllegalStateException.class);
     }
 
+
+    @Test
+    public void fromStream2() {
+        Folyam<Integer> f = Folyam.fromStream(IntStream.range(1, 6).boxed(), false);
+
+        f.test().assertResult(1, 2, 3, 4, 5);
+
+        f.test().assertFailure(IllegalStateException.class);
+    }
+
     @Test
     public void fromOptional() {
         Folyam.fromOptional(Optional.of(1))
