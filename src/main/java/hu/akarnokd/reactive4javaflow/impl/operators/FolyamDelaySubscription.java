@@ -48,7 +48,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
     static abstract class AbstractDelaySubscription<T> implements FolyamSubscriber<Object>, Flow.Subscription {
 
-        Folyam<T> source;
+        FolyamPublisher<T> source;
 
         Flow.Subscription upstream;
         static final VarHandle UPSTREAM;
@@ -67,7 +67,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
             }
         }
 
-        AbstractDelaySubscription(Folyam<T> source) {
+        AbstractDelaySubscription(FolyamPublisher<T> source) {
             this.source = source;
         }
 
@@ -115,7 +115,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
         }
 
         void subscribeNext() {
-            Folyam<T> source = this.source;
+            FolyamPublisher<T> source = this.source;
             this.source = null;
             source.subscribe(createInner());
         }
@@ -133,7 +133,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        DelaySubscriptionSubscriber(FolyamSubscriber<? super T> actual, Folyam<T> source) {
+        DelaySubscriptionSubscriber(FolyamSubscriber<? super T> actual, FolyamPublisher<T> source) {
             super(source);
             this.actual = actual;
         }
@@ -182,7 +182,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        DelaySubscriptionConditionalSubscriber(ConditionalSubscriber<? super T> actual, Folyam<T> source) {
+        DelaySubscriptionConditionalSubscriber(ConditionalSubscriber<? super T> actual, FolyamPublisher<T> source) {
             super(source);
             this.actual = actual;
         }

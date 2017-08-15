@@ -28,11 +28,11 @@ import java.util.concurrent.Flow;
 
 public final class FolyamRepeatWhen<T> extends Folyam<T> {
 
-    final Folyam<T> source;
+    final FolyamPublisher<T> source;
 
     final CheckedFunction<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler;
 
-    public FolyamRepeatWhen(Folyam<T> source, CheckedFunction<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
+    public FolyamRepeatWhen(FolyamPublisher<T> source, CheckedFunction<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
         this.source = source;
         this.handler = handler;
     }
@@ -64,7 +64,7 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
     static abstract class AbstractRepeatWhen<T> extends SubscriptionArbiter implements FolyamSubscriber<T> {
         static final Object NEXT = new Object();
 
-        final Folyam<T> source;
+        final FolyamPublisher<T> source;
 
         final FolyamSubscriber<Object> signaller;
 
@@ -91,12 +91,13 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
             }
         }
 
-        AbstractRepeatWhen(Folyam<T> source, FolyamSubscriber<Object> signaller) {
+        AbstractRepeatWhen(FolyamPublisher<T> source, FolyamSubscriber<Object> signaller) {
             this.source = source;
             this.responder = new HandlerSubscriber(this);
             this.signaller = signaller;
         }
 
+        @Override
         public final void onSubscribe(Flow.Subscription subscription) {
             arbiterReplace(subscription);
         }
@@ -138,7 +139,7 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        RepeatWhenSubscriber(FolyamSubscriber<? super T> actual, Folyam<T> source, FolyamSubscriber<Object> signaller) {
+        RepeatWhenSubscriber(FolyamSubscriber<? super T> actual, FolyamPublisher<T> source, FolyamSubscriber<Object> signaller) {
             super(source, signaller);
             this.actual = actual;
         }
@@ -155,10 +156,12 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
             HalfSerializer.onError(actual, this, WIP_EMISSION, ERROR, throwable);
         }
 
+        @Override
         void complete() {
             HalfSerializer.onComplete(actual, this, WIP_EMISSION, ERROR);
         }
 
+        @Override
         void error(Throwable ex) {
             super.cancel();
             HalfSerializer.onError(actual, this, WIP_EMISSION, ERROR, ex);
@@ -169,7 +172,7 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        RepeatWhenConditionalSubscriber(ConditionalSubscriber<? super T> actual, Folyam<T> source, FolyamSubscriber<Object> signaller) {
+        RepeatWhenConditionalSubscriber(ConditionalSubscriber<? super T> actual, FolyamPublisher<T> source, FolyamSubscriber<Object> signaller) {
             super(source, signaller);
             this.actual = actual;
         }
@@ -195,11 +198,13 @@ public final class FolyamRepeatWhen<T> extends Folyam<T> {
             HalfSerializer.onError(actual, this, WIP_EMISSION, ERROR, throwable);
         }
 
+        @Override
         void complete() {
             super.cancel();
             HalfSerializer.onComplete(actual, this, WIP_EMISSION, ERROR);
         }
 
+        @Override
         void error(Throwable ex) {
             super.cancel();
             HalfSerializer.onError(actual, this, WIP_EMISSION, ERROR, ex);

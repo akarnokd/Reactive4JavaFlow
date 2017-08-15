@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public abstract class Esetleg<T> implements Flow.Publisher<T> {
+public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -42,6 +42,7 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
         }
     }
 
+    @Override
     public final void subscribe(FolyamSubscriber<? super T> s) {
         s = Objects.requireNonNull(FolyamPlugins.onSubscribe(this, s), "The plugin onSubscribe handler returned a null value");
         try {
@@ -216,32 +217,57 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     // Static combinator operators
     // -----------------------------------------------------------------------------------
 
-    public static <T> Esetleg<T> amb(Iterable<? extends Flow.Publisher<? extends T>> sources) {
+    public static <T> Esetleg<T> amb(Iterable<? extends Esetleg<? extends T>> sources) {
         Objects.requireNonNull(sources, "sources == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegAmbIterable<>(sources));
     }
 
-    public static <T, R> Esetleg<R> zip(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
-        return zip(sources, zipper, FolyamPlugins.defaultBufferSize());
-    }
-
-    public static <T, R> Esetleg<R> zip(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper, int prefetch) {
+    @SafeVarargs
+    public static <T> Esetleg<T> ambArray(Esetleg<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
-        Objects.requireNonNull(zipper, "zipper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegAmbArray<>(sources));
     }
 
-    public static <T, R> Esetleg<R> zipDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
-        return zipDelayError(sources, zipper, FolyamPlugins.defaultBufferSize());
-    }
-
-    public static <T, R> Esetleg<R> zipDelayError(Iterable<? extends Flow.Publisher<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper, int prefetch) {
+    public static <T, R> Esetleg<R> zip(Iterable<? extends Esetleg<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
         Objects.requireNonNull(sources, "sources == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegZipIterable<>(sources, zipper, false));
+    }
+
+    public static <T, R> Esetleg<R> zipDelayError(Iterable<? extends Esetleg<? extends T>> sources, CheckedFunction<? super Object[], ? extends R> zipper) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new EsetlegZipIterable<>(sources, zipper, true));
+    }
+
+    @SafeVarargs
+    public static <T, R> Esetleg<R> zipArray(CheckedFunction<? super Object[], ? extends R> zipper, Esetleg<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(sources, zipper, false));
+    }
+
+    @SafeVarargs
+    public static <T, R> Esetleg<R> zipArrayDelayError(CheckedFunction<? super Object[], ? extends R> zipper, Esetleg<? extends T>... sources) {
+        Objects.requireNonNull(sources, "sources == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(sources, zipper, true));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Esetleg<R> zip(Esetleg<T> source1, Esetleg<U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+        Objects.requireNonNull(source1, "sources1 == null");
+        Objects.requireNonNull(source2, "sources2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), false));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T, U, R> Esetleg<R> zipDelayError(Esetleg<T> source1, Esetleg<U> source2, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+        Objects.requireNonNull(source1, "sources1 == null");
+        Objects.requireNonNull(source2, "sources2 == null");
+        Objects.requireNonNull(zipper, "zipper == null");
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), true));
     }
 
     public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second) {
@@ -274,29 +300,17 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final <R> Esetleg<R> mapOptional(CheckedFunction<? super T, ? extends Optional<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegMapOptional<>(this, mapper));
     }
 
     public final <R> Esetleg<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
-        return mapWhen(mapper, FolyamPlugins.defaultBufferSize());
-    }
-
-    public final <R> Esetleg<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch) {
-        Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return mapWhen(mapper, (a, b) -> b);
     }
 
     public final <U, R> Esetleg<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
-        return mapWhen(mapper, combiner, FolyamPlugins.defaultBufferSize());
-    }
-
-    public final <U, R> Esetleg<R> mapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
         Objects.requireNonNull(combiner, "combiner == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegMapWhen<>(this, mapper, combiner, false));
     }
 
     public final Esetleg<T> filter(CheckedPredicate<? super T> filter) {
@@ -305,31 +319,18 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     }
 
     public final Esetleg<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter) {
-        return filterWhen(filter, FolyamPlugins.defaultBufferSize());
-    }
-
-    public final Esetleg<T> filterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter, int prefetch) {
         Objects.requireNonNull(filter, "filter == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegFilterWhen<>(this, filter, false));
     }
 
     public final Esetleg<T> takeUntil(Flow.Publisher<?> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final Esetleg<T> skipUntil(Flow.Publisher<?> other) {
-        Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegTakeUntil<>(this, other));
     }
 
     public final Esetleg<T> delaySubscription(Flow.Publisher<?> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegDelaySubscription<>(this, other));
     }
 
     public final Folyam<T> repeat() {
@@ -345,37 +346,31 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     }
 
     public final Folyam<T> repeat(long times, CheckedBooleanSupplier condition) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(condition, "condition == null");
+        return FolyamPlugins.onAssembly(new FolyamRepeat<>(this, times, condition));
     }
 
-    public final Folyam<T> repeatWhen(Function<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
+    public final Folyam<T> repeatWhen(CheckedFunction<? super Folyam<Object>, ? extends Flow.Publisher<?>> handler) {
         Objects.requireNonNull(handler, "handler == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamRepeatWhen<>(this, handler));
     }
 
-    public final Esetleg<T> switchIfEmpty(Flow.Publisher<? extends T> other) {
+    public final Esetleg<T> switchIfEmpty(Esetleg<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegSwitchIfEmpty<>(this, other));
     }
 
-    public final Esetleg<T> switchIfEmptyMany(Iterable<? extends Flow.Publisher<? extends T>> others) {
+    public final Esetleg<T> switchIfEmptyMany(Iterable<? extends Esetleg<? extends T>> others) {
         Objects.requireNonNull(others, "others == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegSwitchIfEmptyMany<>(this, others));
     }
 
     public final Esetleg<T> defaultIfEmpty(T item) {
-        Objects.requireNonNull(item, "item == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return switchIfEmpty(Esetleg.just(item));
     }
 
-    public final Folyam<T> onTerminateDetach() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+    public final Esetleg<T> onTerminateDetach() {
+        return FolyamPlugins.onAssembly(new EsetlegOnTerminateDetach<>(this));
     }
 
     public final Esetleg<T> ignoreElement() {
@@ -392,37 +387,25 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     // mappers of inner flows
 
-    public final <R> Esetleg<R> flatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
+    public final <R> Esetleg<R> flatMap(CheckedFunction<? super T, ? extends Esetleg<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final <R> Esetleg<R> flatMapDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
+    public final <R> Folyam<R> flatMapPublisher(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final <R> Folyam<R> flatMapFolyam(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
+    public final <R> Folyam<R> flatMapIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public final <R> Folyam<R> flatMapFolyamDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
-        Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final <R> Esetleg<R> flatMapIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-        Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final <R> Esetleg<R> flatMapStream(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper) {
+    public final <R> Folyam<R> flatMapStream(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper) {
         Objects.requireNonNull(mapper, "mapper == null");
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
@@ -436,18 +419,12 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final Esetleg<T> subscribeOn(SchedulerService executor, boolean requestOn) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegSubscribeOn<>(this, executor, requestOn));
     }
 
     public final Esetleg<T> observeOn(SchedulerService executor) {
-        return observeOn(executor, FolyamPlugins.defaultBufferSize());
-    }
-
-    public final Esetleg<T> observeOn(SchedulerService executor, int prefetch) {
         Objects.requireNonNull(executor, "executor == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new EsetlegObserveOn<>(this, executor));
     }
 
     public final Esetleg<T> delay(long time, TimeUnit unit, SchedulerService executor) {
@@ -581,28 +558,29 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
 
     public final Folyam<T> startWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return Folyam.concat(Arrays.asList(other, this));
+        return Folyam.concatArray(other, this);
     }
 
-    public final Esetleg<T> ambWith(Flow.Publisher<? extends T> other) {
+    public final Esetleg<T> ambWith(Esetleg<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return amb(Arrays.asList(this, other));
+        return EsetlegAmbArray.ambWith(this, other);
     }
 
     public final Folyam<T> concatWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return Folyam.concat(Arrays.asList(this, other));
+        return Folyam.concatArray(this, other);
     }
 
     public final Folyam<T> mergeWith(Flow.Publisher<? extends T> other) {
         Objects.requireNonNull(other, "other == null");
-        return Folyam.merge(Arrays.asList(this, other));
+        return Folyam.mergeArray(this, other);
     }
 
-    public final <U, R> Esetleg<R> zipWith(Flow.Publisher<? extends T> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
+    @SuppressWarnings("unchecked")
+    public final <U, R> Esetleg<R> zipWith(Esetleg<? extends T> other, CheckedBiFunction<? super T, ? super U, ? extends R> zipper) {
         Objects.requireNonNull(other, "other == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        return zip(Arrays.asList(this, other), a -> zipper.apply((T)a[0], (U)a[1]));
+        return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
     }
 
     public final Esetleg<T> minWith(Esetleg<? extends T> other, Comparator<? super T> comparator) {
@@ -622,11 +600,6 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     // cold-hot conversion operators
 
     public final ConnectableFolyam<T> publish() {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public final ConnectableFolyam<T> publish(int prefetch) {
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
@@ -696,19 +669,11 @@ public abstract class Esetleg<T> implements Flow.Publisher<T> {
     }
 
     public final Iterable<T> blockingIterable() {
-        return blockingIterable(FolyamPlugins.defaultBufferSize());
-    }
-
-    public final Iterable<T> blockingIterable(int prefetch) {
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     public final Stream<T> blockingStream() {
-        return blockingStream(FolyamPlugins.defaultBufferSize());
-    }
-
-    public final Stream<T> blockingStream(int prefetch) {
         // TODO implement
         throw new UnsupportedOperationException("Not implemented yet!");
     }

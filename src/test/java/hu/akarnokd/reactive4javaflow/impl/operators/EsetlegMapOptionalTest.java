@@ -1,0 +1,95 @@
+/*
+ * Copyright 2017 David Karnok
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package hu.akarnokd.reactive4javaflow.impl.operators;
+
+import hu.akarnokd.reactive4javaflow.*;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Optional;
+
+public class EsetlegMapOptionalTest {
+
+    @Test
+    public void normal() {
+        Esetleg.just(1)
+                .mapOptional(Optional::of)
+                .test()
+                .assertResult(1);
+    }
+
+    @Test
+    public void normalConditional() {
+        Esetleg.just(1)
+                .mapOptional(Optional::of)
+                .filter(v -> true)
+                .test()
+                .assertResult(1);
+    }
+
+    @Test
+    public void normalEmpty() {
+        Esetleg.just(1)
+                .mapOptional(v -> Optional.empty())
+                .test()
+                .assertResult();
+    }
+
+    @Test
+    public void error() {
+        Esetleg.error(new IOException())
+                .mapOptional(Optional::of)
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void errorConditional() {
+        Esetleg.error(new IOException())
+                .mapOptional(Optional::of)
+                .filter(v -> true)
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void predicateCrash() {
+        Esetleg.just(1)
+                .mapOptional(v -> { throw new IOException(); })
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void predicateCrashConditional() {
+        Esetleg.just(1)
+                .mapOptional(v -> { throw new IOException(); })
+                .filter(v -> true)
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void donePath() {
+        TestHelper.folyamDonePath(f -> f.mapOptional(Optional::of), 1);
+    }
+
+    @Test
+    public void donePathConditional() {
+        TestHelper.folyamDonePath(f -> f.mapOptional(Optional::of).filter(v -> true), 1);
+    }
+}

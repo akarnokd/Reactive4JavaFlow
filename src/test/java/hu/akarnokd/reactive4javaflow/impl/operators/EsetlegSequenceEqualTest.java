@@ -163,4 +163,25 @@ public class EsetlegSequenceEqualTest {
                 .test()
                 .assertResult(false);
     }
+
+    @Test
+    public void with() {
+        Esetleg.just(1).equalsWith(Folyam.just(1))
+                .test()
+                .assertResult(true);
+    }
+
+    @Test
+    public void with2() {
+        Esetleg.just(1).equalsWith(Folyam.just(2))
+                .test()
+                .assertResult(false);
+    }
+
+    @Test
+    public void with3() {
+        Esetleg.just(1).equalsWith(Folyam.range(1, 2))
+                .test()
+                .assertResult(false);
+    }
 }

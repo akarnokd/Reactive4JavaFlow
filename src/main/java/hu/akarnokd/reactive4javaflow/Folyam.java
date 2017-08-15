@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-public abstract class Folyam<T> implements Flow.Publisher<T> {
+public abstract class Folyam<T> implements FolyamPublisher<T> {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -40,6 +40,7 @@ public abstract class Folyam<T> implements Flow.Publisher<T> {
         }
     }
 
+    @Override
     public final void subscribe(FolyamSubscriber<? super T> s) {
         s = Objects.requireNonNull(FolyamPlugins.onSubscribe(this, s), "The plugin onSubscribe handler returned a null value");
         try {

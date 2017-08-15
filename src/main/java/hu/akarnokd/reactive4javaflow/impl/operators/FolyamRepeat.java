@@ -26,13 +26,13 @@ import java.util.concurrent.Flow;
 
 public final class FolyamRepeat<T> extends Folyam<T> {
 
-    final Folyam<T> source;
+    final FolyamPublisher<T> source;
 
     final long times;
 
     final CheckedBooleanSupplier condition;
 
-    public FolyamRepeat(Folyam<T> source, long times, CheckedBooleanSupplier condition) {
+    public FolyamRepeat(FolyamPublisher<T> source, long times, CheckedBooleanSupplier condition) {
         this.source = source;
         this.times = times;
         this.condition = condition;
@@ -55,7 +55,7 @@ public final class FolyamRepeat<T> extends Folyam<T> {
 
         final CheckedBooleanSupplier condition;
 
-        final Folyam<T> source;
+        final FolyamPublisher<T> source;
 
         long times;
 
@@ -72,7 +72,7 @@ public final class FolyamRepeat<T> extends Folyam<T> {
             }
         }
 
-        AbstractRepeatSubscriber(long times, CheckedBooleanSupplier condition, Folyam<T> source) {
+        AbstractRepeatSubscriber(long times, CheckedBooleanSupplier condition, FolyamPublisher<T> source) {
             this.times = times;
             this.condition = condition;
             this.source = source;
@@ -129,7 +129,7 @@ public final class FolyamRepeat<T> extends Folyam<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        RepeatSubscriber(FolyamSubscriber<? super T> actual, long times, CheckedBooleanSupplier condition, Folyam<T> source) {
+        RepeatSubscriber(FolyamSubscriber<? super T> actual, long times, CheckedBooleanSupplier condition, FolyamPublisher<T> source) {
             super(times, condition, source);
             this.actual = actual;
         }
@@ -155,7 +155,7 @@ public final class FolyamRepeat<T> extends Folyam<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        RepeatConditionalSubscriber(ConditionalSubscriber<? super T> actual, long times, CheckedBooleanSupplier condition, Folyam<T> source) {
+        RepeatConditionalSubscriber(ConditionalSubscriber<? super T> actual, long times, CheckedBooleanSupplier condition, FolyamPublisher<T> source) {
             super(times, condition, source);
             this.actual = actual;
         }

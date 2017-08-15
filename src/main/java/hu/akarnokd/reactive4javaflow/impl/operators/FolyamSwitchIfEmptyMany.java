@@ -105,7 +105,7 @@ public final class FolyamSwitchIfEmptyMany<T> extends Folyam<T> {
             }
         }
 
-        void subscribeNext(Folyam<T> source) {
+        void subscribeNext(FolyamPublisher<T> source) {
             if ((int)WIP.getAndAdd(this, 1) == 0) {
                 do {
                     if (source != null) {
@@ -210,7 +210,7 @@ public final class FolyamSwitchIfEmptyMany<T> extends Folyam<T> {
             }
         }
 
-        void subscribeNext(Folyam<T> source) {
+        void subscribeNext(FolyamPublisher<T> source) {
             if ((int)WIP.getAndAdd(this, 1) == 0) {
                 do {
                     if (source != null) {

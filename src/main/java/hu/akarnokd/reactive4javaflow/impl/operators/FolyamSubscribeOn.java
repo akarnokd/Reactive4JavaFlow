@@ -64,7 +64,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
 
         Thread thread;
 
-        Folyam<T> source;
+        FolyamPublisher<T> source;
 
         Flow.Subscription upstream;
         static final VarHandle UPSTREAM;
@@ -77,7 +77,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
             }
         }
 
-        AbstractSubscribeOn(SchedulerService.Worker worker, boolean dontRequestOn, Folyam<T> source) {
+        AbstractSubscribeOn(SchedulerService.Worker worker, boolean dontRequestOn, FolyamPublisher<T> source) {
             this.worker = worker;
             this.dontRequestOn = dontRequestOn;
             this.source = source;
@@ -128,7 +128,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
 
         final FolyamSubscriber<? super T> actual;
 
-        SubscribeOnSubscriber(FolyamSubscriber<? super T> actual, SchedulerService.Worker worker, boolean dontRequestOn, Folyam<T> source) {
+        SubscribeOnSubscriber(FolyamSubscriber<? super T> actual, SchedulerService.Worker worker, boolean dontRequestOn, FolyamPublisher<T> source) {
             super(worker, dontRequestOn, source);
             this.actual = actual;
         }
@@ -154,7 +154,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
 
         @Override
         public void run() {
-            Folyam<T> src = source;
+            FolyamPublisher<T> src = source;
             source = null;
             thread = Thread.currentThread();
             src.subscribe(this);
@@ -165,7 +165,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
 
         final ConditionalSubscriber<? super T> actual;
 
-        SubscribeOnConditionalSubscriber(ConditionalSubscriber<? super T> actual, SchedulerService.Worker worker, boolean dontRequestOn, Folyam<T> source) {
+        SubscribeOnConditionalSubscriber(ConditionalSubscriber<? super T> actual, SchedulerService.Worker worker, boolean dontRequestOn, FolyamPublisher<T> source) {
             super(worker, dontRequestOn, source);
             this.actual = actual;
         }
@@ -196,7 +196,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
 
         @Override
         public void run() {
-            Folyam<T> src = source;
+            FolyamPublisher<T> src = source;
             source = null;
             thread = Thread.currentThread();
             src.subscribe(this);
