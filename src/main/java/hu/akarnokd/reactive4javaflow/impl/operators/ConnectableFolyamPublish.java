@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.hot.MulticastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.MulticastProcessor;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 
 import java.lang.invoke.*;

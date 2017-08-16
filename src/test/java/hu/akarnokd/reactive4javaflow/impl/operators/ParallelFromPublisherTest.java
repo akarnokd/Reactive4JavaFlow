@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.hot.SolocastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.SolocastProcessor;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import org.junit.Test;
 

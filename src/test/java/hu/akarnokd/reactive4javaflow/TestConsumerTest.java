@@ -17,11 +17,12 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
-import hu.akarnokd.reactive4javaflow.hot.SolocastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -245,5 +246,286 @@ public class TestConsumerTest {
                     "No errors. (items: 1, errors: 0, completions: 0, latch: 1, timeout!, cancelled!, tag: Tag)",
                     ex.getMessage());
         }
+    }
+
+    @Test
+    public void assertFusionMode() {
+        try {
+            Folyam.just(1)
+                    .test()
+                    .assertFusionMode(FusedSubscription.SYNC);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Wrong fusion mode."));
+        }
+
+        try {
+            Folyam.just(1)
+                    .test()
+                    .assertFusionMode(FusedSubscription.ASYNC);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Wrong fusion mode."));
+        }
+
+        try {
+            Folyam.just(1)
+                    .test(1, false, FusedSubscription.SYNC)
+                    .assertFusionMode(FusedSubscription.NONE);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Wrong fusion mode."));
+        }
+
+        try {
+            Folyam.just(1).hide()
+                    .test(1, false, FusedSubscription.SYNC)
+                    .assertFusionMode(FusedSubscription.NONE);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Wrong fusion mode."));
+        }
+
+        assertEquals("??? 100", TestConsumer.fusionMode(100));
+    }
+
+    @Test
+    public void awaitInterrupted() {
+        DirectProcessor<Integer> dp = new DirectProcessor<>();
+
+        try {
+            Thread.currentThread().interrupt();
+            dp.test()
+                    .awaitDone(1, TimeUnit.MILLISECONDS);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Wait interrupted"));
+        } finally {
+            Thread.interrupted();
+        }
+        assertFalse(dp.hasSubscribers());
+    }
+
+    @Test
+    public void wrongOutcome() {
+        TestConsumer<Integer> tc = Folyam.just(1).test();
+
+        try {
+            tc.assertValues(1, 2);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Number of items differ."));
+        }
+
+        try {
+            tc.assertValues(2);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Item #0 differs."));
+        }
+
+        try {
+            tc.assertNotComplete();
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Completed."));
+        }
+
+        try {
+            tc.assertError(IOException.class);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("No errors."));
+        }
+    }
+
+    @Test
+    public void terminalProblems() {
+        TestConsumer<Integer> tc = new TestConsumer<>();
+        try {
+            tc.assertOnSubscribe();
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("onSubscribe not called."));
+        }
+
+        tc.onSubscribe(new BooleanSubscription());
+
+        try {
+            tc.assertComplete();
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Not completed."));
+        }
+
+        try {
+            tc.assertInnerErrors(errors -> { });
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("No errors."));
+        }
+
+        tc.onComplete();
+        tc.onComplete();
+
+        try {
+            tc.assertComplete();
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Multiple completions."));
+        }
+    }
+
+    @Test
+    public void errorProblem() {
+        TestConsumer<Integer> tc = new TestConsumer<>();
+        tc.onSubscribe(new BooleanSubscription());
+
+        try {
+            tc.assertErrorMessage("Message");
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("No errors."));
+        }
+
+        tc.onError(new IOException("Message"));
+
+        try {
+            tc.assertError(IllegalArgumentException.class);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Error not present."));
+        }
+
+        tc.onError(new IllegalArgumentException());
+
+        try {
+            tc.assertError(IllegalArgumentException.class);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Error present but not alone."));
+        }
+
+        try {
+            tc.assertErrorMessage("Message");
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Message present but other errors as well."));
+        }
+    }
+
+    @Test
+    public void valueAndClassNull() {
+        assertEquals("null", TestConsumer.valueAndClass(null));
+    }
+
+    @Test
+    public void wrongErrorMessage() {
+        TestConsumer<Integer> tc = new TestConsumer<>();
+        tc.onSubscribe(new BooleanSubscription());
+
+        tc.onError(new IOException("Message"));
+
+        try {
+            tc.assertErrorMessage("Error");
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Messages differ."));
+        }
+    }
+
+    @Test
+    public void awaitCountInterrupted() {
+        DirectProcessor<Integer> dp = new DirectProcessor<>();
+
+        try {
+            Thread.currentThread().interrupt();
+            dp.test()
+                    .awaitCount(1, 1, 10);
+        } finally {
+            Thread.interrupted();
+        }
+        assertFalse(dp.hasSubscribers());
+    }
+
+    @Test
+    public void syncRequest() {
+        try {
+            Folyam.just(1)
+                    .test(0, false, FusedSubscription.SYNC)
+                    .requestMore(1);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Requesting in SYNC fused mode is forbidden."));
+        }
+    }
+
+    @Test
+    public void assertValueAt() {
+        TestConsumer<Integer> tc = new TestConsumer<>();
+        tc.onSubscribe(new BooleanSubscription());
+
+        try {
+            tc.assertValueCount(1);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Number of items differ."));
+        }
+
+        try {
+            tc.assertValueSet(Set.of(0));
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Number of items differ."));
+        }
+
+        try {
+            tc.assertValueAt(0, 1);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Not enough elements"));
+        }
+
+        tc.onNext(1);
+
+        try {
+            tc.assertValueAt(0, 2);
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Item @ 0 differs."));
+        }
+
+        try {
+            tc.assertValueSet(Set.of(0));
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Item @ 0 not expected: "));
+        }
+    }
+
+    @Test
+    public void timeout() {
+        TestConsumer<Integer> tc = new TestConsumer<>();
+        tc.onSubscribe(new BooleanSubscription());
+
+        tc.awaitDone(1, TimeUnit.MILLISECONDS);
+
+        try {
+            tc.assertNoTimeout();
+            fail("Should have thrown");
+        } catch (AssertionError ex) {
+            assertTrue(ex.toString(), ex.toString().contains("Timeout."));
+        }
+    }
+
+    @Test
+    public void missingSubscription() {
+        assertEquals(1, TestConsumer.MissingSubscription.values().length);
+
+        TestConsumer.MissingSubscription.MISSING.cancel();
+        TestConsumer.MissingSubscription.MISSING.request(1);
+
+        assertNotNull(TestConsumer.MissingSubscription.valueOf("MISSING"));
+
     }
 }

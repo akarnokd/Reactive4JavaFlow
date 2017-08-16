@@ -59,16 +59,54 @@ public final class FolyamPlugins {
         return 128; // TODO make customizable
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> FolyamSubscriber<? super T> onSubscribe(Folyam<T> parent, FolyamSubscriber<? super T> s) {
-        return s; // TODO make customizable
+        BiFunction<? super Folyam, ? super FolyamSubscriber, ? extends FolyamSubscriber> h = folyamOnSubscribe;
+        if (h != null) {
+            return h.apply(parent, s);
+        }
+        return s;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> FolyamSubscriber<? super T> onSubscribe(Esetleg<T> parent, FolyamSubscriber<? super T> s) {
-        return s; // TODO make customizable
+        BiFunction<? super Esetleg, ? super FolyamSubscriber, ? extends FolyamSubscriber> h = esetlegOnSubscribe;
+        if (h != null) {
+            return h.apply(parent, s);
+        }
+        return s;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> FolyamSubscriber<? super T> onSubscribe(ParallelFolyam<T> parent, FolyamSubscriber<? super T> s) {
-        return s; // TODO make customizable
+        BiFunction<? super ParallelFolyam, ? super FolyamSubscriber, ? extends FolyamSubscriber> h = parallelOnSubscribe;
+        if (h != null) {
+            return h.apply(parent, s);
+        }
+        return s;
+    }
+
+    public static void reset() {
+        setOnError(null);
+
+        setConnectableOnAssembly(null);
+        setEsetlegOnAssembly(null);
+        setFolyamOnAssembly(null);
+        setParallelOnAssembly(null);
+
+        setFolyamOnSubscribe(null);
+        setEsetlegOnSubscribe(null);
+        setParallelOnSubscribe(null);
+
+        setOnComputationSchedulerService(null);
+        setOnSingleSchedulerService(null);
+        setOnIOSchedulerService(null);
+        setOnNewThreadSchedulerService(null);
+
+        setOnInitComputationSchedulerService(null);
+        setOnInitSingleSchedulerService(null);
+        setOnInitIOSchedulerService(null);
+        setOnInitNewThreadSchedulerService(null);
     }
 
     public static <T> Folyam<T> onAssembly(Folyam<T> upstream) {

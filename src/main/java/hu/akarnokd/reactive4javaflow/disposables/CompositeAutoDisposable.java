@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow;
+package hu.akarnokd.reactive4javaflow.disposables;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.util.OpenHashSet;
@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public final class CompositeAutoDisposable implements AutoDisposable {
 
-    volatile boolean disposed;
+    volatile boolean closed;
 
     OpenHashSet<AutoDisposable> set;
 
@@ -52,31 +52,37 @@ public final class CompositeAutoDisposable implements AutoDisposable {
 
     @Override
     public void close() {
-        if (!disposed) {
-            OpenHashSet<AutoDisposable> set;
+        if (!closed) {
+            OpenHashSet<AutoDisposable> set = null;
             synchronized (this) {
-                if (disposed) {
-                    return;
+                if (!closed) {
+                    set = this.set;
+                    this.set = null;
+                    closed = true;
                 }
-                set = this.set;
-                this.set = null;
-                disposed = true;
             }
-            Object[] entries = set.keys();
-            if (entries != null) {
-                for (Object e : entries) {
-                    if (e != null) {
-                        ((AutoDisposable) e).close();
-                    }                }
+            if (set != null) {
+                Object[] entries = set.keys();
+                if (entries != null) {
+                    for (Object e : entries) {
+                        if (e != null) {
+                            ((AutoDisposable) e).close();
+                        }
+                    }
+                }
             }
         }
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
+
     public boolean add(AutoDisposable d) {
         Objects.requireNonNull(d, "d == null");
-        if (!disposed) {
+        if (!closed) {
             synchronized (this) {
-                if (!disposed) {
+                if (!closed) {
                     OpenHashSet<AutoDisposable> set = this.set;
                     if (set == null) {
                         set = new OpenHashSet<>();
@@ -87,14 +93,15 @@ public final class CompositeAutoDisposable implements AutoDisposable {
                 }
             }
         }
+        d.close();
         return false;
     }
 
     public boolean remove(AutoDisposable d) {
         Objects.requireNonNull(d, "d == null");
-        if (!disposed) {
+        if (!closed) {
             synchronized (this) {
-                if (!disposed) {
+                if (!closed) {
                     OpenHashSet<AutoDisposable> set = this.set;
                     if (set == null || !set.remove(d)) {
                         return false;
@@ -109,39 +116,47 @@ public final class CompositeAutoDisposable implements AutoDisposable {
 
     public boolean delete(AutoDisposable d) {
         Objects.requireNonNull(d, "d == null");
-        if (!disposed) {
+        boolean b = false;
+        if (!closed) {
             synchronized (this) {
-                if (!disposed) {
+                if (!closed) {
                     OpenHashSet<AutoDisposable> set = this.set;
-                    return set != null && set.remove(d);
+                    b = set != null && set.remove(d);
                 }
             }
         }
-        return false;
+        return b;
     }
 
     public void clear() {
-        if (!disposed) {
-            OpenHashSet<AutoDisposable> set;
+        if (!closed) {
+            OpenHashSet<AutoDisposable> set = null;
             synchronized (this) {
-                if (disposed) {
-                    return;
+                if (!closed) {
+                    set = this.set;
+                    this.set = null;
                 }
-                set = this.set;
-                this.set = null;
             }
-            Object[] entries = set.keys();
-            if (entries != null) {
-                for (Object o : entries) {
-                    ((AutoDisposable)o).close();
+            if (set != null) {
+                Object[] entries = set.keys();
+                if (entries != null) {
+                    for (Object o : entries) {
+                        if (o != null) {
+                            ((AutoDisposable) o).close();
+                        }
+                    }
                 }
             }
         }
     }
 
     public int size() {
-        synchronized (this) {
-            return set != null ? set.size() : 0;
+        int s = 0;
+        if (!closed) {
+            synchronized (this) {
+                s = set != null ? set.size() : 0;
+            }
         }
+        return s;
     }
 }

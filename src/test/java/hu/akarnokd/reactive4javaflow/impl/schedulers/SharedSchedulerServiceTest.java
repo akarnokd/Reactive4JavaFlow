@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.*;
-import hu.akarnokd.reactive4javaflow.impl.BooleanAutoDisposable;
+import hu.akarnokd.reactive4javaflow.disposables.BooleanAutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.SharedSchedulerService.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.SharedSchedulerService.SharedWorker.*;
 import org.junit.Test;

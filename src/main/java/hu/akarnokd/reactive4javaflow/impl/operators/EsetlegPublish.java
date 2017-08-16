@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.hot.MulticastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.MulticastProcessor;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
 import java.util.Objects;

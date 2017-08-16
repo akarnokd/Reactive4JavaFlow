@@ -23,7 +23,7 @@ public final class ParameterHelper {
 
     /** Utility class. */
     private ParameterHelper() {
-        throw new IllegalStateException("No instances");
+        throw new IllegalStateException("No instances!");
     }
 
     public static void verifyPositive(int value, String name) {

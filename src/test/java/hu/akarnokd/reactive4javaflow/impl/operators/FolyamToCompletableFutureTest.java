@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.Folyam;
-import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
+import hu.akarnokd.reactive4javaflow.processors.DirectProcessor;
 import org.junit.Test;
 
 import java.io.IOException;

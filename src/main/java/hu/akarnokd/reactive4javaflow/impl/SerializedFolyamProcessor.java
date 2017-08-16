@@ -16,7 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.hot.FolyamProcessor;
+import hu.akarnokd.reactive4javaflow.processors.FolyamProcessor;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
 
 import java.util.ArrayList;

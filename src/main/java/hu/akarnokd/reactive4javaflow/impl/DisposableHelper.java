@@ -56,6 +56,24 @@ public enum DisposableHelper implements AutoDisposable {
         }
     }
 
+    public static boolean update(Object target, VarHandle field, AutoDisposable d) {
+        for (;;) {
+            AutoDisposable a = (AutoDisposable)field.getAcquire(target);
+            if (a == DISPOSED) {
+                if (d != null) {
+                    d.close();
+                }
+                return false;
+            }
+            if (field.compareAndSet(target, a, d)) {
+                if (a != null) {
+                    a.close();
+                }
+                return true;
+            }
+        }
+    }
+
     public static boolean dispose(AtomicReference<AutoDisposable> field) {
         AutoDisposable a = field.getAcquire();
         if (a != DISPOSED) {

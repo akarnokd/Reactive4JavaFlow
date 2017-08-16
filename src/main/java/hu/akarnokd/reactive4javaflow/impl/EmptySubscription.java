@@ -48,9 +48,7 @@ public enum EmptySubscription implements FusedSubscription<Object> {
 
     @Override
     public void request(long n) {
-        if (n <= 0L) {
-            FolyamPlugins.onError(new IllegalArgumentException("n <= 0L"));
-        }
+        // deliberately no-op
     }
 
     @Override

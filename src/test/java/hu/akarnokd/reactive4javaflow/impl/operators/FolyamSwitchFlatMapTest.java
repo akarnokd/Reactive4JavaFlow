@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
+import hu.akarnokd.reactive4javaflow.processors.DirectProcessor;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import org.junit.Test;
 

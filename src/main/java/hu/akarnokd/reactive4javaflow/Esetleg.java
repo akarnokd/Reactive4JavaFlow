@@ -578,7 +578,7 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
     }
 
-    // cold-hot conversion operators
+    // cold-processors conversion operators
 
     public final ConnectableFolyam<T> publish() {
         return FolyamPlugins.onAssembly(new ConnectableFolyamPublish<>(this, 1));

@@ -19,10 +19,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.hot.*;
+import hu.akarnokd.reactive4javaflow.processors.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 

@@ -13,16 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
+import hu.akarnokd.reactive4javaflow.functionals.*;
 
 import java.util.concurrent.Flow;
 
 public final class FunctionalHelper {
+
     private FunctionalHelper() {
         throw new IllegalStateException("No instances!");
     }
 
-    public static final CheckedConsumer<Flow.Subscription> REQUEST_UNBOUNDED = s -> s.request(Long.MAX_VALUE);
+    public static final CheckedConsumer<Flow.Subscription> REQUEST_UNBOUNDED = new CheckedConsumer<>() {
+        @Override
+        public void accept(Flow.Subscription s) throws Throwable {
+            s.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public String toString() {
+            return "REQUEST_UNBOUNDED";
+        }
+    };
 }

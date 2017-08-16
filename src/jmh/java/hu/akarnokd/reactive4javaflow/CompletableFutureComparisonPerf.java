@@ -16,7 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow;
 
-import hu.akarnokd.reactive4javaflow.hot.*;
+import hu.akarnokd.reactive4javaflow.processors.*;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.*;

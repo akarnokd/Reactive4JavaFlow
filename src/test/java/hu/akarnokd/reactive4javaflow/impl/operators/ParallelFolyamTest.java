@@ -25,7 +25,7 @@ import java.util.function.Function;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.*;
-import hu.akarnokd.reactive4javaflow.hot.SolocastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.SolocastProcessor;
 import org.junit.*;
 
 public class ParallelFolyamTest {

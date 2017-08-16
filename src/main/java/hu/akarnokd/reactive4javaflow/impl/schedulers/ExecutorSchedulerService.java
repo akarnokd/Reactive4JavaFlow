@@ -77,7 +77,10 @@ public final class ExecutorSchedulerService implements SchedulerService {
     }
 
     public static void shutdownTimedHelpers() {
-        ((ScheduledExecutorService)TIMED_HELPER.getAndSet(SHUTDOWN)).shutdownNow();
+        ScheduledExecutorService exec = ((ScheduledExecutorService)TIMED_HELPER.getAndSet(SHUTDOWN));
+        if (exec != null) {
+            exec.shutdownNow();
+        }
     }
 
     public ExecutorSchedulerService(Executor executor, boolean trampoline) {

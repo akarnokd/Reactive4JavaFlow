@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedPredicate;
-import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
+import hu.akarnokd.reactive4javaflow.processors.DirectProcessor;
 import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 import org.junit.Test;

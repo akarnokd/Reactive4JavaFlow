@@ -16,18 +16,21 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.TestHelper;
+import org.junit.Test;
 
-public final class BooleanAutoDisposable implements AutoDisposable {
+import static org.junit.Assert.assertEquals;
 
-    volatile boolean closed;
+public class FunctionalHelperTest {
 
-    public boolean isClosed() {
-        return closed;
+    @Test
+    public void utilityClass() {
+        TestHelper.checkUtilityClass(FunctionalHelper.class);
     }
 
-    @Override
-    public void close() {
-        closed = true;
+    @Test
+    public void requestUnboundedString() {
+        assertEquals("REQUEST_UNBOUNDED", FunctionalHelper.REQUEST_UNBOUNDED.toString());
     }
 }
+

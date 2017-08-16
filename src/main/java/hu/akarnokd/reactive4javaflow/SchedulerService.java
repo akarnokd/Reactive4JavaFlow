@@ -22,6 +22,7 @@ import hu.akarnokd.reactive4javaflow.impl.PeriodicTask;
 import java.util.Objects;
 import java.util.concurrent.*;
 
+
 public interface SchedulerService {
 
     default AutoDisposable schedule(Runnable task) {
@@ -33,6 +34,8 @@ public interface SchedulerService {
         AutoDisposable d = w.schedule(() -> {
             try {
                 task.run();
+            } catch (Throwable ex) {
+                FolyamPlugins.onError(ex);
             } finally {
                 w.close();
             }
@@ -51,6 +54,7 @@ public interface SchedulerService {
                 task.run();
             } catch (Throwable ex) {
                 w.close();
+                FolyamPlugins.onError(ex);
             }
         }, initialDelay, period, unit);
         if (d == REJECTED) {

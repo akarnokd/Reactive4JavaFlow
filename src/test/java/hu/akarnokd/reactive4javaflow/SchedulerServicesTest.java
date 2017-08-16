@@ -18,6 +18,11 @@ package hu.akarnokd.reactive4javaflow;
 
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 public class SchedulerServicesTest {
     @Test
     public void utilityClass() {
@@ -42,5 +47,120 @@ public class SchedulerServicesTest {
     @Test
     public void newThreadHolderUtility() {
         TestHelper.checkUtilityClass(SchedulerServices.NewThreadHolder.class);
+    }
+
+    @Test
+    public void rejected() {
+        assertEquals("Rejected", SchedulerService.REJECTED.toString());
+        SchedulerService.REJECTED.close();
+    }
+
+    @Test
+    public void restart() throws InterruptedException {
+        SchedulerServices.shutdown();
+        SchedulerServices.shutdown();
+        try {
+            Thread.sleep(100);
+
+            for (Thread t : Thread.getAllStackTraces().keySet()) {
+                if (t.getName().contains("Reactive4JavaFlow")
+                        && !t.getName().contains("Reactive4JavaFlow.Cleaner")) {
+                    fail("Thread still running: " + t);
+                }
+            }
+        } finally {
+            SchedulerServices.start();
+            SchedulerServices.start();
+        }
+
+        Folyam.just(1).subscribeOn(SchedulerServices.computation())
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1);
+
+        Folyam.just(1).subscribeOn(SchedulerServices.single())
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1);
+
+        Folyam.just(1).subscribeOn(SchedulerServices.io())
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1);
+
+        Folyam.just(1).subscribeOn(SchedulerServices.newThread())
+                .test()
+                .awaitDone(5, TimeUnit.SECONDS)
+                .assertResult(1);
+    }
+
+    @Test
+    public void newSingle() throws InterruptedException {
+        SchedulerService sch = SchedulerServices.newSingle("SchedulerServicesTest");
+        try {
+            Folyam.just(1).subscribeOn(sch)
+                    .map(v -> Thread.currentThread().getName().contains("SchedulerServicesTest"))
+                    .test()
+                    .awaitDone(5, TimeUnit.SECONDS)
+                    .assertResult(true);
+        } finally {
+            sch.shutdown();
+        }
+
+        Thread.sleep(100);
+
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.getName().contains("SchedulerServicesTest")) {
+                fail("Thread still running: " + t);
+            }
+        }
+
+    }
+
+
+    @Test
+    public void newThread() throws InterruptedException {
+        SchedulerService sch = SchedulerServices.newThread("SchedulerServicesTest");
+        try {
+            Folyam.just(1).subscribeOn(sch)
+                    .map(v -> Thread.currentThread().getName().contains("SchedulerServicesTest"))
+                    .test()
+                    .awaitDone(5, TimeUnit.SECONDS)
+                    .assertResult(true);
+        } finally {
+            sch.shutdown();
+        }
+
+        Thread.sleep(100);
+
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.getName().contains("SchedulerServicesTest")) {
+                fail("Thread still running: " + t);
+            }
+        }
+    }
+
+    @Test
+    public void newParallel() throws InterruptedException {
+        SchedulerService sch = SchedulerServices.newParallel(2, "SchedulerServicesTest");
+        try {
+            Folyam.range(1, 2).subscribeOn(sch)
+                    .parallel(2)
+                    .map(v -> Thread.currentThread().getName().contains("SchedulerServicesTest"))
+                    .sequential()
+                    .test()
+                    .awaitDone(5, TimeUnit.SECONDS)
+                    .assertResult(true, true);
+        } finally {
+            sch.shutdown();
+        }
+
+        Thread.sleep(100);
+
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.getName().contains("SchedulerServicesTest")) {
+                fail("Thread still running: " + t);
+            }
+        }
     }
 }

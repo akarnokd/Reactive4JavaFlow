@@ -238,7 +238,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return this;
     }
 
-    String fusionMode(int mode) {
+    static String fusionMode(int mode) {
         if (mode == FusedSubscription.NONE) {
             return "NONE";
         }
@@ -331,7 +331,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         throw fail("Error not present.");
     }
 
-    String valueAndClass(Object o) {
+    static String valueAndClass(Object o) {
         if (o == null) {
             return "null";
         }
@@ -415,7 +415,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final TestConsumer<T> requestMore(long n) {
         if (actualFusionMode == FusedSubscription.SYNC) {
-            throw fail("Requesting in SYNC fused mode is forbidden");
+            throw fail("Requesting in SYNC fused mode is forbidden.");
         }
         SubscriptionHelper.deferredRequest(this, UPSTREAM, REQUESTED, n);
         return this;
@@ -428,7 +428,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final TestConsumer<T> assertInnerErrors(Consumer<List<Throwable>> consumer) {
         if (errors.size() == 0) {
-            throw fail("No errors");
+            throw fail("No errors.");
         }
         List<Throwable> errorsList = new ArrayList<>();
         errors.forEach(e -> {
@@ -444,7 +444,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final TestConsumer<T> assertValueAt(int index, T item) {
         int s = items.size();
-        if (s < index) {
+        if (s <= index) {
             throw fail("Not enough elements: " + index);
         }
         T v = items.get(index);
@@ -456,7 +456,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     public final TestConsumer<T> assertNoTimeout() {
         if (timeout) {
-            throw fail("Timeout!");
+            throw fail("Timeout.");
         }
         return this;
     }
@@ -482,7 +482,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         for (int i = 0; i < items.size(); i++) {
             T v = items.get(i);
             if (!expected.contains(v)) {
-                throw fail("Item @ " + i + ": " + valueAndClass(v) + " not expected");
+                throw fail("Item @ " + i + " not expected: " + valueAndClass(v));
             }
         }
         return this;

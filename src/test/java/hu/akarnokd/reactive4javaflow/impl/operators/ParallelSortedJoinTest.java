@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
+import hu.akarnokd.reactive4javaflow.processors.DirectProcessor;
 import org.junit.Test;
 
 public class ParallelSortedJoinTest {

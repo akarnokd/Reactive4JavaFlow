@@ -17,12 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.hot.DirectProcessor;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 public class EsetlegTakeUntilTest {
 

@@ -138,7 +138,7 @@ public final class SchedulerServices {
     public static void shutdown() {
         SINGLE.shutdown();
         COMPUTATION.shutdown();
-        IO.start();
+        IO.shutdown();
         NEW_THREAD.shutdown();
         ExecutorSchedulerService.shutdownTimedHelpers();
     }

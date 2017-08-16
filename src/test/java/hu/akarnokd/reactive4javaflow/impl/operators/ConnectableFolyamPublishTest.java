@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.SequentialAutoDisposable;
+import hu.akarnokd.reactive4javaflow.disposables.SequentialAutoDisposable;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;

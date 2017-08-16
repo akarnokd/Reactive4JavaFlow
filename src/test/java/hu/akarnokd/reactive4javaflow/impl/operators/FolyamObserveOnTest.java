@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
-import hu.akarnokd.reactive4javaflow.hot.SolocastProcessor;
+import hu.akarnokd.reactive4javaflow.processors.SolocastProcessor;
 import hu.akarnokd.reactive4javaflow.impl.*;
 import org.junit.Test;
 

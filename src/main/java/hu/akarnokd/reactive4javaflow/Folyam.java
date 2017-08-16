@@ -1548,7 +1548,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
         return FolyamPlugins.onAssembly(new FolyamGroupBy<>(this, keySelector, valueSelector, prefetch));
     }
 
-    // cold-hot conversion operators
+    // cold-processors conversion operators
 
     public final ConnectableFolyam<T> publish() {
         return publish(FolyamPlugins.defaultBufferSize());

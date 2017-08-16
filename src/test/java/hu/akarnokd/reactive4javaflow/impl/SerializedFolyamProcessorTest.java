@@ -16,19 +16,5 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import java.lang.annotation.*;
-
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface BackpressureSupport {
-
-    Mode value();
-
-    enum Mode {
-        FULL,
-        PASS_THROUGH,
-        UNBOUNDED_IN,
-        ERROR
-    }
+public class SerializedFolyamProcessorTest {
 }
