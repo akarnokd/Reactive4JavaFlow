@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.Flow;
 
 public final class EsetlegZipIterable<T, R> extends Esetleg<R> {
@@ -46,7 +46,7 @@ public final class EsetlegZipIterable<T, R> extends Esetleg<R> {
                 if (n == srcs.length) {
                     srcs = Arrays.copyOf(srcs, n + (n >> 2));
                 }
-                srcs[n++] = p;
+                srcs[n++] = Objects.requireNonNull(p, "sources[" + n + "] == null");
             }
         } catch (Throwable ex) {
             FolyamPlugins.handleFatal(ex);

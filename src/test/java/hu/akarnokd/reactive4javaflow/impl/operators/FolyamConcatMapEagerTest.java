@@ -309,4 +309,18 @@ public class FolyamConcatMapEagerTest {
 
         tc.assertFailure(IOException.class);
     }
+
+    @Test
+    public void iterableEmpty() {
+        Folyam.concatEager(List.of())
+                .test()
+                .assertResult();
+    }
+
+    @Test
+    public void iterableCrash() {
+        Folyam.concatEager(new FailingMappedIterable<>(1, 10, 10, v -> Folyam.never()))
+                .test()
+                .assertFailure(IllegalStateException.class);
+    }
 }

@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedRunnable;
@@ -84,8 +85,7 @@ public final class LambdaConsumer<T> extends AtomicReference<Flow.Subscription> 
             onError.accept(throwable);
         } catch (Throwable ex) {
             FolyamPlugins.handleFatal(ex);
-            ex.addSuppressed(throwable);
-            FolyamPlugins.onError(ex);
+            FolyamPlugins.onError(new CompositeThrowable(throwable, ex));
         }
     }
 

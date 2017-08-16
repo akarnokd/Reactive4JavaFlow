@@ -89,4 +89,39 @@ public class EsetlegZipArrayTest {
                 .assertResult("[1, 1]");
     }
 
+    @Test
+    public void iterableLot() {
+        List<Esetleg<Integer>> list = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            list.add(Esetleg.just(1));
+        }
+        list.add(null);
+
+        Esetleg.zip(list, a -> a)
+                .test()
+                .assertFailure(NullPointerException.class);
+    }
+
+
+    @Test
+    public void iterableOne() {
+        Esetleg.zip(List.of(Esetleg.just(1)), a -> a[0])
+                .test()
+                .assertResult(1);
+    }
+
+    @Test
+    public void iterableOneConditional() {
+        Esetleg.zip(List.of(Esetleg.just(1)), a -> a[0])
+                .filter(v -> true)
+                .test()
+                .assertResult(1);
+    }
+
+    @Test
+    public void iterableEmpty() {
+        Esetleg.zip(List.of(), a -> a)
+                .test()
+                .assertResult();
+    }
 }

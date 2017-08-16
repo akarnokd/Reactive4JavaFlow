@@ -17,6 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.disposables.SequentialAutoDisposable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import org.junit.*;
 
@@ -293,5 +294,76 @@ public abstract class AbstractSchedulerServiceTest {
             assertFalse(errors.isEmpty());
             TestHelper.assertError(errors, 0, IllegalArgumentException.class);
         });
+    }
+
+    @Test
+    public void workerDirectCloseRace() {
+        for (int i = 0; i < 1000; i++) {
+
+            TestHelper.withErrorTracking(errors -> {
+                SchedulerService.Worker w = scheduler.worker();
+
+                Runnable r1 = () -> w.schedule(() -> {
+                });
+
+                Runnable r2 = w::close;
+
+                TestHelper.race(r1, r2);
+            });
+        }
+    }
+
+    @Test
+    public void workerImmediateCloseTaskRace() {
+        for (int i = 0; i < 1000; i++) {
+
+            try (SchedulerService.Worker w = scheduler.worker()) {
+
+                SequentialAutoDisposable sd = new SequentialAutoDisposable();
+
+                Runnable r1 = () -> sd.replace(w.schedule(() -> {
+                }));
+
+                Runnable r2 = sd::close;
+
+                TestHelper.race(r1, r2);
+            }
+        }
+    }
+
+    @Test
+    public void workerDelayedCloseTaskRace() {
+        for (int i = 0; i < 1000; i++) {
+
+            try (SchedulerService.Worker w = scheduler.worker()) {
+
+                SequentialAutoDisposable sd = new SequentialAutoDisposable();
+
+                Runnable r1 = () -> sd.replace(w.schedule(() -> {
+                }, 1, TimeUnit.MILLISECONDS));
+
+                Runnable r2 = sd::close;
+
+                TestHelper.race(r1, r2);
+            }
+        }
+    }
+
+    @Test
+    public void workerPeriodicCloseTaskRace() {
+        for (int i = 0; i < 1000; i++) {
+
+            try (SchedulerService.Worker w = scheduler.worker()) {
+
+                SequentialAutoDisposable sd = new SequentialAutoDisposable();
+
+                Runnable r1 = () -> sd.replace(w.schedulePeriodically(() -> {
+                }, 1, 1, TimeUnit.MILLISECONDS));
+
+                Runnable r2 = sd::close;
+
+                TestHelper.race(r1, r2);
+            }
+        }
     }
 }

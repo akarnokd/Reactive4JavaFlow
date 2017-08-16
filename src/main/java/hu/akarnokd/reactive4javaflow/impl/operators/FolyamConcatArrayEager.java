@@ -42,6 +42,7 @@ public final class FolyamConcatArrayEager<T> extends Folyam<T> {
         subscriber.onSubscribe(new FolyamArray.ArraySubscription<>(subscriber, srcs, 0, n));
     }
 
+    /*
     public static <T> Folyam<T> mergeWith(Folyam<T> source, Flow.Publisher<? extends T> other, boolean delayError) {
         if (source instanceof FolyamConcatArrayEager) {
             FolyamConcatArrayEager aa = (FolyamConcatArrayEager) source;
@@ -55,4 +56,5 @@ public final class FolyamConcatArrayEager<T> extends Folyam<T> {
         return new FolyamConcatArrayEager<>(new Flow.Publisher[] { source, other }, delayError);
 
     }
+    */
 }

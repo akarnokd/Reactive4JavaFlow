@@ -105,7 +105,7 @@ public final class TrampolineSchedulerService implements SchedulerService {
                             Thread.sleep(sleepMillis);
                         }
                         r.run();
-                    } catch (Throwable ex) {
+                    } catch (final Throwable ex) {
                         FolyamPlugins.onError(ex);
                     }
                 }
