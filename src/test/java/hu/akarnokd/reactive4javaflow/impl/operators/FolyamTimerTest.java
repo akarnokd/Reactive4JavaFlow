@@ -25,7 +25,7 @@ public class FolyamTimerTest {
 
     @Test
     public void standard() {
-        TestHelper.assertResult(Folyam.timer(10, TimeUnit.MILLISECONDS, SchedulerServices.single()), 0L);
+        TestHelper.assertResult(Folyam.timer(1, TimeUnit.MILLISECONDS, SchedulerServices.single()), 0L);
     }
 
     @Test(timeout = 1000)

@@ -742,6 +742,42 @@ public final class TestHelper {
             ts6.awaitDone(5, TimeUnit.SECONDS)
                     .assertResult(values);
 
+            int raceLoop = 250;
+
+            // request-request race
+            for (int i = 0; i < raceLoop; i++) {
+                TestConsumer<T> tc7 = new TestConsumer<>(0L);
+
+                source.subscribe(tc7);
+
+                Runnable r = () -> tc7.requestMore(1);
+
+                try {
+                    race(r, r);
+
+                    if (values.length > 1) {
+                        tc7.awaitCount(2, 1, 5000)
+                                .assertValues(values[0], values[1]);
+                    } else {
+                        tc7.awaitCount(1, 1, 5000)
+                                .assertValues(values[0]);
+                    }
+                } finally {
+                    tc7.cancel();
+                }
+            }
+
+            // request-cancel race
+            for (int i = 0; i < raceLoop; i++) {
+                TestConsumer<T> tc8 = new TestConsumer<>(0L);
+
+                source.subscribe(tc8);
+
+                Runnable r1 = () -> tc8.requestMore(1);
+                Runnable r2 = tc8::cancel;
+
+                race(r1, r2);
+            }
 
         }
     }

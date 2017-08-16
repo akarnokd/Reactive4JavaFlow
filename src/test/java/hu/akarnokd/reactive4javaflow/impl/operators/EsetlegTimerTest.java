@@ -25,7 +25,7 @@ public class EsetlegTimerTest {
 
     @Test
     public void standard() {
-        TestHelper.assertResult(Esetleg.timer(10, TimeUnit.MILLISECONDS, SchedulerServices.single()), 0L);
+        TestHelper.assertResult(Esetleg.timer(1, TimeUnit.MILLISECONDS, SchedulerServices.single()), 0L);
     }
 
     @Test(timeout = 1000)

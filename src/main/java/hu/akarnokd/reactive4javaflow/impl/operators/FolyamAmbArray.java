@@ -155,7 +155,7 @@ public final class FolyamAmbArray<T> extends Folyam<T> {
                 for (AmbInnerSubscriber<T> inner : subscribers) {
                     inner.request(n);
                 }
-            } else {
+            } else if (idx != Integer.MAX_VALUE) {
                 subscribers[idx].request(n);
             }
         }
@@ -278,7 +278,7 @@ public final class FolyamAmbArray<T> extends Folyam<T> {
                 for (AmbInnerConditionalSubscriber<T> inner : subscribers) {
                     inner.request(n);
                 }
-            } else {
+            } else if (idx != Integer.MAX_VALUE) {
                 subscribers[idx].request(n);
             }
         }

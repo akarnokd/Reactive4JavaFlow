@@ -22,6 +22,7 @@ import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
@@ -1513,8 +1514,9 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final Folyam<Folyam<T>> window(int size, int skip) {
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        ParameterHelper.verifyPositive(size, "size");
+        ParameterHelper.verifyPositive(skip, "skip");
+        return FolyamPlugins.onAssembly(new FolyamWindowSize<>(this, size, skip));
     }
 
     public final Folyam<Folyam<T>> window(Flow.Publisher<?> boundary) {

@@ -42,6 +42,14 @@ public class FolyamFlattenIterableTest {
     }
 
     @Test
+    public void standardHide1() {
+        TestHelper.assertResult(
+                Folyam.range(1, 5).hide().flatMapIterable(Collections::singletonList, 1),
+                1, 2, 3, 4, 5
+        );
+    }
+
+    @Test
     public void standard2() {
         TestHelper.assertResult(
                 Folyam.empty().flatMapIterable(Collections::singletonList)

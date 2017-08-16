@@ -97,4 +97,21 @@ public class FolyamSubscribeOnTest {
                     .assertResult(1);
         }
     }
+
+    @Test
+    public void requestRequestRace() {
+        Folyam<Integer> f = Folyam.range(1, 5).subscribeOn(SchedulerServices.single());
+
+        for (int i = 0; i < 1000; i++) {
+
+            TestConsumer<Integer> tc = f.test(0);
+
+            Runnable r = () -> tc.requestMore(1);
+
+            TestHelper.race(r, r);
+
+            tc.awaitCount(2, 1, 5000)
+                    .assertValues(1, 2);
+        }
+    }
 }

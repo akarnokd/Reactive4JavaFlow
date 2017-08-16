@@ -101,7 +101,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
                 SubscriptionHelper.addRequested(this, n);
                 s = (Flow.Subscription)UPSTREAM.getAcquire(this);
                 if (s != null) {
-                    n = get();
+                    n = getAndSet(0L);
                     if (n != 0L) {
                         requestUpstream(n, s);
                     }
