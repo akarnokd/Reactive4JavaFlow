@@ -45,18 +45,12 @@ public final class IOSchedulerService implements SchedulerService, ThreadFactory
     static {
         try {
             INDEX = MethodHandles.lookup().findVarHandle(IOSchedulerService.class, "index", Long.TYPE);
+            CURRENT = MethodHandles.lookup().findVarHandle(IOSchedulerService.class, "current", IOPools.class);
         } catch (Throwable ex) {
             throw new InternalError(ex);
         }
         STOPPED = Executors.newScheduledThreadPool(0);
         STOPPED.shutdown();
-    }
-    static {
-        try {
-            CURRENT = MethodHandles.lookup().findVarHandle(IOSchedulerService.class, "current", IOPools.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
     }
 
     public IOSchedulerService(String name, int priority, boolean daemon) {

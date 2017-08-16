@@ -47,15 +47,7 @@ public final class ExceptionHelper {
             if (a == TERMINATED) {
                 return false;
             }
-            Throwable b;
-            if (a instanceof CompositeThrowable) {
-                b = ((CompositeThrowable) a).copyAndAdd(t);
-            } else
-            if (a == null) {
-                b = t;
-            } else {
-                b = new CompositeThrowable(a, t);
-            }
+            Throwable b = CompositeThrowable.combine(a, t);
             if (errors.compareAndSet(a, b)) {
                 return true;
             }
@@ -68,15 +60,7 @@ public final class ExceptionHelper {
             if (a == TERMINATED) {
                 return false;
             }
-            Throwable b;
-            if (a instanceof CompositeThrowable) {
-                b = ((CompositeThrowable) a).copyAndAdd(t);
-            } else
-            if (a == null) {
-                b = t;
-            } else {
-                b = new CompositeThrowable(a, t);
-            }
+            Throwable b = CompositeThrowable.combine(a, t);
             if (ERRORS.compareAndSet(target, a, b)) {
                 return true;
             }

@@ -94,7 +94,7 @@ public final class FolyamCreate<T> extends Folyam<T> {
         public void setResource(AutoCloseable resource) {
             for (;;) {
                 AutoCloseable res = (AutoCloseable) RESOURCE.getAcquire(this);
-                if (res == DisposableHelper.DISPOSED) {
+                if (res == DisposableHelper.CLOSED) {
                     if (resource != null) {
                         try {
                             resource.close();
@@ -119,15 +119,15 @@ public final class FolyamCreate<T> extends Folyam<T> {
 
         @Override
         public boolean isCancelled() {
-            return RESOURCE.getAcquire(this) == DisposableHelper.DISPOSED;
+            return RESOURCE.getAcquire(this) == DisposableHelper.CLOSED;
         }
 
         @Override
         public void cancel() {
             AutoCloseable res = (AutoCloseable) RESOURCE.getAcquire(this);
-            if (res != DisposableHelper.DISPOSED) {
-                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.DISPOSED);
-                if (res != null && res != DisposableHelper.DISPOSED) {
+            if (res != DisposableHelper.CLOSED) {
+                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.CLOSED);
+                if (res != null && res != DisposableHelper.CLOSED) {
                     try {
                         res.close();
                     } catch (Throwable ex) {
@@ -324,8 +324,8 @@ public final class FolyamCreate<T> extends Folyam<T> {
 
         @Override
         public boolean tryOnError(Throwable ex) {
-            AutoCloseable res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.DISPOSED);
-            if (res != DisposableHelper.DISPOSED) {
+            AutoCloseable res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.CLOSED);
+            if (res != DisposableHelper.CLOSED) {
                 if (ex == null) {
                     ex = new NullPointerException("ex == null");
                 }
@@ -344,8 +344,8 @@ public final class FolyamCreate<T> extends Folyam<T> {
 
         @Override
         public void onComplete() {
-            AutoCloseable res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.DISPOSED);
-            if (res != DisposableHelper.DISPOSED) {
+            AutoCloseable res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.CLOSED);
+            if (res != DisposableHelper.CLOSED) {
                 subscriber.onComplete();
                 if (res != null) {
                     try {
@@ -369,7 +369,7 @@ public final class FolyamCreate<T> extends Folyam<T> {
             if (item == null) {
                 onError(new NullPointerException("item == null"));
             } else {
-                if (RESOURCE.getAcquire(this) != DisposableHelper.DISPOSED) {
+                if (RESOURCE.getAcquire(this) != DisposableHelper.CLOSED) {
                     subscriber.onNext(item);
                 }
             }
@@ -478,9 +478,9 @@ public final class FolyamCreate<T> extends Folyam<T> {
         @Override
         public final boolean tryOnError(Throwable ex) {
             AutoCloseable res = (AutoCloseable)RESOURCE.getAcquire(this);
-            if (res != DisposableHelper.DISPOSED) {
-                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.DISPOSED);
-                if (res != DisposableHelper.DISPOSED) {
+            if (res != DisposableHelper.CLOSED) {
+                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.CLOSED);
+                if (res != DisposableHelper.CLOSED) {
                     toClose = res;
                     if (ex == null) {
                         ex = new NullPointerException("ex == null");
@@ -497,9 +497,9 @@ public final class FolyamCreate<T> extends Folyam<T> {
         @Override
         public final void onComplete() {
             AutoCloseable res = (AutoCloseable)RESOURCE.getAcquire(this);
-            if (res != DisposableHelper.DISPOSED) {
-                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.DISPOSED);
-                if (res != DisposableHelper.DISPOSED) {
+            if (res != DisposableHelper.CLOSED) {
+                res = (AutoCloseable)RESOURCE.getAndSet(this, DisposableHelper.CLOSED);
+                if (res != DisposableHelper.CLOSED) {
                     toClose = res;
                     DONE.setRelease(this, true);
                     drain();

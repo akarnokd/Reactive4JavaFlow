@@ -19,6 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.util.OpenHashSet;
+import hu.akarnokd.reactive4javaflow.processors.FolyamProcessor;
 
 import java.lang.invoke.*;
 import java.util.Queue;
@@ -49,6 +50,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
         SHUTDOWN.shutdown();
         CANCELLED = new FutureTask<>(() -> null);
 
+        timedHelper = SHUTDOWN;
         startTimedHelpers();
     }
 
@@ -93,7 +95,14 @@ public final class ExecutorSchedulerService implements SchedulerService {
         if (executor instanceof ExecutorService) {
             ExecutorService exec = (ExecutorService) this.executor;
             try {
-                Future<?> f = exec.submit(task);
+                Future<?> f = exec.submit((Callable<Void>) () -> {
+                    try {
+                        task.run();
+                    } catch (Throwable ex) {
+                        FolyamPlugins.onError(ex);
+                    }
+                    return null;
+                });
                 return () -> f.cancel(true);
             } catch (RejectedExecutionException ex) {
                 FolyamPlugins.onError(ex);
@@ -110,12 +119,23 @@ public final class ExecutorSchedulerService implements SchedulerService {
         }
     }
 
+    static ScheduledExecutorService timedHelper() {
+        return (ScheduledExecutorService)TIMED_HELPER.getAcquire();
+    }
+
     @Override
     public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
         if (executor instanceof ScheduledExecutorService) {
             ScheduledExecutorService exec = (ScheduledExecutorService) this.executor;
             try {
-                Future<?> f = exec.schedule(task, delay, unit);
+                Future<?> f = exec.schedule((Callable<Void>) () -> {
+                    try {
+                        task.run();
+                    } catch (Throwable ex) {
+                        FolyamPlugins.onError(ex);
+                    }
+                    return null;
+                }, delay, unit);
                 return () -> f.cancel(true);
             } catch (RejectedExecutionException ex) {
                 FolyamPlugins.onError(ex);
@@ -128,8 +148,15 @@ public final class ExecutorSchedulerService implements SchedulerService {
             DoubleFuture df = new DoubleFuture();
 
             try {
-                Future<?> f = timedHelper.schedule(() -> {
-                    df.setNext(exec.submit(task));
+                Future<?> f = timedHelper().schedule(() -> {
+                    df.setNext(exec.submit((Callable<Void>) () -> {
+                        try {
+                            task.run();
+                        } catch (Throwable ex) {
+                            FolyamPlugins.onError(ex);
+                        }
+                        return null;
+                    }));
                     return null;
                 }, delay, unit);
 
@@ -143,7 +170,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
         }
         ExecutorDirectTimedTask dt = new ExecutorDirectTimedTask(task);
         try {
-            Future<?> f = timedHelper.schedule(() -> {
+            Future<?> f = timedHelper().schedule(() -> {
                 executor.execute(dt);
                 return null;
             }, delay, unit);
@@ -161,7 +188,14 @@ public final class ExecutorSchedulerService implements SchedulerService {
         if (executor instanceof ScheduledExecutorService) {
             ScheduledExecutorService exec = (ScheduledExecutorService) this.executor;
             try {
-                Future<?> f = exec.scheduleAtFixedRate(task, initialDelay, period, unit);
+                Future<?> f = exec.scheduleAtFixedRate(() -> {
+                    try {
+                        task.run();
+                    } catch (Throwable ex) {
+                        FolyamPlugins.onError(ex);
+                        throw ex;
+                    }
+                }, initialDelay, period, unit);
                 return () -> f.cancel(true);
             } catch (RejectedExecutionException ex) {
                 return REJECTED;
@@ -362,23 +396,24 @@ public final class ExecutorSchedulerService implements SchedulerService {
             if (executor instanceof ExecutorService) {
                 ExecutorService exec = (ExecutorService) this.executor;
                 ExecutorWorkerTimedTaskServiced wtt = new ExecutorWorkerTimedTaskServiced(task, this);
-                try {
-                    Future<?> f = timedHelper.schedule(() -> {
-                        wtt.setNext(exec.submit(wtt));
-                        return null;
-                    }, delay, unit);
-                    wtt.setFirst(f);
-                    return wtt;
-                } catch (RejectedExecutionException ex) {
-                    FolyamPlugins.onError(ex);
-                    accept(wtt);
+                if (add(wtt)) {
+                    try {
+                        Future<?> f = timedHelper().schedule(() -> {
+                            wtt.setNext(exec.submit(wtt));
+                            return null;
+                        }, delay, unit);
+                        wtt.setFirst(f);
+                        return wtt;
+                    } catch (RejectedExecutionException ex) {
+                        FolyamPlugins.onError(ex);
+                        accept(wtt);
+                    }
                 }
-
             } else {
                 ExecutorWorkerTimedTask wtt = new ExecutorWorkerTimedTask(task, this);
                 if (add(wtt)) {
                     try {
-                        Future<?> f = timedHelper.schedule(() -> {
+                        Future<?> f = timedHelper().schedule(() -> {
                             executor.execute(wtt);
                             return null;
                         }, delay, unit);
@@ -664,7 +699,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
             ExecutorWorkerTimedTask wt = new ExecutorWorkerTimedTask(task, this);
             if (add(wt)) {
                 try {
-                    Future<?> f = timedHelper.submit(() -> {
+                    Future<?> f = timedHelper().schedule(() -> {
                         queue.offer(wt);
                         if (!closed) {
                             try {
@@ -677,7 +712,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
                             queue.clear();
                         }
                         return null;
-                    });
+                    }, delay, unit);
                     wt.setFirst(f);
                     return wt;
                 } catch (RejectedExecutionException ex) {

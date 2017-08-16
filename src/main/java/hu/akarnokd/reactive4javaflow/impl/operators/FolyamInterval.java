@@ -150,7 +150,7 @@ public final class FolyamInterval extends Folyam<Long> {
                 AVAILABLE.setRelease(this, ++a);
                 drain();
                 if (a == f) {
-                    DisposableHelper.dispose(this, TASK);
+                    DisposableHelper.close(this, TASK);
                 }
             }
         }
@@ -180,7 +180,7 @@ public final class FolyamInterval extends Folyam<Long> {
         @Override
         public final void cancel() {
             CANCELLED.setRelease(this, true);
-            DisposableHelper.dispose(this, TASK);
+            DisposableHelper.close(this, TASK);
         }
 
         final void setTask(AutoDisposable d) {

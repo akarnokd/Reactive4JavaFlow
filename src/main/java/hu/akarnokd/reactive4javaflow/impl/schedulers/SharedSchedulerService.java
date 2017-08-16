@@ -197,7 +197,7 @@ public final class SharedSchedulerService implements SchedulerService {
                 }
                 for (;;) {
                     AutoDisposable f = (AutoDisposable)FUTURE.getAcquire(this);
-                    if (f == DisposableHelper.DISPOSED || FUTURE.compareAndSet(this, f, this)) {
+                    if (f == DisposableHelper.CLOSED || FUTURE.compareAndSet(this, f, this)) {
                         break;
                     }
                 }
@@ -209,18 +209,18 @@ public final class SharedSchedulerService implements SchedulerService {
                 if (cd != null) {
                     cd.remove(this);
                 }
-                DisposableHelper.dispose(this, FUTURE);
+                DisposableHelper.close(this, FUTURE);
             }
 
             void setFuture(AutoDisposable d) {
                 AutoDisposable f = (AutoDisposable)FUTURE.getAcquire(this);
                 if (f != this) {
-                    if (f == DisposableHelper.DISPOSED) {
+                    if (f == DisposableHelper.CLOSED) {
                         d.close();
                     } else
                     if (!FUTURE.compareAndSet(this, f, d)) {
                         f = (AutoDisposable)FUTURE.getAcquire(this);
-                        if (f == DisposableHelper.DISPOSED) {
+                        if (f == DisposableHelper.CLOSED) {
                             d.close();
                         }
                     }

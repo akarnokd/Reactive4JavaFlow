@@ -106,14 +106,14 @@ public final class FolyamTimeoutSelector<T> extends Folyam<T> {
         public final void cancel() {
             if (getAndSet(Long.MIN_VALUE) != Long.MIN_VALUE) {
                 upstream.cancel();
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             }
         }
 
         final void timeout(long index) {
             if (get() == index && compareAndSet(index, Long.MIN_VALUE)) {
                 upstream.cancel();
-                TASK.setRelease(this, DisposableHelper.DISPOSED);
+                TASK.setRelease(this, DisposableHelper.CLOSED);
                 error(new TimeoutException("Timeout awaiting item index: " + index));
             }
         }
@@ -121,7 +121,7 @@ public final class FolyamTimeoutSelector<T> extends Folyam<T> {
         final void timeoutError(long index, Throwable ex) {
             if (get() == index && compareAndSet(index, Long.MIN_VALUE)) {
                 upstream.cancel();
-                TASK.setRelease(this, DisposableHelper.DISPOSED);
+                TASK.setRelease(this, DisposableHelper.CLOSED);
                 error(ex);
             } else {
                 FolyamPlugins.onError(ex);
@@ -157,7 +157,7 @@ public final class FolyamTimeoutSelector<T> extends Folyam<T> {
         public final void onError(Throwable throwable) {
             if (getAndSet(Long.MIN_VALUE) != Long.MIN_VALUE) {
                 error(throwable);
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             } else {
                 FolyamPlugins.onError(throwable);
             }
@@ -166,7 +166,7 @@ public final class FolyamTimeoutSelector<T> extends Folyam<T> {
         public final void onComplete() {
             if (getAndSet(Long.MIN_VALUE) != Long.MIN_VALUE) {
                 complete();
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             }
         }
 

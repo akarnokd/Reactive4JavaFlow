@@ -500,6 +500,10 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
         return this;
     }
 
+    public final List<Throwable> errors() {
+        return errors;
+    }
+
     enum MissingSubscription implements Flow.Subscription {
         MISSING;
 

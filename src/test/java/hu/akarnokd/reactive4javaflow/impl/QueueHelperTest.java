@@ -16,18 +16,27 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.TestHelper;
+import org.junit.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
+import static org.junit.Assert.assertEquals;
 
-public final class AtomicDisposable extends AtomicReference<AutoDisposable> implements AutoDisposable {
+public class QueueHelperTest {
 
-    public boolean replace(AutoDisposable d) {
-        return DisposableHelper.replace(this, d);
+    @Test
+    public void utilityClass() {
+        TestHelper.checkUtilityClass(QueueHelper.class);
     }
 
-    @Override
-    public void close() {
-        DisposableHelper.close(this);
+    @Test
+    public void pow() {
+        assertEquals(1, QueueHelper.pow2(1));
+        assertEquals(2, QueueHelper.pow2(2));
+        assertEquals(4, QueueHelper.pow2(3));
+        assertEquals(4, QueueHelper.pow2(4));
+        assertEquals(8, QueueHelper.pow2(5));
+        assertEquals(8, QueueHelper.pow2(6));
+        assertEquals(8, QueueHelper.pow2(7));
+        assertEquals(8, QueueHelper.pow2(8));
     }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package hu.akarnokd.reactive4javaflow.impl;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
@@ -20,13 +21,21 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Atomic utility methods to handle the replacing, updating and closing
+ * of AutoDisposable containers.
+ */
 public enum DisposableHelper implements AutoDisposable {
-    DISPOSED;
+    /**
+     * DON'T LEAK; represents a terminal state and indicates any subsequent AutoDisposable
+     * should be disposed when replacing/updating an AutoDisposable container.
+     */
+    CLOSED;
 
     public static boolean replace(AtomicReference<AutoDisposable> field, AutoDisposable d) {
         for (;;) {
             AutoDisposable a = field.get();
-            if (a == DISPOSED) {
+            if (a == CLOSED) {
                 if (d != null) {
                     d.close();
                 }
@@ -41,7 +50,7 @@ public enum DisposableHelper implements AutoDisposable {
     public static boolean update(AtomicReference<AutoDisposable> field, AutoDisposable d) {
         for (;;) {
             AutoDisposable a = field.get();
-            if (a == DISPOSED) {
+            if (a == CLOSED) {
                 if (d != null) {
                     d.close();
                 }
@@ -59,7 +68,7 @@ public enum DisposableHelper implements AutoDisposable {
     public static boolean update(Object target, VarHandle field, AutoDisposable d) {
         for (;;) {
             AutoDisposable a = (AutoDisposable)field.getAcquire(target);
-            if (a == DISPOSED) {
+            if (a == CLOSED) {
                 if (d != null) {
                     d.close();
                 }
@@ -74,11 +83,11 @@ public enum DisposableHelper implements AutoDisposable {
         }
     }
 
-    public static boolean dispose(AtomicReference<AutoDisposable> field) {
+    public static boolean close(AtomicReference<AutoDisposable> field) {
         AutoDisposable a = field.getAcquire();
-        if (a != DISPOSED) {
-            a = field.getAndSet(DISPOSED);
-            if (a != DISPOSED) {
+        if (a != CLOSED) {
+            a = field.getAndSet(CLOSED);
+            if (a != CLOSED) {
                 if (a != null) {
                     a.close();
                 }
@@ -88,11 +97,11 @@ public enum DisposableHelper implements AutoDisposable {
         return false;
     }
 
-    public static boolean dispose(Object target, VarHandle FIELD) {
+    public static boolean close(Object target, VarHandle FIELD) {
         AutoDisposable a = (AutoDisposable)FIELD.getAcquire(target);
-        if (a != DISPOSED) {
-            a = (AutoDisposable)FIELD.getAndSet(target, DISPOSED);
-            if (a != DISPOSED) {
+        if (a != CLOSED) {
+            a = (AutoDisposable)FIELD.getAndSet(target, CLOSED);
+            if (a != CLOSED) {
                 if (a != null) {
                     a.close();
                 }
@@ -105,7 +114,7 @@ public enum DisposableHelper implements AutoDisposable {
     public static boolean replace(Object target, VarHandle FIELD, AutoDisposable d) {
         for (;;) {
             AutoDisposable a = (AutoDisposable)FIELD.getAcquire(target);
-            if (a == DISPOSED) {
+            if (a == CLOSED) {
                 if (d != null) {
                     d.close();
                 }
@@ -115,10 +124,6 @@ public enum DisposableHelper implements AutoDisposable {
                 return true;
             }
         }
-    }
-
-    public static boolean isDisposed(Object target, VarHandle FIELD) {
-        return FIELD.getAcquire(target) == DISPOSED;
     }
 
     @Override

@@ -20,7 +20,6 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
 
 import java.lang.invoke.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class SequentialAutoDisposable implements AutoDisposable {
 
@@ -59,11 +58,11 @@ public final class SequentialAutoDisposable implements AutoDisposable {
     }
 
     public boolean isClosed() {
-        return D.getAcquire(this) == DisposableHelper.DISPOSED;
+        return D.getAcquire(this) == DisposableHelper.CLOSED;
     }
 
     @Override
     public void close() {
-        DisposableHelper.dispose(this, D);
+        DisposableHelper.close(this, D);
     }
 }

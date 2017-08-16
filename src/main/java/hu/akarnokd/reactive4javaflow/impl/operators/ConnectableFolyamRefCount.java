@@ -118,7 +118,7 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
     void timeout(RefConnection rc) {
         synchronized (this) {
             if (rc.subscriberCount == 0 && rc == connection) {
-                DisposableHelper.dispose(rc);
+                DisposableHelper.close(rc);
                 source.reset();
                 connection = null;
             }

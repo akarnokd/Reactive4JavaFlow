@@ -147,7 +147,7 @@ public final class FolyamFilterWhen<T> extends Folyam<T> {
         public void onError(Throwable throwable) {
             if (ExceptionHelper.addThrowable(this, ERROR, throwable)) {
                 if (!delayError) {
-                    DisposableHelper.dispose(this, OTHER);
+                    DisposableHelper.close(this, OTHER);
                 }
                 DONE.setRelease(this, true);
                 drain();
@@ -172,7 +172,7 @@ public final class FolyamFilterWhen<T> extends Folyam<T> {
         public void cancel() {
             cancelled = true;
             upstream.cancel();
-            DisposableHelper.dispose(this, OTHER);
+            DisposableHelper.close(this, OTHER);
             if (getAndIncrement() == 0) {
                 Arrays.fill(array, null);
             }

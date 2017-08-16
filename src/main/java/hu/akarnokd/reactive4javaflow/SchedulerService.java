@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.PeriodicTask;
+import hu.akarnokd.reactive4javaflow.impl.schedulers.PeriodicTask;
 
 import java.util.Objects;
 import java.util.concurrent.*;

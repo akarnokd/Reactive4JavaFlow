@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl;
+package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.*;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-public final class AtomicDisposable extends AtomicReference<AutoDisposable> implements AutoDisposable {
-
-    public boolean replace(AutoDisposable d) {
-        return DisposableHelper.replace(this, d);
-    }
+public class NewThreadSchedulerServiceTest extends AbstractSchedulerServiceTest {
 
     @Override
-    public void close() {
-        DisposableHelper.close(this);
+    protected SchedulerService create() {
+        return SchedulerServices.newThread();
     }
 }

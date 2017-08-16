@@ -100,7 +100,7 @@ public final class FolyamDebounce<T> extends Folyam<T> {
 
             if (idx != Long.MAX_VALUE && INDEX.compareAndSet(this, idx, idx + 1)) {
                 AutoDisposable d = task;
-                if (d != null && d != DisposableHelper.DISPOSED) {
+                if (d != null && d != DisposableHelper.CLOSED) {
                     task = null;
                     b = !SubscriptionHelper.cancel((ItemSubscriber<?>)d);
                 }
@@ -138,7 +138,7 @@ public final class FolyamDebounce<T> extends Folyam<T> {
         public void onComplete() {
             if ((long)INDEX.getAndSet(this, Long.MAX_VALUE) != Long.MAX_VALUE) {
                 AutoDisposable d = task;
-                if (d == null || d == DisposableHelper.DISPOSED || !((ItemSubscriber<?>) d).emitLast()) {
+                if (d == null || d == DisposableHelper.CLOSED || !((ItemSubscriber<?>) d).emitLast()) {
                     HalfSerializer.onComplete(actual, this, WIP, ERROR);
                 }
             }
@@ -153,7 +153,7 @@ public final class FolyamDebounce<T> extends Folyam<T> {
         public void cancel() {
             if ((long)INDEX.getAndSet(this, Long.MAX_VALUE) != Long.MAX_VALUE) {
                 upstream.cancel();
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             }
         }
 

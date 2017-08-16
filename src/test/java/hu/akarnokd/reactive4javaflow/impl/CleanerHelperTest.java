@@ -16,5 +16,13 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-public class SerializedFolyamProcessorTest {
+import hu.akarnokd.reactive4javaflow.TestHelper;
+import org.junit.Test;
+
+public class CleanerHelperTest {
+
+    @Test
+    public void utilityClass() {
+        TestHelper.checkUtilityClass(CleanerHelper.class);
+    }
 }

@@ -110,14 +110,14 @@ public final class FolyamTimeoutSelectorFallback<T> extends Folyam<T> {
         public final void cancel() {
             if ((long)INDEX.getAndSet(this, Long.MIN_VALUE) != Long.MIN_VALUE) {
                 super.cancel();
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             }
         }
 
         final void timeout(long index) {
             if ((long)INDEX.getAcquire(this) == index && INDEX.compareAndSet(this, index, Long.MIN_VALUE)) {
                 upstream.cancel();
-                TASK.setRelease(this, DisposableHelper.DISPOSED);
+                TASK.setRelease(this, DisposableHelper.CLOSED);
                 if (index != 0L) {
                     arbiterProduced(index);
                 }
@@ -130,7 +130,7 @@ public final class FolyamTimeoutSelectorFallback<T> extends Folyam<T> {
         final void timeoutError(long index, Throwable ex) {
             if ((long)INDEX.getAcquire(this) == index && INDEX.compareAndSet(this, index, Long.MIN_VALUE)) {
                 upstream.cancel();
-                TASK.setRelease(this, DisposableHelper.DISPOSED);
+                TASK.setRelease(this, DisposableHelper.CLOSED);
                 error(ex);
             } else {
                 FolyamPlugins.onError(ex);
@@ -166,7 +166,7 @@ public final class FolyamTimeoutSelectorFallback<T> extends Folyam<T> {
         public final void onError(Throwable throwable) {
             if ((long)INDEX.getAndSet(this, Long.MIN_VALUE) != Long.MIN_VALUE) {
                 error(throwable);
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             } else {
                 FolyamPlugins.onError(throwable);
             }
@@ -175,7 +175,7 @@ public final class FolyamTimeoutSelectorFallback<T> extends Folyam<T> {
         public final void onComplete() {
             if ((long)INDEX.getAndSet(this, Long.MIN_VALUE) != Long.MIN_VALUE) {
                 complete();
-                DisposableHelper.dispose(this, TASK);
+                DisposableHelper.close(this, TASK);
             }
         }
 

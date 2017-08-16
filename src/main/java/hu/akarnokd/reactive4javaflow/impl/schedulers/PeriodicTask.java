@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl;
+package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
 
 import java.lang.invoke.*;
 import java.util.concurrent.TimeUnit;
@@ -81,8 +82,8 @@ public final class PeriodicTask implements Runnable, AutoDisposable {
 
     @Override
     public void close() {
-        DisposableHelper.dispose(this, FIRST);
-        DisposableHelper.dispose(this, NEXT);
+        DisposableHelper.close(this, FIRST);
+        DisposableHelper.close(this, NEXT);
     }
 
     public void setFirst(AutoDisposable d) {

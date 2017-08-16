@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package hu.akarnokd.reactive4javaflow.impl;
+package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.processors.FolyamProcessor;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 
-public final class SerializedFolyamProcessor<T> extends FolyamProcessor<T> implements Flow.Subscription {
+final class SerializedFolyamProcessor<T> extends FolyamProcessor<T> implements Flow.Subscription {
 
     final FolyamProcessor<T> actual;
 
@@ -74,10 +73,7 @@ public final class SerializedFolyamProcessor<T> extends FolyamProcessor<T> imple
 
     @Override
     public void onNext(T item) {
-        if (item == null) {
-            onError(new NullPointerException("item == null"));
-            return;
-        }
+        Objects.requireNonNull(item, "item == null");
         synchronized (this) {
             if (emitting) {
                 if (!done) {
@@ -113,8 +109,10 @@ public final class SerializedFolyamProcessor<T> extends FolyamProcessor<T> imple
                 ex = error;
             }
 
-            for (T v : q) {
-                actual.onNext(v);
+            if (q != null) {
+                for (T v : q) {
+                    actual.onNext(v);
+                }
             }
 
             if (d) {

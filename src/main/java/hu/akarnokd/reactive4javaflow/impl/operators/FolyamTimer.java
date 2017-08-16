@@ -81,7 +81,7 @@ public final class FolyamTimer extends Folyam<Long> {
         @Override
         public void cancel() {
             super.cancel();
-            DisposableHelper.dispose(this, TASK);
+            DisposableHelper.close(this, TASK);
         }
     }
 }

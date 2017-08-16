@@ -18,7 +18,6 @@ package hu.akarnokd.reactive4javaflow.processors;
 
 import hu.akarnokd.reactive4javaflow.Folyam;
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SerializedFolyamProcessor;
 
 import java.util.concurrent.Flow;
 
