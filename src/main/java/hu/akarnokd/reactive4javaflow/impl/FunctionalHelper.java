@@ -37,4 +37,12 @@ public final class FunctionalHelper {
             return "REQUEST_UNBOUNDED";
         }
     };
+
+    public static final CheckedConsumer<Object> EMPTY_CONSUMER = o -> {
+        // deliberately no-op
+    };
+
+    public static final CheckedRunnable EMPTY_RUNNABLE = () -> {
+        // deliberately no-op
+    };
 }

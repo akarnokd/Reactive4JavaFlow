@@ -16,23 +16,25 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-public abstract class FolyamProcessor<T> extends Folyam<T> implements FlowProcessorSupport<T> {
+import java.lang.invoke.*;
+import java.util.Objects;
+import java.util.concurrent.Flow;
+
+public abstract class EsetlegProcessor<T> extends Esetleg<T> implements FlowProcessorSupport<T> {
 
     @Override
-    public final FolyamProcessor<T> toSerialized() {
-        if (this instanceof SerializedFolyamProcessor) {
-            return this;
-        }
-        return new SerializedFolyamProcessor<>(this);
+    public EsetlegProcessor<T> toSerialized() {
+        return this;
     }
 
     @Override
-    public final FolyamProcessor<T> refCount() {
-        if (this instanceof FolyamProcessorRefCount) {
+    public final EsetlegProcessor<T> refCount() {
+        if (this instanceof EsetlegProcessorRefCount) {
             return this;
         }
-        return new FolyamProcessorRefCount<>(this);
+        return new EsetlegProcessorRefCount<>(this);
     }
 }

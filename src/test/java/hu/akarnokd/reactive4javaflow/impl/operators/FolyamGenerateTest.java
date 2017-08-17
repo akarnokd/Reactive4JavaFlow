@@ -153,4 +153,13 @@ public class FolyamGenerateTest {
         .assertFusionMode(FusedSubscription.NONE)
         .assertResult(1);
     }
+
+    @Test
+    public void generatorStateFunction() {
+        Folyam.generate(() -> 0, (s, e) -> {
+            e.onComplete();
+            return s;
+        }).test()
+                .assertResult();
+    }
 }

@@ -16,23 +16,26 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.TestHelper;
+import hu.akarnokd.reactive4javaflow.impl.VH;
+import org.junit.Test;
 
-public abstract class FolyamProcessor<T> extends Folyam<T> implements FlowProcessorSupport<T> {
+import java.lang.invoke.MethodHandles;
 
-    @Override
-    public final FolyamProcessor<T> toSerialized() {
-        if (this instanceof SerializedFolyamProcessor) {
-            return this;
-        }
-        return new SerializedFolyamProcessor<>(this);
+public class VHTest {
+
+    @Test
+    public void utilityClass() {
+        TestHelper.checkUtilityClass(VH.class);
     }
 
-    @Override
-    public final FolyamProcessor<T> refCount() {
-        if (this instanceof FolyamProcessorRefCount) {
-            return this;
-        }
-        return new FolyamProcessorRefCount<>(this);
+    @Test(expected = InternalError.class)
+    public void findInvalid() {
+        VH.find(MethodHandles.lookup(), VHTest.class, "field", Object.class);
+    }
+
+    @Test(expected = InternalError.class)
+    public void findStatic() {
+        VH.findStatic(MethodHandles.lookup(), VHTest.class, "field", Object.class);
     }
 }

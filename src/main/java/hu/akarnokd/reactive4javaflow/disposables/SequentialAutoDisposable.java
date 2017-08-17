@@ -17,22 +17,14 @@
 package hu.akarnokd.reactive4javaflow.disposables;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 
 public final class SequentialAutoDisposable implements AutoDisposable {
 
     AutoDisposable d;
-    static final VarHandle D;
-
-    static {
-        try {
-            D = MethodHandles.lookup().findVarHandle(SequentialAutoDisposable.class, "d", AutoDisposable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle D = VH.find(MethodHandles.lookup(), SequentialAutoDisposable.class, "d", AutoDisposable.class);
 
     public SequentialAutoDisposable() {
     }

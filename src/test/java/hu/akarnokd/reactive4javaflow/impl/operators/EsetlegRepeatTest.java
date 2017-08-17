@@ -32,6 +32,13 @@ public class EsetlegRepeatTest {
 
 
     @Test
+    public void normalUnlimited() {
+        Esetleg.just(1).repeat().take(2)
+                .test()
+                .assertResult(1, 1);
+    }
+
+    @Test
     public void normalConditional() {
         Esetleg.just(1).repeat(2)
                 .filter(v -> true)

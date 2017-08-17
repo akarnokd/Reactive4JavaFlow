@@ -16,23 +16,21 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
+import hu.akarnokd.reactive4javaflow.*;
 
-public abstract class FolyamProcessor<T> extends Folyam<T> implements FlowProcessorSupport<T> {
+import java.util.concurrent.Flow;
 
-    @Override
-    public final FolyamProcessor<T> toSerialized() {
-        if (this instanceof SerializedFolyamProcessor) {
-            return this;
-        }
-        return new SerializedFolyamProcessor<>(this);
-    }
+public interface FlowProcessorSupport<T> extends Flow.Processor<T, T>, FolyamPublisher<T>, FolyamSubscriber<T> {
 
-    @Override
-    public final FolyamProcessor<T> refCount() {
-        if (this instanceof FolyamProcessorRefCount) {
-            return this;
-        }
-        return new FolyamProcessorRefCount<>(this);
-    }
+    boolean hasThrowable();
+
+    Throwable getThrowable();
+
+    boolean hasComplete();
+
+    boolean hasSubscribers();
+
+    FlowProcessorSupport<T> toSerialized();
+
+    FlowProcessorSupport<T> refCount();
 }

@@ -22,10 +22,9 @@ import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
 
-import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.*;
+import java.util.function.Function;
 import java.util.stream.*;
 
 public abstract class Folyam<T> implements FolyamPublisher<T> {
@@ -62,15 +61,15 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final AutoDisposable subscribe() {
-        return subscribe(v -> { }, FolyamPlugins::onError, () -> { });
+        return subscribe(FunctionalHelper.EMPTY_CONSUMER, FolyamPlugins::onError, FunctionalHelper.EMPTY_RUNNABLE);
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext) {
-        return subscribe(onNext, FolyamPlugins::onError, () -> { });
+        return subscribe(onNext, FolyamPlugins::onError, FunctionalHelper.EMPTY_RUNNABLE);
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError) {
-        return subscribe(onNext, onError, () -> { });
+        return subscribe(onNext, onError, FunctionalHelper.EMPTY_RUNNABLE);
     }
 
     public final AutoDisposable subscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete) {
@@ -189,12 +188,12 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
 
     public static <T> Folyam<T> generate(CheckedConsumer<Emitter<T>> generator) {
         Objects.requireNonNull(generator, "generator == null");
-        return generate(() -> null, (s, e) -> { generator.accept(e); return null;  }, s -> { });
+        return generate(() -> null, (s, e) -> { generator.accept(e); return null;  }, FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiConsumer<S, Emitter<T>> generator) {
         Objects.requireNonNull(generator, "generator == null");
-        return generate(stateSupplier, (s, e) -> { generator.accept(s, e); return s;  }, s -> { });
+        return generate(stateSupplier, (s, e) -> { generator.accept(s, e); return s;  }, FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiConsumer<S, Emitter<T>> generator, CheckedConsumer<? super S> stateCleanup) {
@@ -203,7 +202,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiFunction<S, Emitter<T>, S> generator) {
-        return generate(stateSupplier, generator, s -> { });
+        return generate(stateSupplier, generator, FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public static <T, S> Folyam<T> generate(Callable<S> stateSupplier, CheckedBiFunction<S, Emitter<T>, S> generator, CheckedConsumer<? super S> stateCleanup) {
@@ -1176,7 +1175,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     // custom backpressure handling
 
     public final Folyam<T> onBackpressureDrop() {
-        return onBackpressureDrop(v -> { });
+        return onBackpressureDrop(FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public final Folyam<T> onBackpressureDrop(CheckedConsumer<? super T> handler) {
@@ -1185,7 +1184,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final Folyam<T> onBackpressureLatest() {
-        return onBackpressureLatest(v -> { });
+        return onBackpressureLatest(FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public final Folyam<T> onBackpressureLatest(CheckedConsumer<? super T> handler) {
@@ -1202,7 +1201,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final Folyam<T> onBackpressureDropOldest(int capacity) {
-        return onBackpressureDropOldest(capacity, v -> { });
+        return onBackpressureDropOldest(capacity, FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public final Folyam<T> onBackpressureDropOldest(int capacity, CheckedConsumer<? super T> handler) {
@@ -1211,7 +1210,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final Folyam<T> onBackpressureDropNewest(int capacity) {
-        return onBackpressureDropNewest(capacity, v -> { });
+        return onBackpressureDropNewest(capacity, FunctionalHelper.EMPTY_CONSUMER);
     }
 
     public final Folyam<T> onBackpressureDropNewest(int capacity, CheckedConsumer<? super T> handler) {
@@ -1800,11 +1799,11 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     }
 
     public final void blockingSubscribe(CheckedConsumer<? super T> onNext) {
-        blockingSubscribe(onNext, FolyamPlugins::onError, () -> { });
+        blockingSubscribe(onNext, FolyamPlugins::onError, FunctionalHelper.EMPTY_RUNNABLE);
     }
 
     public final void blockingSubscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError) {
-        blockingSubscribe(onNext, onError, () -> { });
+        blockingSubscribe(onNext, onError, FunctionalHelper.EMPTY_RUNNABLE);
     }
 
     public final void blockingSubscribe(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete) {

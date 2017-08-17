@@ -34,6 +34,15 @@ public class EsetlegOnErrorResumeNextTest {
     }
 
     @Test
+    public void standardError() {
+        TestHelper.assertResult(
+                Esetleg.error(new IOException())
+                        .onErrorReturn(6),
+                6
+        );
+    }
+
+    @Test
     public void standardHidden() {
         TestHelper.assertResult(
                 Esetleg.just(1).hide()

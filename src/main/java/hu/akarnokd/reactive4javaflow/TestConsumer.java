@@ -147,6 +147,7 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
                         v = qs.poll();
                     } catch (Throwable ex) {
                         close();
+                        qs.clear();
                         errors.add(ex);
                         cdl.countDown();
                         return;
