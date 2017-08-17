@@ -24,7 +24,7 @@ import hu.akarnokd.reactive4javaflow.impl.*;
 import java.lang.invoke.*;
 import java.util.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class FolyamZipArray<T, R> extends Folyam<R> {
 
@@ -86,23 +86,14 @@ public final class FolyamZipArray<T, R> extends Folyam<R> {
         volatile boolean cancelled;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractZipCoordinator.class, "requested", Long.TYPE);
 
         Object[] values;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractZipCoordinator.class, "error", Throwable.class);
 
         long emitted;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractZipCoordinator.class, "requested", Long.TYPE);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractZipCoordinator.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractZipCoordinator(CheckedFunction<? super Object[], ? extends R> zipper, int n, int prefetch, boolean delayError) {
             this.zipper = zipper;

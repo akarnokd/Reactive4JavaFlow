@@ -16,15 +16,12 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
-import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 
@@ -33,44 +30,30 @@ public final class SolocastProcessor<T> extends FolyamProcessor<T> {
     final SpscLinkedArrayQueue<T> queue;
 
     long requested;
-    static final VarHandle REQUESTED;
+    static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "requested", Long.TYPE);
 
     int wip;
-    static final VarHandle WIP;
+    static final VarHandle WIP = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "wip", Integer.TYPE);
 
     boolean done;
-    static final VarHandle DONE;
+    static final VarHandle DONE = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "done", Boolean.TYPE);
     Throwable error;
 
     FolyamSubscriber<? super T> actual;
-    static final VarHandle ACTUAL;
+    static final VarHandle ACTUAL = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "actual", FolyamSubscriber.class);
 
     boolean once;
-    static final VarHandle ONCE;
+    static final VarHandle ONCE = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "once", Boolean.TYPE);
 
     boolean cancelled;
-    static final VarHandle CANCELLED;
+    static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "cancelled", Boolean.TYPE);
 
     Runnable onTerminate;
-    static final VarHandle ON_TERMINATE;
+    static final VarHandle ON_TERMINATE = VH.find(MethodHandles.lookup(), SolocastProcessor.class, "onTerminate", Runnable.class);
 
     boolean outputFused;
 
     long emitted;
-
-    static {
-        try {
-            REQUESTED = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "requested", Long.TYPE);
-            WIP = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "wip", Integer.TYPE);
-            DONE = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "done", Boolean.TYPE);
-            ACTUAL = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "actual", FolyamSubscriber.class);
-            ONCE = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "once", Boolean.TYPE);
-            CANCELLED = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "cancelled", Boolean.TYPE);
-            ON_TERMINATE = MethodHandles.lookup().findVarHandle(SolocastProcessor.class, "onTerminate", Runnable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public SolocastProcessor() {
         this(FolyamPlugins.defaultBufferSize());

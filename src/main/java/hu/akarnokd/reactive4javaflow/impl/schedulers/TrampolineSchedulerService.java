@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.MpscLinkedArrayQueue;
 
 import java.lang.invoke.*;
@@ -36,17 +36,9 @@ public final class TrampolineSchedulerService implements SchedulerService {
         final MpscLinkedArrayQueue<TrampolineTask> queue;
 
         long wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), TrampolineWorker.class, "wip", Long.TYPE);
 
         volatile boolean closed;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(TrampolineWorker.class, "wip", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         TrampolineWorker() {
             queue = new MpscLinkedArrayQueue<>(32);

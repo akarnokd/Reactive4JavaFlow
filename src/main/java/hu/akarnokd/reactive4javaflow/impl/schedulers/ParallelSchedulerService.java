@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.Objects;
@@ -33,10 +34,10 @@ public final class ParallelSchedulerService implements SchedulerService, ThreadF
     final boolean daemon;
 
     long index;
-    static final VarHandle INDEX;
+    static final VarHandle INDEX = VH.find(MethodHandles.lookup(), ParallelSchedulerService.class, "index", Long.TYPE);
 
     ScheduledExecutorService[] executors;
-    static final VarHandle EXECUTORS;
+    static final VarHandle EXECUTORS = VH.find(MethodHandles.lookup(), ParallelSchedulerService.class, "executors", ScheduledExecutorService[].class);
 
     static final ScheduledExecutorService[] SHUTDOWN = new ScheduledExecutorService[0];
 
@@ -45,12 +46,6 @@ public final class ParallelSchedulerService implements SchedulerService, ThreadF
     int n;
 
     static {
-        try {
-            INDEX = MethodHandles.lookup().findVarHandle(ParallelSchedulerService.class, "index", Long.TYPE);
-            EXECUTORS = MethodHandles.lookup().findVarHandle(ParallelSchedulerService.class, "executors", ScheduledExecutorService[].class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
         STOPPED = Executors.newScheduledThreadPool(0);
         STOPPED.shutdown();
     }

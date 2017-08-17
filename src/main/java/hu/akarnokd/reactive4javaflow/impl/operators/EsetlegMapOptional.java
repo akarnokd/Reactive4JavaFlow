@@ -18,10 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
-import java.util.*;
-import java.util.concurrent.Flow;
+import java.util.Optional;
 
 public final class EsetlegMapOptional<T, R> extends Esetleg<R> {
 

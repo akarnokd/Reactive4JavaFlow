@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -67,15 +67,7 @@ public final class FolyamSubscribeOn<T> extends Folyam<T> {
         FolyamPublisher<T> source;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractSubscribeOn.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractSubscribeOn.class, "upstream", Flow.Subscription.class);
 
         AbstractSubscribeOn(SchedulerService.Worker worker, boolean dontRequestOn, FolyamPublisher<T> source) {
             this.worker = worker;

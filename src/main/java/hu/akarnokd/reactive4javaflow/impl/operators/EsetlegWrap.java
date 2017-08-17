@@ -17,9 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
 
-import java.util.NoSuchElementException;
 import java.util.concurrent.Flow;
 
 public final class EsetlegWrap<T> extends Esetleg<T> {

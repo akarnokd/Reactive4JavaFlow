@@ -18,7 +18,6 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionArbiter;
 
 import java.util.concurrent.Flow;
 

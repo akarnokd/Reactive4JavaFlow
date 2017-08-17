@@ -18,12 +18,10 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-import java.lang.invoke.*;
 import java.util.Arrays;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class EsetlegAmbArray<T> extends Esetleg<T> {
 

@@ -29,21 +29,12 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
     Flow.Subscription missedSubscription;
 
     long missedRequested;
-    static final VarHandle MISSED_REQUESTED;
+    static final VarHandle MISSED_REQUESTED = VH.find(MethodHandles.lookup(), SubscriptionArbiter.class, "missedRequested", Long.TYPE);
 
     long missedProduced;
 
     boolean cancelled;
-    static final VarHandle CANCELLED;
-
-    static {
-        try {
-            MISSED_REQUESTED = MethodHandles.lookup().findVarHandle(SubscriptionArbiter.class, "missedRequested", Long.TYPE);
-            CANCELLED = MethodHandles.lookup().findVarHandle(SubscriptionArbiter.class, "cancelled", Boolean.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), SubscriptionArbiter.class, "cancelled", Boolean.TYPE);
 
     public final void arbiterReplace(Flow.Subscription s) {
         if (getAcquire() == 0 && compareAndSet(0, 1)) {

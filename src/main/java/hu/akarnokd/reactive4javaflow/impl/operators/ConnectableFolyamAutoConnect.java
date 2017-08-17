@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.function.Consumer;
@@ -31,15 +32,7 @@ public final class ConnectableFolyamAutoConnect<T> extends Folyam<T> {
     final Consumer<? super AutoDisposable> onConnect;
 
     int count;
-    static final VarHandle COUNT;
-
-    static {
-        try {
-            COUNT = MethodHandles.lookup().findVarHandle(ConnectableFolyamAutoConnect.class, "count", int.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle COUNT = VH.find(MethodHandles.lookup(), ConnectableFolyamAutoConnect.class, "count", int.class);
 
     public ConnectableFolyamAutoConnect(ConnectableFolyam<T> source, int minSubscribers, Consumer<? super AutoDisposable> onConnect) {
         this.source = source;

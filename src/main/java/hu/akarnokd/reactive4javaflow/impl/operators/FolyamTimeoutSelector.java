@@ -21,8 +21,8 @@ import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -61,16 +61,7 @@ public final class FolyamTimeoutSelector<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         AutoDisposable task;
-        static final VarHandle TASK;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                TASK = lk.findVarHandle(AbstractTimeoutTimedSelector.class, "task", AutoDisposable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle TASK = VH.find(MethodHandles.lookup(), AbstractTimeoutTimedSelector.class, "task", AutoDisposable.class);
 
         protected AbstractTimeoutTimedSelector(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector) {
             this.firstTimeout = firstTimeout;

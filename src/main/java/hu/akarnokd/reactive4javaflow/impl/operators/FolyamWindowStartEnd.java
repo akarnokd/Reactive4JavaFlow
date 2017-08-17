@@ -25,7 +25,7 @@ import hu.akarnokd.reactive4javaflow.processors.SolocastProcessor;
 
 import java.lang.invoke.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class FolyamWindowStartEnd<T, U> extends Folyam<Folyam<T>> {
@@ -65,15 +65,15 @@ public final class FolyamWindowStartEnd<T, U> extends Folyam<Folyam<T>> {
         final FolyamBufferStartEnd.BufferStartSubscriber<U> openSubscriber;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "upstream", Flow.Subscription.class);
 
         volatile boolean cancelled;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "error", Throwable.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "done", boolean.class);
 
         static final Object ITEM = new Object();
 
@@ -82,22 +82,10 @@ public final class FolyamWindowStartEnd<T, U> extends Folyam<Folyam<T>> {
         static final Object CLOSE = new Object();
 
         boolean once;
-        static final VarHandle ONCE;
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "once", boolean.class);
 
         int active;
-        static final VarHandle ACTIVE;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "done", boolean.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "upstream", Flow.Subscription.class);
-                ERROR = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "error", Throwable.class);
-                ONCE = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "once", boolean.class);
-                ACTIVE = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "active", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ACTIVE = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "active", int.class);
 
         BufferStartEndSubscriber(FolyamSubscriber<? super Folyam<T>> actual, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end) {
             this.actual = actual;

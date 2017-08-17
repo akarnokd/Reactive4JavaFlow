@@ -20,10 +20,10 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
-import hu.akarnokd.reactive4javaflow.impl.util.*;
+import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 
 import java.lang.invoke.*;
-import java.util.*;
+import java.util.Objects;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.*;
 
@@ -90,32 +90,21 @@ public final class FolyamCombineLatest<T, R> extends Folyam<R> {
         volatile boolean cancelled;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractCombineLatest.class, "requested", Long.TYPE);
 
         Object[] values;
-        static final VarHandle VALUES;
+        static final VarHandle VALUES = VH.find(MethodHandles.lookup(), AbstractCombineLatest.class, "values", Object[].class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractCombineLatest.class, "error", Throwable.class);
 
         long emitted;
 
         int done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractCombineLatest.class, "done", Integer.TYPE);
 
         int active;
 
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractCombineLatest.class, "requested", Long.TYPE);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractCombineLatest.class, "error", Throwable.class);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractCombineLatest.class, "done", Integer.TYPE);
-                VALUES = MethodHandles.lookup().findVarHandle(AbstractCombineLatest.class, "values", Object[].class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractCombineLatest(CheckedFunction<? super Object[], ? extends R> combiner, int n, int prefetch, boolean delayError) {
             this.combiner = combiner;

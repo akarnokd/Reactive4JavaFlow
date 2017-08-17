@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
-import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 
@@ -44,21 +44,12 @@ public final class EsetlegCreate<T> extends Esetleg<T> {
     static final class CreateEmitter<T> extends DeferredScalarSubscription<T> implements FolyamEmitter<T> {
 
         boolean once;
-        static final VarHandle ONCE;
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), CreateEmitter.class, "once", boolean.class);
 
         AutoCloseable resource;
-        static final VarHandle RESOURCE;
+        static final VarHandle RESOURCE = VH.find(MethodHandles.lookup(), CreateEmitter.class, "resource", AutoCloseable.class);
 
         static final AutoCloseable CLOSED = () -> { };
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(CreateEmitter.class, "once", boolean.class);
-                RESOURCE = MethodHandles.lookup().findVarHandle(CreateEmitter.class, "resource", AutoCloseable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         CreateEmitter(FolyamSubscriber<? super T> actual) {
             super(actual);

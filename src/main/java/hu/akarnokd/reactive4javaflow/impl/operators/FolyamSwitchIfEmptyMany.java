@@ -20,8 +20,8 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.*;
 import java.util.concurrent.Flow;
 
@@ -62,16 +62,7 @@ public final class FolyamSwitchIfEmptyMany<T> extends Folyam<T> {
         boolean hasValue;
 
         int wip;
-        static final VarHandle WIP;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                WIP = lk.findVarHandle(SwitchIfEmptyManySubscriber.class, "wip", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), SwitchIfEmptyManySubscriber.class, "wip", int.class);
 
         SwitchIfEmptyManySubscriber(FolyamSubscriber<? super T> actual, Iterable<? extends Flow.Publisher<? extends T>> others) {
             this.actual = actual;
@@ -159,16 +150,7 @@ public final class FolyamSwitchIfEmptyMany<T> extends Folyam<T> {
         boolean hasValue;
 
         int wip;
-        static final VarHandle WIP;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                WIP = lk.findVarHandle(SwitchIfEmptyManyConditionalSubscriber.class, "wip", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), SwitchIfEmptyManyConditionalSubscriber.class, "wip", int.class);
 
         SwitchIfEmptyManyConditionalSubscriber(ConditionalSubscriber<? super T> actual, Iterable<? extends Flow.Publisher<? extends T>> others) {
             this.actual = actual;

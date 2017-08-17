@@ -16,12 +16,12 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import java.util.Objects;
-import java.util.concurrent.*;
-
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedBiConsumer;
 import hu.akarnokd.reactive4javaflow.impl.*;
+
+import java.util.Objects;
+import java.util.concurrent.*;
 
 /**
  * Reduce the sequence of values in each 'rail' to a single value.

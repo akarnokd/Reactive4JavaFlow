@@ -16,33 +16,23 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 
 public final class LastProcessor<T> extends FolyamProcessor<T> {
 
     LastProcessorSubscription<T>[] subscribers = EMPTY;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), LastProcessor.class, "subscribers", LastProcessorSubscription[].class);
 
     T value;
     Throwable error;
 
     static final LastProcessorSubscription[] EMPTY = new LastProcessorSubscription[0];
     static final LastProcessorSubscription[] TERMINATED = new LastProcessorSubscription[0];
-
-    static {
-        try {
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(LastProcessor.class, "subscribers", LastProcessorSubscription[].class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     @Override
     public boolean hasThrowable() {

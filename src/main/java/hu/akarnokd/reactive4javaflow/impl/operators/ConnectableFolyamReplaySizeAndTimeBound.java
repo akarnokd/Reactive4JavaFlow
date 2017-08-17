@@ -18,8 +18,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.processors.CachingProcessor;
-import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
@@ -38,17 +38,9 @@ public final class ConnectableFolyamReplaySizeAndTimeBound<T> extends Connectabl
     final SchedulerService executor;
 
     CachingProcessor<T> processor;
-    static final VarHandle PROCESSOR;
+    static final VarHandle PROCESSOR = VH.find(MethodHandles.lookup(), ConnectableFolyamReplaySizeAndTimeBound.class, "processor", CachingProcessor.class);
 
     static final Flow.Subscription CONNECT = new BooleanSubscription();
-
-    static {
-        try {
-            PROCESSOR = MethodHandles.lookup().findVarHandle(ConnectableFolyamReplaySizeAndTimeBound.class, "processor", CachingProcessor.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public ConnectableFolyamReplaySizeAndTimeBound(Folyam<T> source, int maxSize, long timeout, TimeUnit unit, SchedulerService executor) {
         this.source = source;

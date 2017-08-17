@@ -54,37 +54,24 @@ public final class FolyamSample<T> extends Folyam<T> {
         final boolean emitLast;
 
         T value;
-        static final VarHandle VALUE;
+        static final VarHandle VALUE = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "value", Object.class);
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "requested", long.class);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "error", Throwable.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), SampleSubscriber.class, "done", boolean.class);
 
         volatile boolean cancelled;
-
-        static {
-            try {
-                VALUE = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "value", Object.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "requested", long.class);
-                WIP = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "error", Throwable.class);
-                DONE = MethodHandles.lookup().findVarHandle(SampleSubscriber.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         SampleSubscriber(FolyamSubscriber<? super T> actual, boolean emitLast) {
             this.actual = actual;
@@ -205,19 +192,10 @@ public final class FolyamSample<T> extends Folyam<T> {
             final SampleSubscriber<?> parent;
 
             Flow.Subscription upstream;
-            static final VarHandle UPSTREAM;
+            static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), SamplerSubscriber.class, "upstream", Flow.Subscription.class);
 
             long requested;
-            static final VarHandle REQUESTED;
-
-            static {
-                try {
-                    UPSTREAM = MethodHandles.lookup().findVarHandle(SamplerSubscriber.class, "upstream", Flow.Subscription.class);
-                    REQUESTED = MethodHandles.lookup().findVarHandle(SamplerSubscriber.class, "requested", long.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), SamplerSubscriber.class, "requested", long.class);
 
             SamplerSubscriber(SampleSubscriber<?> parent) {
                 this.parent = parent;

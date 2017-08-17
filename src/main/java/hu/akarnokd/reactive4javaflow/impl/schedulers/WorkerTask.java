@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
@@ -28,25 +29,16 @@ public final class WorkerTask implements Callable<Void>, Runnable, AutoDisposabl
     final Runnable run;
 
     Consumer<? super WorkerTask> worker;
-    static final VarHandle WORKER;
+    static final VarHandle WORKER = VH.find(MethodHandles.lookup(), WorkerTask.class, "worker", Consumer.class);
 
     Future<?> future;
-    static final VarHandle FUTURE;
+    static final VarHandle FUTURE = VH.find(MethodHandles.lookup(), WorkerTask.class, "future", Future.class);
 
     Thread runner;
 
     static final Future<Void> DONE = new FutureTask<>(() -> null);
 
     static final Future<Void> CLOSED = new FutureTask<>(() -> null);
-
-    static {
-        try {
-            WORKER = MethodHandles.lookup().findVarHandle(WorkerTask.class, "worker", Consumer.class);
-            FUTURE = MethodHandles.lookup().findVarHandle(WorkerTask.class, "future", Future.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public WorkerTask(Runnable run, Consumer<? super WorkerTask> worker) {
         this.run = run;

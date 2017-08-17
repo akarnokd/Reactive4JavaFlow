@@ -54,15 +54,7 @@ public final class ParallelSumFloat<T> extends Esetleg<Float> {
         final Throwable[] errors;
 
         int n;
-        static final VarHandle N;
-
-        static {
-            try {
-                N = MethodHandles.lookup().findVarHandle(SumFloatCoordinator.class, "n", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle N = VH.find(MethodHandles.lookup(), SumFloatCoordinator.class, "n", int.class);
 
         SumFloatCoordinator(FolyamSubscriber<? super Float> actual, int n, CheckedFunction<? super T, ? extends Number> valueSelector) {
             super(actual);

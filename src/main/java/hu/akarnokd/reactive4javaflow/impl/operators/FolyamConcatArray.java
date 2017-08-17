@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionArbiter;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.Arrays;
@@ -87,21 +87,12 @@ public final class FolyamConcatArray<T> extends Folyam<T> {
         int index;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractConcatArray.class, "error", Throwable.class);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractConcatArray.class, "wip", Integer.TYPE);
 
         long produced;
-
-        static {
-            try {
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractConcatArray.class, "error", Throwable.class);
-                WIP = MethodHandles.lookup().findVarHandle(AbstractConcatArray.class, "wip", Integer.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractConcatArray(Flow.Publisher<? extends T>[] sources, boolean delayError) {
             this.sources = sources;

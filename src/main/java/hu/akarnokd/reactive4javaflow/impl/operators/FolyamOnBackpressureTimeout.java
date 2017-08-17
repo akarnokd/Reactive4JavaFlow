@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.ArrayDeque;
@@ -75,7 +75,7 @@ public final class FolyamOnBackpressureTimeout<T> extends Folyam<T> {
         Flow.Subscription s;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), OnBackpressureTimeoutSubscriber.class, "requested", long.class);
 
         final ArrayDeque<Object> queue;
 
@@ -83,14 +83,6 @@ public final class FolyamOnBackpressureTimeout<T> extends Folyam<T> {
         Throwable error;
 
         volatile boolean cancelled;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(OnBackpressureTimeoutSubscriber.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         OnBackpressureTimeoutSubscriber(FolyamSubscriber<? super T> actual, int maxSize, long timeout, TimeUnit unit,
                                         SchedulerService.Worker worker, CheckedConsumer<? super T> onEvict) {

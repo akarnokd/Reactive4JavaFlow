@@ -31,15 +31,7 @@ import static org.junit.Assert.assertTrue;
 public class DisposableHelperTest {
 
     AutoDisposable d;
-    static final VarHandle D;
-
-    static {
-        try {
-            D = MethodHandles.lookup().findVarHandle(DisposableHelperTest.class, "d", AutoDisposable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle D = VH.find(MethodHandles.lookup(), DisposableHelperTest.class, "d", AutoDisposable.class);
 
     @Test
     public void closedReplace() {

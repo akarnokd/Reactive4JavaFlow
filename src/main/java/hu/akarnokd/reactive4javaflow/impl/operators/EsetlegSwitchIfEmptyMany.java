@@ -18,14 +18,6 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionArbiter;
-
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
-import java.util.*;
-import java.util.concurrent.Flow;
-
-import static java.lang.invoke.MethodHandles.lookup;
 
 public final class EsetlegSwitchIfEmptyMany<T> extends Esetleg<T> {
 

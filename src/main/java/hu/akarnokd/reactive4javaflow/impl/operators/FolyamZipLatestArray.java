@@ -20,8 +20,8 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.Objects;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.*;
@@ -69,29 +69,17 @@ public final class FolyamZipLatestArray<T, R> extends Folyam<R> {
         final CheckedFunction<? super Object[], ? extends R> zipper;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), ZipLatestCoordinator.class, "wip", int.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), ZipLatestCoordinator.class, "requested", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), ZipLatestCoordinator.class, "error", Throwable.class);
 
         volatile boolean cancelled;
 
         long emitted;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                WIP = lk.findVarHandle(ZipLatestCoordinator.class, "wip", int.class);
-                REQUESTED = lk.findVarHandle(ZipLatestCoordinator.class, "requested", long.class);
-                ERROR = lk.findVarHandle(ZipLatestCoordinator.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
 
         @SuppressWarnings("unchecked")
         ZipLatestCoordinator(FolyamSubscriber<? super R> actual, int n, CheckedFunction<? super Object[], ? extends R> zipper) {
@@ -260,17 +248,7 @@ public final class FolyamZipLatestArray<T, R> extends Folyam<R> {
             final int index;
 
             boolean done;
-            static final VarHandle DONE;
-
-            static {
-                Lookup lk = lookup();
-                try {
-                    DONE = lk.findVarHandle(InnerSubscriber.class, "done", boolean.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
-
+            static final VarHandle DONE = VH.find(MethodHandles.lookup(), InnerSubscriber.class, "done", boolean.class);
 
             InnerSubscriber(ZipLatestCoordinator<T, ?> parent, int index) {
                 this.index = index;

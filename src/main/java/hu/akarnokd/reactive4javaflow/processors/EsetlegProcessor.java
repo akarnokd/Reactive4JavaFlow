@@ -16,12 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow.processors;
 
-import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.*;
-
-import java.lang.invoke.*;
-import java.util.Objects;
-import java.util.concurrent.Flow;
+import hu.akarnokd.reactive4javaflow.Esetleg;
 
 public abstract class EsetlegProcessor<T> extends Esetleg<T> implements FlowProcessorSupport<T> {
 

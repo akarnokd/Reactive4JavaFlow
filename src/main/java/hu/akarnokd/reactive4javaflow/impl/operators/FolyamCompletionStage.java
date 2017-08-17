@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.impl.DeferredScalarSubscription;
 
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 

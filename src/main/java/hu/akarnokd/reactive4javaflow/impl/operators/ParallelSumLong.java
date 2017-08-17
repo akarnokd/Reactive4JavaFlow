@@ -54,15 +54,7 @@ public final class ParallelSumLong<T> extends Esetleg<Long> {
         final Throwable[] errors;
 
         int n;
-        static final VarHandle N;
-
-        static {
-            try {
-                N = MethodHandles.lookup().findVarHandle(SumLongCoordinator.class, "n", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle N = VH.find(MethodHandles.lookup(), SumLongCoordinator.class, "n", int.class);
 
         SumLongCoordinator(FolyamSubscriber<? super Long> actual, int n, CheckedFunction<? super T, ? extends Number> valueSelector) {
             super(actual);

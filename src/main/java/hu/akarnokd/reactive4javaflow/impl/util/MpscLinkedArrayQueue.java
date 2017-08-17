@@ -16,42 +16,28 @@
 
 package hu.akarnokd.reactive4javaflow.impl.util;
 
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
-import hu.akarnokd.reactive4javaflow.impl.QueueHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.Objects;
 
 public final class MpscLinkedArrayQueue<T> implements PlainQueue<T> {
 
     final int capacity;
 
-    static final VarHandle ARRAY;
+    static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
     Island producerArray;
-    static final VarHandle PRODUCER_ARRAY;
-    static final VarHandle PRODUCER_INDEX;
+    static final VarHandle PRODUCER_ARRAY = VH.find(MethodHandles.lookup(), MpscLinkedArrayQueue.class, "producerArray", Island.class);
+    static final VarHandle PRODUCER_INDEX = VH.find(MethodHandles.lookup(), Island.class, "producerIndex", Integer.TYPE);
 
     Island consumerArray;
     int consumerIndex;
-    static final VarHandle CONSUMER_INDEX;
+    static final VarHandle CONSUMER_INDEX = VH.find(MethodHandles.lookup(), MpscLinkedArrayQueue.class, "consumerIndex", Integer.TYPE);
 
-    static final VarHandle NEXT_ISLAND;
+    static final VarHandle NEXT_ISLAND = VH.find(MethodHandles.lookup(), Island.class, "next", Island.class);
 
     static final Island EMPTY = new Island(0);
-
-    static {
-        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-        try {
-            PRODUCER_ARRAY = MethodHandles.lookup().findVarHandle(MpscLinkedArrayQueue.class, "producerArray", Island.class);
-            PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(Island.class, "producerIndex", Integer.TYPE);
-            CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(MpscLinkedArrayQueue.class, "consumerIndex", Integer.TYPE);
-            NEXT_ISLAND = MethodHandles.lookup().findVarHandle(Island.class, "next", Island.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public MpscLinkedArrayQueue(int capacity) {
         int c = QueueHelper.pow2(Math.max(4, capacity));

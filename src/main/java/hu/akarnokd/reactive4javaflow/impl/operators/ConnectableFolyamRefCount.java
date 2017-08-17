@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.disposables.SequentialAutoDisposable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;

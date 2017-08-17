@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.disposables.SequentialAutoDisposable;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
 import java.util.Objects;
 import java.util.concurrent.Flow;

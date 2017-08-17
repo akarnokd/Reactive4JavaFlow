@@ -16,7 +16,7 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -24,15 +24,7 @@ import java.util.concurrent.Flow;
 public abstract class AbstractDisposableSubscriber<T> implements FolyamSubscriber<T>, AutoDisposable {
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractDisposableSubscriber.class, "upstream", Flow.Subscription.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractDisposableSubscriber.class, "upstream", Flow.Subscription.class);
 
     protected void onStart() {
         request(Long.MAX_VALUE);

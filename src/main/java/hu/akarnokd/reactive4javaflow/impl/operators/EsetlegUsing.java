@@ -19,11 +19,11 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.*;
-import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 public final class EsetlegUsing<T, R> extends Esetleg<T> {
 

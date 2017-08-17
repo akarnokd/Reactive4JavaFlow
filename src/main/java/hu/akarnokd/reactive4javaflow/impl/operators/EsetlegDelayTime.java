@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 public final class EsetlegDelayTime<T> extends Esetleg<T> {
 

@@ -71,31 +71,20 @@ public final class FolyamConcatMap<T, R> extends Folyam<R> {
         int consumed;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), ConcatMapSubscriber.class, "done", Boolean.TYPE);
 
         volatile boolean cancelled;
 
         volatile boolean active;
-        static final VarHandle ACTIVE;
+        static final VarHandle ACTIVE = VH.find(MethodHandles.lookup(), ConcatMapSubscriber.class, "active", Boolean.TYPE);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), ConcatMapSubscriber.class, "wip", Integer.TYPE);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), ConcatMapSubscriber.class, "error", Throwable.class);
 
         int fusionMode;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(ConcatMapSubscriber.class, "done", Boolean.TYPE);
-                ACTIVE = MethodHandles.lookup().findVarHandle(ConcatMapSubscriber.class, "active", Boolean.TYPE);
-                WIP = MethodHandles.lookup().findVarHandle(ConcatMapSubscriber.class, "wip", Integer.TYPE);
-                ERROR = MethodHandles.lookup().findVarHandle(ConcatMapSubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         ConcatMapSubscriber(FolyamSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int prefetch, boolean delayError) {
             this.actual = actual;

@@ -21,7 +21,7 @@ import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.*;
 
 public final class ParallelIgnoreElements<T> extends Esetleg<T> {

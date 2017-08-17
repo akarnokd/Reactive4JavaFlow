@@ -16,7 +16,7 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.*;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.FunctionalHelper;
 import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;

@@ -69,19 +69,11 @@ public final class FolyamExpand<T> extends Folyam<T> {
         final PlainQueue<Flow.Publisher<? extends T>> queue;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), ExpandBreathSubscriber.class, "wip", int.class);
 
         volatile boolean active;
 
         long produced;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(ExpandBreathSubscriber.class, "wip", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         ExpandBreathSubscriber(FolyamSubscriber<? super T> actual,
                                CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander, int capacityHint) {
@@ -174,16 +166,16 @@ public final class FolyamExpand<T> extends Folyam<T> {
         final CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), ExpandDepthSubscription.class, "error", Throwable.class);
 
         int active;
-        static final VarHandle ACTIVE;
+        static final VarHandle ACTIVE = VH.find(MethodHandles.lookup(), ExpandDepthSubscription.class, "active", int.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), ExpandDepthSubscription.class, "requested", long.class);
 
         Object current;
-        static final VarHandle CURRENT;
+        static final VarHandle CURRENT = VH.find(MethodHandles.lookup(), ExpandDepthSubscription.class, "current", Object.class);
 
         ArrayDeque<ExpandDepthSubscriber> subscriptionStack;
 
@@ -192,17 +184,6 @@ public final class FolyamExpand<T> extends Folyam<T> {
         Flow.Publisher<? extends T> source;
 
         long consumed;
-
-        static {
-            try {
-                ERROR = MethodHandles.lookup().findVarHandle(ExpandDepthSubscription.class, "error", Throwable.class);
-                ACTIVE = MethodHandles.lookup().findVarHandle(ExpandDepthSubscription.class, "active", int.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(ExpandDepthSubscription.class, "requested", long.class);
-                CURRENT = MethodHandles.lookup().findVarHandle(ExpandDepthSubscription.class, "current", Object.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         ExpandDepthSubscription(FolyamSubscriber<? super T> actual,
                                 CheckedFunction<? super T, ? extends Flow.Publisher<? extends T>> expander,

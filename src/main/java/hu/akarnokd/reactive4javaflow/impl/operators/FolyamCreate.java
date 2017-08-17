@@ -19,15 +19,11 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
-import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.invoke.*;
+import java.util.*;
 import java.util.concurrent.Flow;
 
 public final class FolyamCreate<T> extends Folyam<T> {
@@ -80,15 +76,7 @@ public final class FolyamCreate<T> extends Folyam<T> {
     static abstract class AbstractFolyamEmitter<T> implements FolyamEmitter<T>, Flow.Subscription {
 
         AutoCloseable resource;
-        static final VarHandle RESOURCE;
-
-        static {
-            try {
-                RESOURCE = MethodHandles.lookup().findVarHandle(AbstractFolyamEmitter.class, "resource", AutoCloseable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle RESOURCE = VH.find(MethodHandles.lookup(), AbstractFolyamEmitter.class, "resource", AutoCloseable.class);
 
         @Override
         public void setResource(AutoCloseable resource) {
@@ -298,15 +286,7 @@ public final class FolyamCreate<T> extends Folyam<T> {
         final FolyamSubscriber<? super T> subscriber;
 
         long requested;
-        static final VarHandle REQUESTED;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractBackpressuredFolyamEmitter.class, "requested", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractBackpressuredFolyamEmitter.class, "requested", Long.TYPE);
 
         AbstractBackpressuredFolyamEmitter(FolyamSubscriber<? super T> subscriber) {
             this.subscriber = subscriber;
@@ -433,27 +413,18 @@ public final class FolyamCreate<T> extends Folyam<T> {
     static abstract class AbstractBufferingFolyamEmitter<T> extends AbstractBackpressuredFolyamEmitter<T> {
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractBufferingFolyamEmitter.class, "wip", Integer.TYPE);
 
         Throwable error;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractBufferingFolyamEmitter.class, "done", Boolean.TYPE);
 
         AutoCloseable toClose;
 
         volatile boolean cancelled;
 
         long emitted;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(AbstractBufferingFolyamEmitter.class, "wip", Integer.TYPE);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractBufferingFolyamEmitter.class, "done", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractBufferingFolyamEmitter(FolyamSubscriber<? super T> subscriber) {
             super(subscriber);
@@ -536,15 +507,7 @@ public final class FolyamCreate<T> extends Folyam<T> {
     static final class LatestFolyamEmitter<T> extends AbstractBufferingFolyamEmitter<T> {
 
         T item;
-        static final VarHandle ITEM;
-
-        static {
-            try {
-                ITEM = MethodHandles.lookup().findVarHandle(LatestFolyamEmitter.class, "item", Object.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ITEM = VH.find(MethodHandles.lookup(), LatestFolyamEmitter.class, "item", Object.class);
 
         LatestFolyamEmitter(FolyamSubscriber<? super T> subscriber) {
             super(subscriber);

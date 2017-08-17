@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.*;
 
 import java.lang.invoke.*;
@@ -59,10 +59,10 @@ public final class FolyamFlattenIterable<T, R> extends Folyam<R> {
         final int limit;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractFlattenIterable.class, "requested", Long.TYPE);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractFlattenIterable.class, "done", Boolean.TYPE);
         Throwable error;
 
         volatile boolean cancelled;
@@ -79,15 +79,6 @@ public final class FolyamFlattenIterable<T, R> extends Folyam<R> {
         int consumed;
 
         long emitted;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractFlattenIterable.class, "requested", Long.TYPE);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractFlattenIterable.class, "done", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractFlattenIterable(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper, int prefetch) {
             this.mapper = mapper;

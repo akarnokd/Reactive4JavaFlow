@@ -16,7 +16,6 @@
 
 package hu.akarnokd.reactive4javaflow.impl;
 
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 
 import java.util.concurrent.Flow;

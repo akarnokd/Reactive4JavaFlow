@@ -16,11 +16,9 @@
 package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.HalfSerializer;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.concurrent.Flow;
 
 public final class StrictSubscriber<T> implements FolyamSubscriber<T>, Flow.Subscription {
@@ -28,27 +26,16 @@ public final class StrictSubscriber<T> implements FolyamSubscriber<T>, Flow.Subs
     final Flow.Subscriber<? super T> actual;
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), StrictSubscriber.class, "upstream", Flow.Subscription.class);
 
     long requested;
-    static final VarHandle REQUESTED;
+    static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), StrictSubscriber.class, "requested", Long.TYPE);
 
     Throwable error;
-    static final VarHandle ERROR;
+    static final VarHandle ERROR = VH.find(MethodHandles.lookup(), StrictSubscriber.class, "error", Throwable.class);
 
     int wip;
-    static final VarHandle WIP;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "upstream", Flow.Subscription.class);
-            REQUESTED = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "requested", Long.TYPE);
-            ERROR = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "error", Throwable.class);
-            WIP = MethodHandles.lookup().findVarHandle(StrictSubscriber.class, "wip", Integer.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle WIP = VH.find(MethodHandles.lookup(), StrictSubscriber.class, "wip", Integer.TYPE);
 
     public StrictSubscriber(Flow.Subscriber<? super T> actual) {
         this.actual = actual;

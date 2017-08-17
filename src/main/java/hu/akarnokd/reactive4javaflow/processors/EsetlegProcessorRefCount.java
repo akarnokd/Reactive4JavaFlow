@@ -17,7 +17,6 @@
 package hu.akarnokd.reactive4javaflow.processors;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
@@ -28,22 +27,13 @@ final class EsetlegProcessorRefCount<T> extends EsetlegProcessor<T> implements R
     final EsetlegProcessor<T> actual;
 
     RefCountSubscriber<T>[] subscribers;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), EsetlegProcessorRefCount.class, "subscribers", RefCountSubscriber[].class);
 
     static final RefCountSubscriber[] EMPTY = new RefCountSubscriber[0];
     static final RefCountSubscriber[] TERMINATED = new RefCountSubscriber[0];
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(EsetlegProcessorRefCount.class, "upstream", Flow.Subscription.class);
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(EsetlegProcessorRefCount.class, "subscribers", RefCountSubscriber[].class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), EsetlegProcessorRefCount.class, "upstream", Flow.Subscription.class);
 
     public EsetlegProcessorRefCount(EsetlegProcessor<T> actual) {
         this.actual = actual;

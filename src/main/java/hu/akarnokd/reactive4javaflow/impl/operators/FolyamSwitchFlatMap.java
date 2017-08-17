@@ -16,21 +16,15 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
+import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.impl.ExceptionHelper;
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscArrayQueue;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
 public final class FolyamSwitchFlatMap<T, R> extends Folyam<R> {
 
@@ -74,10 +68,10 @@ public final class FolyamSwitchFlatMap<T, R> extends Folyam<R> {
         final ArrayDeque<SfmInnerSubscriber<T, R>> active;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), SwitchFlatMapSubscriber.class, "requested", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), SwitchFlatMapSubscriber.class, "error", Throwable.class);
 
         Flow.Subscription s;
 
@@ -91,15 +85,6 @@ public final class FolyamSwitchFlatMap<T, R> extends Folyam<R> {
         long versionCache;
 
         long emitted;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(SwitchFlatMapSubscriber.class, "requested", long.class);
-                ERROR = MethodHandles.lookup().findVarHandle(SwitchFlatMapSubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         @SuppressWarnings("unchecked")
         SwitchFlatMapSubscriber(FolyamSubscriber<? super R> actual,

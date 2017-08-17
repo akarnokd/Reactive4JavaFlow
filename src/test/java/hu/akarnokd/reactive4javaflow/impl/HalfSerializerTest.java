@@ -36,19 +36,10 @@ public class HalfSerializerTest {
         final TestConsumer<Integer> tc;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), HalfConsumer.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(HalfConsumer.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(HalfConsumer.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), HalfConsumer.class, "error", Throwable.class);
 
         HalfConsumer() {
             tc = new TestConsumer<>();

@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.SchedulerService;
-import hu.akarnokd.reactive4javaflow.impl.CleanerHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.lang.ref.Cleaner;
@@ -32,15 +32,7 @@ public final class NewThreadSchedulerService implements SchedulerService, Thread
     final boolean daemon;
 
     long index;
-    static final VarHandle INDEX;
-
-    static {
-        try {
-            INDEX = MethodHandles.lookup().findVarHandle(NewThreadSchedulerService.class, "index", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle INDEX = VH.find(MethodHandles.lookup(), NewThreadSchedulerService.class, "index", Long.TYPE);
 
     public NewThreadSchedulerService(String namePrefix, int priority, boolean daemon) {
         this.namePrefix = namePrefix;

@@ -60,22 +60,13 @@ public final class FolyamOnBackpressureBufferAll<T> extends Folyam<T> {
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractOnBackpressureBuffer.class, "done", boolean.class);
         Throwable error;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractOnBackpressureBuffer.class, "requested", long.class);
 
         long emitted;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureBuffer.class, "done", boolean.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureBuffer.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractOnBackpressureBuffer(int capacityHint, boolean bounded) {
             queue = bounded ? new SpscArrayQueue<>(capacityHint) : new SpscLinkedArrayQueue<>(capacityHint);

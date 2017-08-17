@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -51,21 +51,12 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
         FolyamPublisher<T> source;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractDelaySubscription.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractDelaySubscription.class, "requested", long.class);
 
         boolean done;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractDelaySubscription.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractDelaySubscription.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractDelaySubscription(FolyamPublisher<T> source) {
             this.source = source;

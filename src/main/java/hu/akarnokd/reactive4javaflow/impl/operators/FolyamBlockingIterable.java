@@ -64,10 +64,10 @@ public final class FolyamBlockingIterable<T> implements Iterable<T> {
         final Condition condition;
 
         FusedQueue<T> queue;
-        static final VarHandle QUEUE;
+        static final VarHandle QUEUE = VH.find(MethodHandles.lookup(), BlockingIterator.class, "queue", FusedQueue.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), BlockingIterator.class, "done", Boolean.TYPE);
 
         Throwable error;
 
@@ -79,27 +79,15 @@ public final class FolyamBlockingIterable<T> implements Iterable<T> {
         long missed;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BlockingIterator.class, "upstream", Flow.Subscription.class);
 
         long wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), BlockingIterator.class, "wip", Long.TYPE);
 
         int sourceFused;
 
         Cleaner.Cleanable cleanable;
-        static final VarHandle CLEANABLE;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(BlockingIterator.class, "upstream", Flow.Subscription.class);
-                WIP = MethodHandles.lookup().findVarHandle(BlockingIterator.class, "wip", Long.TYPE);
-                DONE = MethodHandles.lookup().findVarHandle(BlockingIterator.class, "done", Boolean.TYPE);
-                QUEUE = MethodHandles.lookup().findVarHandle(BlockingIterator.class, "queue", FusedQueue.class);
-                CLEANABLE = MethodHandles.lookup().findVarHandle(BlockingIterator.class, "cleanable", Cleaner.Cleanable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle CLEANABLE = VH.find(MethodHandles.lookup(), BlockingIterator.class, "cleanable", Cleaner.Cleanable.class);
 
         BlockingIterator(int prefetch) {
             this.prefetch = prefetch;

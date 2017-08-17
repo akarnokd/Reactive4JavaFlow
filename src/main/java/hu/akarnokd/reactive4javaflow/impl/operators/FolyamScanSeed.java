@@ -78,28 +78,18 @@ public final class FolyamScanSeed<T, R> extends Folyam<R> {
         R accumulator;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractScanSeed.class, "requested", long.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractScanSeed.class, "done", boolean.class);
 
         Throwable error;
 
         long emitted;
 
         int consumed;
-
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractScanSeed.class, "requested", long.class);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractScanSeed.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractScanSeed(CheckedBiFunction<R, ? super T, R> scanner, int prefetch, R initialValue) {
             this.scanner = scanner;

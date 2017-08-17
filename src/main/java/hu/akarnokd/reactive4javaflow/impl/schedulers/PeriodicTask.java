@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.TimeUnit;
@@ -38,19 +38,10 @@ public final class PeriodicTask implements Runnable, AutoDisposable {
     long count;
 
     AutoDisposable first;
-    static final VarHandle FIRST;
+    static final VarHandle FIRST = VH.find(MethodHandles.lookup(), PeriodicTask.class, "first", AutoDisposable.class);
 
     AutoDisposable next;
-    static final VarHandle NEXT;
-
-    static {
-        try {
-            FIRST = MethodHandles.lookup().findVarHandle(PeriodicTask.class, "first", AutoDisposable.class);
-            NEXT = MethodHandles.lookup().findVarHandle(PeriodicTask.class, "next", AutoDisposable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle NEXT = VH.find(MethodHandles.lookup(), PeriodicTask.class, "next", AutoDisposable.class);
 
     public PeriodicTask(SchedulerService.Worker worker, Runnable actual, long period, TimeUnit unit, long start) {
         this.worker = worker;

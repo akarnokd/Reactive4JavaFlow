@@ -26,29 +26,19 @@ import java.util.concurrent.Flow;
 public final class FirstProcessor<T> extends EsetlegProcessor<T> {
 
     FirstProcessorSubscription<T>[] subscribers = EMPTY;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), FirstProcessor.class, "subscribers", FirstProcessorSubscription[].class);
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), FirstProcessor.class, "upstream", Flow.Subscription.class);
 
     boolean once;
-    static final VarHandle ONCE;
+    static final VarHandle ONCE = VH.find(MethodHandles.lookup(), FirstProcessor.class, "once", boolean.class);
 
     T value;
     Throwable error;
 
     static final FirstProcessorSubscription[] EMPTY = new FirstProcessorSubscription[0];
     static final FirstProcessorSubscription[] TERMINATED = new FirstProcessorSubscription[0];
-
-    static {
-        try {
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(FirstProcessor.class, "subscribers", FirstProcessorSubscription[].class);
-            UPSTREAM = MethodHandles.lookup().findVarHandle(FirstProcessor.class, "upstream", Flow.Subscription.class);
-            ONCE = MethodHandles.lookup().findVarHandle(FirstProcessor.class, "once", boolean.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     @Override
     public boolean hasThrowable() {

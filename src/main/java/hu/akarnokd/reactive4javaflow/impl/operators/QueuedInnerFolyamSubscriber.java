@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.*;
 
 import java.lang.invoke.*;
@@ -36,23 +36,14 @@ public final class QueuedInnerFolyamSubscriber<T> extends AtomicReference<Flow.S
     final int limit;
 
     boolean done;
-    static final VarHandle DONE;
+    static final VarHandle DONE = VH.find(MethodHandles.lookup(), QueuedInnerFolyamSubscriber.class, "done", Boolean.TYPE);
 
     FusedQueue<T> queue;
-    static final VarHandle QUEUE;
+    static final VarHandle QUEUE = VH.find(MethodHandles.lookup(), QueuedInnerFolyamSubscriber.class, "queue", FusedQueue.class);
 
     int consumed;
 
     boolean allowRequest;
-
-    static {
-        try {
-            DONE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "done", Boolean.TYPE);
-            QUEUE = MethodHandles.lookup().findVarHandle(QueuedInnerFolyamSubscriber.class, "queue", FusedQueue.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public QueuedInnerFolyamSubscriber(QueuedFolyamSubscriberSupport<T> parent, int index, int prefetch) {
         this.parent = parent;

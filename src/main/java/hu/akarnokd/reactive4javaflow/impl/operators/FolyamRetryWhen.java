@@ -19,8 +19,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.processors.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.processors.*;
 
 import java.lang.invoke.*;
 import java.util.Objects;
@@ -70,25 +70,15 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
         final HandlerSubscriber responder;
 
         int wipEmission;
-        static final VarHandle WIP_EMISSION;
+        static final VarHandle WIP_EMISSION = VH.find(MethodHandles.lookup(), AbstractRetryWhen.class, "wipEmission", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractRetryWhen.class, "error", Throwable.class);
 
         int wipAgain;
-        static final VarHandle WIP_AGAIN;
+        static final VarHandle WIP_AGAIN = VH.find(MethodHandles.lookup(), AbstractRetryWhen.class, "wipAgain", int.class);
 
         long produced;
-
-        static {
-            try {
-                WIP_EMISSION = MethodHandles.lookup().findVarHandle(AbstractRetryWhen.class, "wipEmission", int.class);
-                WIP_AGAIN = MethodHandles.lookup().findVarHandle(AbstractRetryWhen.class, "wipAgain", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractRetryWhen.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractRetryWhen(FolyamPublisher<T> source, FolyamSubscriber<Throwable> signaller) {
             this.source = source;
@@ -210,19 +200,10 @@ public final class FolyamRetryWhen<T> extends Folyam<T> {
         final AbstractRetryWhen<?> parent;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), HandlerSubscriber.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(HandlerSubscriber.class, "requested", long.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(HandlerSubscriber.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), HandlerSubscriber.class, "requested", long.class);
 
         HandlerSubscriber(AbstractRetryWhen<?> parent) {
             this.parent = parent;

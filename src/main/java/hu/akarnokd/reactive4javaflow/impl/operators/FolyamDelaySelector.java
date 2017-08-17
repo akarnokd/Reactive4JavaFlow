@@ -56,23 +56,14 @@ public final class FolyamDelaySelector<T> extends Folyam<T> {
         volatile boolean cancelled;
 
         long active;
-        static final VarHandle ACTIVE;
+        static final VarHandle ACTIVE = VH.find(MethodHandles.lookup(), DelaySelectorSubscriber.class, "active", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), DelaySelectorSubscriber.class, "error", Throwable.class);
 
         OpenHashSet<AutoDisposable> subscribers;
 
         boolean outputFused;
-
-        static {
-            try {
-                ACTIVE = MethodHandles.lookup().findVarHandle(DelaySelectorSubscriber.class, "active", long.class);
-                ERROR = MethodHandles.lookup().findVarHandle(DelaySelectorSubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         DelaySelectorSubscriber(FolyamSubscriber<? super T> actual, CheckedFunction<? super T, ? extends Flow.Publisher<?>> delaySelector) {
             this.actual = actual;

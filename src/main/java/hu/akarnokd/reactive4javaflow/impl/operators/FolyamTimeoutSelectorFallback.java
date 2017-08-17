@@ -63,20 +63,10 @@ public final class FolyamTimeoutSelectorFallback<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         AutoDisposable task;
-        static final VarHandle TASK;
+        static final VarHandle TASK = VH.find(MethodHandles.lookup(), AbstractTimeoutTimedSelectorFallback.class, "task", AutoDisposable.class);
 
         long index;
-        static final VarHandle INDEX;
-
-        static {
-            MethodHandles.Lookup lk = MethodHandles.lookup();
-            try {
-                TASK = lk.findVarHandle(AbstractTimeoutTimedSelectorFallback.class, "task", AutoDisposable.class);
-                INDEX = lk.findVarHandle(AbstractTimeoutTimedSelectorFallback.class, "index", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle INDEX = VH.find(MethodHandles.lookup(), AbstractTimeoutTimedSelectorFallback.class, "index", long.class);
 
         protected AbstractTimeoutTimedSelectorFallback(Flow.Publisher<?> firstTimeout, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemTimeoutSelector, Flow.Publisher<? extends T> fallback) {
             this.firstTimeout = firstTimeout;

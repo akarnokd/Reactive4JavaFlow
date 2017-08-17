@@ -30,23 +30,13 @@ import static org.junit.Assert.*;
 public class SubscriptionHelperTest {
 
     Flow.Subscription d;
-    static final VarHandle D;
+    static final VarHandle D = VH.find(MethodHandles.lookup(), SubscriptionHelperTest.class, "d", Flow.Subscription.class);
 
     long requested;
-    static final VarHandle R;
+    static final VarHandle R = VH.find(MethodHandles.lookup(), SubscriptionHelperTest.class, "requested", long.class);
 
     boolean cancelled;
-    static final VarHandle C;
-
-    static {
-        try {
-            D = MethodHandles.lookup().findVarHandle(SubscriptionHelperTest.class, "d", Flow.Subscription.class);
-            R = MethodHandles.lookup().findVarHandle(SubscriptionHelperTest.class, "requested", long.class);
-            C = MethodHandles.lookup().findVarHandle(SubscriptionHelperTest.class, "cancelled", boolean.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle C = VH.find(MethodHandles.lookup(), SubscriptionHelperTest.class, "cancelled", boolean.class);
 
     @Test
     public void closedReplace() {

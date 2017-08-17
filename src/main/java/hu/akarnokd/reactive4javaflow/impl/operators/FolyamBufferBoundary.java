@@ -23,7 +23,7 @@ import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 import java.lang.invoke.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class FolyamBufferBoundary<T, C extends Collection<? super T>> extends Folyam<C> {
 
@@ -64,27 +64,27 @@ public final class FolyamBufferBoundary<T, C extends Collection<? super T>> exte
         final SpscLinkedArrayQueue<T> queue;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "upstream", Flow.Subscription.class);
 
         Flow.Subscription boundary;
-        static final VarHandle BOUNDARY;
+        static final VarHandle BOUNDARY = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "boundary", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "requested", long.class);
 
         long available;
-        static final VarHandle AVAILABLE;
+        static final VarHandle AVAILABLE = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "available", long.class);
 
         long signal;
-        static final VarHandle SIGNAL;
+        static final VarHandle SIGNAL = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "signal", long.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "done", boolean.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), BufferBoundarySubscriber.class, "error", Throwable.class);
 
         int count;
         C buffer;
@@ -92,20 +92,6 @@ public final class FolyamBufferBoundary<T, C extends Collection<? super T>> exte
         long emitted;
 
         int consumed;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "upstream", Flow.Subscription.class);
-                BOUNDARY = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "boundary", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "requested", long.class);
-                AVAILABLE = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "available", long.class);
-                SIGNAL = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "signal", long.class);
-                DONE = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "done", boolean.class);
-                ERROR = MethodHandles.lookup().findVarHandle(BufferBoundarySubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         BufferBoundarySubscriber(FolyamSubscriber<? super C> actual, Callable<C> collectionSupplier, int maxSize) {
             this.actual = actual;

@@ -27,22 +27,13 @@ final class FolyamProcessorRefCount<T> extends FolyamProcessor<T> implements Ref
     final FolyamProcessor<T> actual;
 
     RefCountSubscriber<T>[] subscribers;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), FolyamProcessorRefCount.class, "subscribers", RefCountSubscriber[].class);
 
     static final RefCountSubscriber[] EMPTY = new RefCountSubscriber[0];
     static final RefCountSubscriber[] TERMINATED = new RefCountSubscriber[0];
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(FolyamProcessorRefCount.class, "upstream", Flow.Subscription.class);
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(FolyamProcessorRefCount.class, "subscribers", RefCountSubscriber[].class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), FolyamProcessorRefCount.class, "upstream", Flow.Subscription.class);
 
     public FolyamProcessorRefCount(FolyamProcessor<T> actual) {
         this.actual = actual;

@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.*;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedBiFunction;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
@@ -61,31 +61,19 @@ public final class FolyamWithLatestFrom<T, U, R> extends Folyam<R> {
         final OtherSubscriber<U> other;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractWithLatestFrom.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractWithLatestFrom.class, "requested", long.class);
 
         U latest;
-        static final VarHandle LATEST;
+        static final VarHandle LATEST = VH.find(MethodHandles.lookup(), AbstractWithLatestFrom.class, "latest", Object.class);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractWithLatestFrom.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractWithLatestFrom.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractWithLatestFrom.class, "requested", long.class);
-                LATEST = MethodHandles.lookup().findVarHandle(AbstractWithLatestFrom.class, "latest", Object.class);
-                WIP = MethodHandles.lookup().findVarHandle(AbstractWithLatestFrom.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractWithLatestFrom.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractWithLatestFrom.class, "error", Throwable.class);
 
         protected AbstractWithLatestFrom(CheckedBiFunction<? super T, ? super U, ? extends R> combiner) {
             this.combiner = combiner;

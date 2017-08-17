@@ -18,16 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.*;
-import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
-import java.lang.invoke.*;
-import java.lang.invoke.MethodHandles.Lookup;
-import java.util.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.*;
-
-import static java.lang.invoke.MethodHandles.lookup;
 
 public final class EsetlegMapWhen<T, U, R> extends Esetleg<R> {
 

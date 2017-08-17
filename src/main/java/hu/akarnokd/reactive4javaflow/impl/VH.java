@@ -34,7 +34,7 @@ public final class VH {
         try {
             return lookup.findVarHandle(parent, field, type);
         } catch (Throwable ex) {
-            throw new InternalError(ex);
+            throw new  InternalError(ex);
         }
     }
 
@@ -42,7 +42,7 @@ public final class VH {
         try {
             return lookup.findStaticVarHandle(parent, field, type);
         } catch (Throwable ex) {
-            throw new InternalError(ex);
+            throw new  InternalError(ex);
         }
     }
 }

@@ -16,12 +16,12 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+
 import java.util.*;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.*;
-
-import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 
 /**
  * Given sorted rail sequences (according to the provided comparator) as List

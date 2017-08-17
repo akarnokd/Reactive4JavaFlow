@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.SchedulerService;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.DisposableHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.OpenHashSet;
 
 import java.lang.invoke.*;
@@ -164,17 +164,9 @@ public final class SharedSchedulerService implements SchedulerService {
             private static final long serialVersionUID = 4949851341419870956L;
 
             AutoDisposable future;
-            static final VarHandle FUTURE;
+            static final VarHandle FUTURE = VH.find(MethodHandles.lookup(), SharedAction.class, "future", AutoDisposable.class);
 
             final Runnable actual;
-
-            static {
-                try {
-                    FUTURE = MethodHandles.lookup().findVarHandle(SharedAction.class, "future", AutoDisposable.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
 
             SharedAction(Runnable actual, SharedWorker parent) {
                 this.actual = actual;

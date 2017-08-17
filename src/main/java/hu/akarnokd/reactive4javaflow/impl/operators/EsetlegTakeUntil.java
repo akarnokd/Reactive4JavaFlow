@@ -18,11 +18,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class EsetlegTakeUntil<T> extends Esetleg<T> {
 

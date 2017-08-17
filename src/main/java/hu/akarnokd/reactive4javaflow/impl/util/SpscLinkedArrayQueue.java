@@ -16,11 +16,9 @@
 
 package hu.akarnokd.reactive4javaflow.impl.util;
 
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
-import hu.akarnokd.reactive4javaflow.impl.QueueHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -28,27 +26,17 @@ public final class SpscLinkedArrayQueue<T> implements PlainQueue<T> {
 
     final int mask;
 
-    static final VarHandle ARRAY;
+    static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
     Object[] producerArray;
     long producerIndex;
-    static final VarHandle PRODUCER_INDEX;
+    static final VarHandle PRODUCER_INDEX = VH.find(MethodHandles.lookup(), SpscLinkedArrayQueue.class, "producerIndex", Long.TYPE);
 
     Object[] consumerArray;
     long consumerIndex;
-    static final VarHandle CONSUMER_INDEX;
+    static final VarHandle CONSUMER_INDEX = VH.find(MethodHandles.lookup(), SpscLinkedArrayQueue.class, "consumerIndex", Long.TYPE);
 
     static final Object NEXT = new Object();
-
-    static {
-        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-        try {
-            PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(SpscLinkedArrayQueue.class, "producerIndex", Long.TYPE);
-            CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(SpscLinkedArrayQueue.class, "consumerIndex", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public SpscLinkedArrayQueue(int capacity) {
         int c = QueueHelper.pow2(Math.max(4, capacity));

@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
@@ -26,15 +26,7 @@ import java.util.concurrent.*;
 public final class BlockingConsumerIgnore extends CountDownLatch implements FolyamSubscriber<Object>, AutoDisposable {
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(BlockingConsumerIgnore.class, "upstream", Flow.Subscription.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BlockingConsumerIgnore.class, "upstream", Flow.Subscription.class);
 
     public BlockingConsumerIgnore() {
         super(1);

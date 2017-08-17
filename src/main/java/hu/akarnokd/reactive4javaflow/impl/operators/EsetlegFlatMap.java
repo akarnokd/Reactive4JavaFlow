@@ -93,17 +93,9 @@ public final class EsetlegFlatMap<T, R> extends Esetleg<R> {
         final CheckedFunction<? super T, ? extends Esetleg<? extends R>> mapper;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), FlatMapSubscriber.class, "upstream", Flow.Subscription.class);
 
         boolean done;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(FlatMapSubscriber.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         public FlatMapSubscriber(FolyamSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Esetleg<? extends R>> mapper) {
             super(actual);

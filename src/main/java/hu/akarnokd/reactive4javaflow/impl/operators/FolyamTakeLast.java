@@ -18,7 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.ArrayDeque;
@@ -53,21 +53,12 @@ public final class FolyamTakeLast<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), AbstractTakeLast.class, "cancelled", Boolean.TYPE);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractTakeLast.class, "requested", Long.TYPE);
 
         boolean outputFused;
-
-        static {
-            try {
-                CANCELLED = MethodHandles.lookup().findVarHandle(AbstractTakeLast.class, "cancelled", Boolean.TYPE);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractTakeLast.class, "requested", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractTakeLast(int n) {
             this.queue = new ArrayDeque<>();

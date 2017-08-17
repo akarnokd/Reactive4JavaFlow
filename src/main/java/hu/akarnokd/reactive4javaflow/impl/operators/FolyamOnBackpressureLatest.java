@@ -18,8 +18,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedConsumer;
-import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -52,29 +52,19 @@ public final class FolyamOnBackpressureLatest<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         T value;
-        static final VarHandle VALUE;
+        static final VarHandle VALUE = VH.find(MethodHandles.lookup(), AbstractOnBackpressureLatest.class, "value", Object.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractOnBackpressureLatest.class, "done", boolean.class);
 
         Throwable error;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractOnBackpressureLatest.class, "requested", long.class);
 
         long emitted;
-
-        static {
-            try {
-                VALUE = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureLatest.class, "value", Object.class);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureLatest.class, "done", boolean.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureLatest.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractOnBackpressureLatest(CheckedConsumer<? super T> onDrop) {
             this.onDrop = onDrop;

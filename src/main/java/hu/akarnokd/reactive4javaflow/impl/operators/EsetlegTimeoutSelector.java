@@ -17,17 +17,9 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
-import java.util.Objects;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-
-import static java.lang.invoke.MethodHandles.lookup;
+import java.util.concurrent.Flow;
 
 public final class EsetlegTimeoutSelector<T> extends Esetleg<T> {
 

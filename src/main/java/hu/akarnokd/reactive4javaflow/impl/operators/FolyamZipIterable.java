@@ -18,9 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
-import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-import java.util.*;
+import java.util.Arrays;
 import java.util.concurrent.Flow;
 
 public final class FolyamZipIterable<T, R> extends Folyam<R> {

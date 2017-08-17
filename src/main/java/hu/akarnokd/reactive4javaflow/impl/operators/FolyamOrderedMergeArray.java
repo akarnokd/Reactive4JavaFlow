@@ -20,11 +20,11 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.invoke.MethodHandles.lookup;
 
@@ -90,23 +90,12 @@ public final class FolyamOrderedMergeArray<T> extends Folyam<T> {
         volatile boolean cancelled;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), MergeCoordinator.class, "requested", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), MergeCoordinator.class, "error", Throwable.class);
 
         long emitted;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                REQUESTED = lk.findVarHandle(MergeCoordinator.class, "requested", long.class);
-                ERROR = lk.findVarHandle(MergeCoordinator.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
 
         @SuppressWarnings("unchecked")
         MergeCoordinator(FolyamSubscriber<? super T> actual, Comparator<? super T> comparator, int n, int prefetch, boolean delayErrors) {

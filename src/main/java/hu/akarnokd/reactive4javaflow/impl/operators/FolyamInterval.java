@@ -78,31 +78,20 @@ public final class FolyamInterval extends Folyam<Long> {
         final long end;
 
         AutoDisposable task;
-        static final VarHandle TASK;
+        static final VarHandle TASK = VH.find(MethodHandles.lookup(), AbstractIntervalSubscription.class, "task", AutoDisposable.class);
 
         long available;
-        static final VarHandle AVAILABLE;
+        static final VarHandle AVAILABLE = VH.find(MethodHandles.lookup(), AbstractIntervalSubscription.class, "available", Long.TYPE);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractIntervalSubscription.class, "requested", Long.TYPE);
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), AbstractIntervalSubscription.class, "cancelled", Boolean.TYPE);
 
         boolean fused;
 
         long consumed;
-
-        static {
-            try {
-                TASK = MethodHandles.lookup().findVarHandle(AbstractIntervalSubscription.class, "task", AutoDisposable.class);
-                AVAILABLE = MethodHandles.lookup().findVarHandle(AbstractIntervalSubscription.class, "available", Long.TYPE);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractIntervalSubscription.class, "requested", Long.TYPE);
-                CANCELLED = MethodHandles.lookup().findVarHandle(AbstractIntervalSubscription.class, "cancelled", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractIntervalSubscription(long start, long end) {
             this.available = start;

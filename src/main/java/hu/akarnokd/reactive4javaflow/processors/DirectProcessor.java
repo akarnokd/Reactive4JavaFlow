@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.processors;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.Objects;
@@ -27,20 +27,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class DirectProcessor<T> extends FolyamProcessor<T> {
 
     DirectSubscription<T>[] subscribers = EMPTY;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), DirectProcessor.class, "subscribers", DirectSubscription[].class);
 
     static final DirectSubscription[] EMPTY = new DirectSubscription[0];
     static final DirectSubscription[] TERMINATED = new DirectSubscription[0];
 
     Throwable error;
-
-    static {
-        try {
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(DirectProcessor.class, "subscribers", DirectSubscription[].class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     @Override
     public boolean hasThrowable() {

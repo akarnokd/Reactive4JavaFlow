@@ -63,32 +63,24 @@ public final class FolyamSwitchMap<T, R> extends Folyam<R> {
         Flow.Subscription upstream;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractSwitchMap.class, "requested", long.class);
 
         QueuedInnerFolyamSubscriber<T> current;
-        static final VarHandle CURRENT;
+        static final VarHandle CURRENT = VH.find(MethodHandles.lookup(), AbstractSwitchMap.class, "current", QueuedInnerFolyamSubscriber.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractSwitchMap.class, "done", boolean.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractSwitchMap.class, "error", Throwable.class);
 
         long emitted;
 
         static final QueuedInnerFolyamSubscriber TERMINATED;
 
         static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractSwitchMap.class, "requested", long.class);
-                CURRENT = MethodHandles.lookup().findVarHandle(AbstractSwitchMap.class, "current", QueuedInnerFolyamSubscriber.class);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractSwitchMap.class, "done", boolean.class);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractSwitchMap.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
             TERMINATED = new QueuedInnerFolyamSubscriber<Object>(null, Integer.MAX_VALUE, 0);
             TERMINATED.cancel();
         }

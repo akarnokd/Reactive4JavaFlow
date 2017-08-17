@@ -17,17 +17,13 @@ package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
-import hu.akarnokd.reactive4javaflow.fused.FusedQueue;
-import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.VolatileSizeArrayList;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.*;
 
 public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
@@ -41,10 +37,10 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     volatile int completions;
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), TestConsumer.class, "upstream", Flow.Subscription.class);
 
     long requested;
-    static final VarHandle REQUESTED;
+    static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), TestConsumer.class, "requested", Long.TYPE);
 
     FusedQueue<T> qs;
 
@@ -55,15 +51,6 @@ public class TestConsumer<T> implements FolyamSubscriber<T>, AutoDisposable {
     String tag;
 
     boolean timeout;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(TestConsumer.class, "upstream", Flow.Subscription.class);
-            REQUESTED = MethodHandles.lookup().findVarHandle(TestConsumer.class, "requested", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public TestConsumer() {
         this(Long.MAX_VALUE);

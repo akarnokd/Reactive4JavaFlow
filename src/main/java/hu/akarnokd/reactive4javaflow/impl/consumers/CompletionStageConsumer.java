@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
@@ -27,15 +27,7 @@ public final class CompletionStageConsumer<T> extends CompletableFuture<T> imple
     T item;
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(CompletionStageConsumer.class, "upstream", Flow.Subscription.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), CompletionStageConsumer.class, "upstream", Flow.Subscription.class);
 
     @Override
     public void onSubscribe(Flow.Subscription subscription) {

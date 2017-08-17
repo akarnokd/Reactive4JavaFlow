@@ -68,26 +68,26 @@ public final class FolyamFilterWhen<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         AutoDisposable other;
-        static final VarHandle OTHER;
+        static final VarHandle OTHER = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "other", AutoDisposable.class);
 
         long producerIndex;
-        static final VarHandle PRODUCER_INDEX;
+        static final VarHandle PRODUCER_INDEX = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "producerIndex", long.class);
 
         long consumerIndex;
-        static final VarHandle CONSUMER_INDEX;
+        static final VarHandle CONSUMER_INDEX = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "consumerIndex", long.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "requested", long.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "done", boolean.class);
 
-        static final VarHandle ARRAY;
+        static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
         int state;
-        static final VarHandle STATE;
+        static final VarHandle STATE = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "state", int.class);
 
         static final int STATE_NONE = 0;
         static final int STATE_RUNNING = 1;
@@ -95,28 +95,11 @@ public final class FolyamFilterWhen<T> extends Folyam<T> {
         static final int STATE_VALUE = 3;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractFilterWhen.class, "error", Throwable.class);
 
         long emitted;
 
         int consumed;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                PRODUCER_INDEX = lk.findVarHandle(AbstractFilterWhen.class, "producerIndex", long.class);
-                CONSUMER_INDEX = lk.findVarHandle(AbstractFilterWhen.class, "consumerIndex", long.class);
-                DONE = lk.findVarHandle(AbstractFilterWhen.class, "done", boolean.class);
-                STATE = lk.findVarHandle(AbstractFilterWhen.class, "state", int.class);
-                ERROR = lk.findVarHandle(AbstractFilterWhen.class, "error", Throwable.class);
-                REQUESTED = lk.findVarHandle(AbstractFilterWhen.class, "requested", long.class);
-                OTHER = lk.findVarHandle(AbstractFilterWhen.class, "other", AutoDisposable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-        }
-
 
         AbstractFilterWhen(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter, int prefetch, boolean delayError) {
             this.filter = filter;

@@ -57,27 +57,16 @@ public final class FolyamTakeUntil<T> extends Folyam<T> {
         final UntilSubscriber other;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractTakeUntil.class, "wip", Integer.TYPE);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractTakeUntil.class, "error", Throwable.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractTakeUntil.class, "requested", Long.TYPE);
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(AbstractTakeUntil.class, "wip", Integer.TYPE);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractTakeUntil.class, "error", Throwable.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractTakeUntil.class, "requested", Long.TYPE);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractTakeUntil.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractTakeUntil.class, "upstream", Flow.Subscription.class);
 
         AbstractTakeUntil() {
             other = new UntilSubscriber(this);

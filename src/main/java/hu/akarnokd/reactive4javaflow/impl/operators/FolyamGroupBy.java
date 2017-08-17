@@ -68,31 +68,20 @@ public final class FolyamGroupBy<T, K, V> extends Folyam<GroupedFolyam<K, V>> {
         boolean outputFused;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), GroupBySubscriber.class, "requested", long.class);
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), GroupBySubscriber.class, "cancelled", boolean.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), GroupBySubscriber.class, "done", boolean.class);
 
         int groupCount;
-        static final VarHandle GROUP_COUNT;
+        static final VarHandle GROUP_COUNT = VH.find(MethodHandles.lookup(), GroupBySubscriber.class, "groupCount", int.class);
 
         Throwable error;
 
         long emitted;
-
-        static {
-            try {
-                CANCELLED = MethodHandles.lookup().findVarHandle(GroupBySubscriber.class, "cancelled", boolean.class);
-                DONE = MethodHandles.lookup().findVarHandle(GroupBySubscriber.class, "done", boolean.class);
-                GROUP_COUNT = MethodHandles.lookup().findVarHandle(GroupBySubscriber.class, "groupCount", int.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(GroupBySubscriber.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         GroupBySubscriber(FolyamSubscriber<? super GroupedFolyam<K, V>> actual, CheckedFunction<? super T, ? extends K> keySelector, CheckedFunction<? super T, ? extends V> valueSelector, int prefetch) {
             this.actual = actual;
@@ -340,40 +329,27 @@ public final class FolyamGroupBy<T, K, V> extends Folyam<GroupedFolyam<K, V>> {
             boolean outputFused;
 
             boolean once;
-            static final VarHandle ONCE;
+            static final VarHandle ONCE = VH.find(MethodHandles.lookup(), SolocastGroup.class, "once", boolean.class);
 
             FolyamSubscriber<? super V> actual;
-            static final VarHandle ACTUAL;
+            static final VarHandle ACTUAL = VH.find(MethodHandles.lookup(), SolocastGroup.class, "actual", FolyamSubscriber.class);
 
             long requested;
-            static final VarHandle REQUESTED;
+            static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), SolocastGroup.class, "requested", long.class);
 
             int wip;
-            static final VarHandle WIP;
+            static final VarHandle WIP = VH.find(MethodHandles.lookup(), SolocastGroup.class, "wip", int.class);
 
             boolean done;
-            static final VarHandle DONE;
+            static final VarHandle DONE = VH.find(MethodHandles.lookup(), SolocastGroup.class, "done", boolean.class);
             Throwable error;
 
             boolean cancelled;
-            static final VarHandle CANCELLED;
+            static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), SolocastGroup.class, "cancelled", boolean.class);
 
             long emitted;
 
             int consumed;
-
-            static {
-                try {
-                    ONCE = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "once", boolean.class);
-                    WIP = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "wip", int.class);
-                    REQUESTED = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "requested", long.class);
-                    DONE = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "done", boolean.class);
-                    ACTUAL = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "actual", FolyamSubscriber.class);
-                    CANCELLED = MethodHandles.lookup().findVarHandle(SolocastGroup.class, "cancelled", boolean.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
 
             SolocastGroup(K key, GroupBySubscriber<?, K, V> parent) {
                 this.key = key;

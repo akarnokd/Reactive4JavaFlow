@@ -54,15 +54,7 @@ public final class ParallelSumDouble<T> extends Esetleg<Double> {
         final Throwable[] errors;
 
         int n;
-        static final VarHandle N;
-
-        static {
-            try {
-                N = MethodHandles.lookup().findVarHandle(SumDoubleCoordinator.class, "n", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle N = VH.find(MethodHandles.lookup(), SumDoubleCoordinator.class, "n", int.class);
 
         SumDoubleCoordinator(FolyamSubscriber<? super Double> actual, int n, CheckedFunction<? super T, ? extends Number> valueSelector) {
             super(actual);

@@ -16,6 +16,7 @@
 
 package hu.akarnokd.reactive4javaflow;
 
+import hu.akarnokd.reactive4javaflow.impl.VH;
 import org.openjdk.jmh.annotations.*;
 
 import java.lang.invoke.*;
@@ -238,15 +239,7 @@ public class VarHandleCostPerf {
 
     static final class A {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(A.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), A.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -255,15 +248,7 @@ public class VarHandleCostPerf {
 
     static final class B {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(B.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), B.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -271,15 +256,7 @@ public class VarHandleCostPerf {
     }
     static final class C {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(C.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), C.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -287,15 +264,7 @@ public class VarHandleCostPerf {
     }
     static final class D {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(D.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), D.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -303,15 +272,7 @@ public class VarHandleCostPerf {
     }
     static final class E {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(E.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), E.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -319,15 +280,7 @@ public class VarHandleCostPerf {
     }
     static final class F {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(F.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), F.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);
@@ -335,15 +288,7 @@ public class VarHandleCostPerf {
     }
     static final class G {
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(G.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), G.class, "upstream", Flow.Subscription.class);
 
         void cancel() {
             VarHandleCostPerf.cancel(this, UPSTREAM);

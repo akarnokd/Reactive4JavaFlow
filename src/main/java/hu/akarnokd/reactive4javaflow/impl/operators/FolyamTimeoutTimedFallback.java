@@ -21,8 +21,8 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.concurrent.*;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -72,17 +72,7 @@ public final class FolyamTimeoutTimedFallback<T> extends Folyam<T> {
         AutoDisposable task;
 
         long index;
-        static final VarHandle INDEX;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                INDEX = lk.findVarHandle(AbstractTimeoutTimedFallback.class, "index", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
+        static final VarHandle INDEX = VH.find(MethodHandles.lookup(), AbstractTimeoutTimedFallback.class, "index", long.class);
 
         protected AbstractTimeoutTimedFallback(long timeout, TimeUnit unit, SchedulerService.Worker worker, Flow.Publisher<? extends T> fallback) {
             this.timeout = timeout;

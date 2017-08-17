@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.CleanerHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.OpenHashSet;
 
 import java.lang.invoke.*;
@@ -35,20 +35,14 @@ public final class IOSchedulerService implements SchedulerService, ThreadFactory
     final boolean daemon;
 
     IOPools current;
-    static final VarHandle CURRENT;
+    static final VarHandle CURRENT = VH.find(MethodHandles.lookup(), IOSchedulerService.class, "current", IOPools.class);
 
     long index;
-    static final VarHandle INDEX;
+    static final VarHandle INDEX = VH.find(MethodHandles.lookup(), IOSchedulerService.class, "index", Long.TYPE);
 
     static final ScheduledExecutorService STOPPED;
 
     static {
-        try {
-            INDEX = MethodHandles.lookup().findVarHandle(IOSchedulerService.class, "index", Long.TYPE);
-            CURRENT = MethodHandles.lookup().findVarHandle(IOSchedulerService.class, "current", IOPools.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
         STOPPED = Executors.newScheduledThreadPool(0);
         STOPPED.shutdown();
     }
@@ -264,15 +258,7 @@ public final class IOSchedulerService implements SchedulerService, ThreadFactory
         final Cleaner.Cleanable cleanable;
 
         boolean once;
-        static final VarHandle ONCE;
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(IOWorker.class, "once", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), IOWorker.class, "once", boolean.class);
 
         public IOWorker(ScheduledExecutorService exec, IOPools pools) {
             super(exec);

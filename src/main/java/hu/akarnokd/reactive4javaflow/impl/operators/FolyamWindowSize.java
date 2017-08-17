@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 import hu.akarnokd.reactive4javaflow.processors.SolocastProcessor;
 
@@ -183,35 +183,23 @@ public final class FolyamWindowSize<T> extends Folyam<Folyam<T>> {
         int produced;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), WindowSizeOverlappingSubscriber.class, "wip", int.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), WindowSizeOverlappingSubscriber.class, "done", boolean.class);
 
         Throwable error;
 
         boolean once;
-        static final VarHandle ONCE;
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), WindowSizeOverlappingSubscriber.class, "once", boolean.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), WindowSizeOverlappingSubscriber.class, "requested", long.class);
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), WindowSizeOverlappingSubscriber.class, "cancelled", boolean.class);
 
         long emitted;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(WindowSizeOverlappingSubscriber.class, "wip", int.class);
-                DONE = MethodHandles.lookup().findVarHandle(WindowSizeOverlappingSubscriber.class, "done", boolean.class);
-                ONCE = MethodHandles.lookup().findVarHandle(WindowSizeOverlappingSubscriber.class, "once", boolean.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(WindowSizeOverlappingSubscriber.class, "requested", long.class);
-                CANCELLED = MethodHandles.lookup().findVarHandle(WindowSizeOverlappingSubscriber.class, "cancelled", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         WindowSizeOverlappingSubscriber(FolyamSubscriber<? super Folyam<T>> actual, int size, int skip) {
             this.actual = actual;

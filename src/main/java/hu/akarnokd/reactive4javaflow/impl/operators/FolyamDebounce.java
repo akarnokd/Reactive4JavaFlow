@@ -51,27 +51,16 @@ public final class FolyamDebounce<T> extends Folyam<T> {
         Flow.Subscription upstream;
 
         long index;
-        static final VarHandle INDEX;
+        static final VarHandle INDEX = VH.find(MethodHandles.lookup(), DebounceSubscriber.class, "index", long.class);
 
         AutoDisposable task;
-        static final VarHandle TASK;
+        static final VarHandle TASK = VH.find(MethodHandles.lookup(), DebounceSubscriber.class, "task", AutoDisposable.class);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), DebounceSubscriber.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
-
-        static {
-            try {
-                INDEX = MethodHandles.lookup().findVarHandle(DebounceSubscriber.class, "index", long.class);
-                TASK = MethodHandles.lookup().findVarHandle(DebounceSubscriber.class, "task", AutoDisposable.class);
-                WIP = MethodHandles.lookup().findVarHandle(DebounceSubscriber.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(DebounceSubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), DebounceSubscriber.class, "error", Throwable.class);
 
         DebounceSubscriber(FolyamSubscriber<? super T> actual, CheckedFunction<? super T, ? extends Flow.Publisher<?>> itemDebouncer) {
             this.actual = actual;

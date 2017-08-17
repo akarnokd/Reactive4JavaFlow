@@ -31,26 +31,16 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
     final BufferManager<T> manager;
 
     CachingSubscription<T>[] subscribers;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), CachingProcessor.class, "subscribers", CachingSubscription[].class);
 
     static final CachingSubscription[] EMPTY = new CachingSubscription[0];
     static final CachingSubscription[] TERMINATED = new CachingSubscription[0];
 
     Throwable error;
-    static final VarHandle ERROR;
+    static final VarHandle ERROR = VH.find(MethodHandles.lookup(), CachingProcessor.class, "error", Throwable.class);
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(CachingProcessor.class, "subscribers", CachingSubscription[].class);
-            UPSTREAM = MethodHandles.lookup().findVarHandle(CachingProcessor.class, "upstream", Flow.Subscription.class);
-            ERROR = MethodHandles.lookup().findVarHandle(CachingProcessor.class, "error", Throwable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), CachingProcessor.class, "upstream", Flow.Subscription.class);
 
     public static <T> CachingProcessor<T> withCapacityHint(int capacityHint) {
         return new CachingProcessor<>(new UnboundedBufferManager<>(capacityHint));
@@ -275,24 +265,14 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         int tailOffset;
 
         long available;
-        static final VarHandle AVAILABLE;
+        static final VarHandle AVAILABLE = VH.find(MethodHandles.lookup(), UnboundedBufferManager.class, "available", long.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), UnboundedBufferManager.class, "done", boolean.class);
 
         Throwable error;
 
-        static final VarHandle ARRAY;
-
-        static {
-            try {
-                AVAILABLE = MethodHandles.lookup().findVarHandle(UnboundedBufferManager.class, "available", long.class);
-                DONE = MethodHandles.lookup().findVarHandle(UnboundedBufferManager.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-        }
+        static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
         UnboundedBufferManager(int capacityHint) {
             this.capacityHint = capacityHint;
@@ -498,27 +478,17 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         final int maxSize;
 
         Node<T> head;
-        static final VarHandle HEAD;
+        static final VarHandle HEAD = VH.find(MethodHandles.lookup(), SizeBoundBufferManager.class, "head", Node.class);
 
         Node<T> tail;
-        static final VarHandle TAIL;
+        static final VarHandle TAIL = VH.find(MethodHandles.lookup(), SizeBoundBufferManager.class, "tail", Node.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), SizeBoundBufferManager.class, "done", boolean.class);
 
         Throwable error;
 
         int size;
-
-        static {
-            try {
-                HEAD = MethodHandles.lookup().findVarHandle(SizeBoundBufferManager.class, "head", Node.class);
-                TAIL = MethodHandles.lookup().findVarHandle(SizeBoundBufferManager.class, "tail", Node.class);
-                DONE = MethodHandles.lookup().findVarHandle(SizeBoundBufferManager.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         SizeBoundBufferManager(int maxSize) {
             this.maxSize = maxSize;
@@ -726,27 +696,17 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         final SchedulerService executor;
 
         Node<T> head;
-        static final VarHandle HEAD;
+        static final VarHandle HEAD = VH.find(MethodHandles.lookup(), TimeBoundBufferManager.class, "head", Node.class);
 
         Node<T> tail;
-        static final VarHandle TAIL;
+        static final VarHandle TAIL = VH.find(MethodHandles.lookup(), TimeBoundBufferManager.class, "tail", Node.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), TimeBoundBufferManager.class, "done", boolean.class);
 
         Throwable error;
 
         int size;
-
-        static {
-            try {
-                HEAD = MethodHandles.lookup().findVarHandle(TimeBoundBufferManager.class, "head", Node.class);
-                TAIL = MethodHandles.lookup().findVarHandle(TimeBoundBufferManager.class, "tail", Node.class);
-                DONE = MethodHandles.lookup().findVarHandle(TimeBoundBufferManager.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         TimeBoundBufferManager(int maxSize, long timeout, TimeUnit unit, SchedulerService executor) {
             this.maxSize = maxSize;
@@ -987,19 +947,10 @@ public final class CachingProcessor<T> extends FolyamProcessor<T> implements Aut
         boolean outputFused;
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), CachingSubscription.class, "cancelled", boolean.class);
 
         long requested;
-        static final VarHandle REQUESTED;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(CachingSubscription.class, "requested", long.class);
-                CANCELLED = MethodHandles.lookup().findVarHandle(CachingSubscription.class, "cancelled", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), CachingSubscription.class, "requested", long.class);
 
         CachingSubscription(FolyamSubscriber<? super T> actual, BufferManager<T> manager, CachingProcessor<T> parent) {
             this.actual = actual;

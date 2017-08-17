@@ -28,15 +28,7 @@ import static org.junit.Assert.*;
 public class ExceptionHelperTest {
 
     Throwable error;
-    static final VarHandle ERROR;
-
-    static {
-        try {
-            ERROR = MethodHandles.lookup().findVarHandle(ExceptionHelperTest.class, "error", Throwable.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle ERROR = VH.find(MethodHandles.lookup(), ExceptionHelperTest.class, "error", Throwable.class);
 
     @Test
     public void utilityClass() {

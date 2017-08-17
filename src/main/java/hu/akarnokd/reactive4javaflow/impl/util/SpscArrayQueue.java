@@ -15,35 +15,23 @@
  */
 package hu.akarnokd.reactive4javaflow.impl.util;
 
-import hu.akarnokd.reactive4javaflow.impl.PlainQueue;
-import hu.akarnokd.reactive4javaflow.impl.QueueHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import java.lang.invoke.*;
 import java.util.Objects;
 
 public final class SpscArrayQueue<T> implements PlainQueue<T> {
 
     final T[] array;
-    static final VarHandle ARRAY;
+    static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
     final int mask;
 
     long producerIndex;
-    static final VarHandle PRODUCER_INDEX;
+    static final VarHandle PRODUCER_INDEX = VH.find(MethodHandles.lookup(), SpscArrayQueue.class, "producerIndex", Long.TYPE);
 
     long consumerIndex;
-    static final VarHandle CONSUMER_INDEX;
-
-    static {
-        try {
-            PRODUCER_INDEX = MethodHandles.lookup().findVarHandle(SpscArrayQueue.class, "producerIndex", Long.TYPE);
-            CONSUMER_INDEX = MethodHandles.lookup().findVarHandle(SpscArrayQueue.class, "consumerIndex", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-        ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-    }
+    static final VarHandle CONSUMER_INDEX = VH.find(MethodHandles.lookup(), SpscArrayQueue.class, "consumerIndex", Long.TYPE);
 
     public SpscArrayQueue(int capacity) {
         int c = QueueHelper.pow2(capacity);

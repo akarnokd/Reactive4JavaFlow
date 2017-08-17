@@ -17,15 +17,9 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.*;
-
-import static java.lang.invoke.MethodHandles.lookup;
+import java.util.concurrent.TimeUnit;
 
 public final class EsetlegTimeoutTimedFallback<T> extends Esetleg<T> {
 

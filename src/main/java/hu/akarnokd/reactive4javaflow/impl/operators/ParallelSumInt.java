@@ -23,7 +23,7 @@ import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ParallelSumInt<T> extends Esetleg<Integer> {
 
@@ -54,15 +54,7 @@ public final class ParallelSumInt<T> extends Esetleg<Integer> {
         final Throwable[] errors;
 
         int n;
-        static final VarHandle N;
-
-        static {
-            try {
-                N = MethodHandles.lookup().findVarHandle(SumIntCoordinator.class, "n", int.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle N = VH.find(MethodHandles.lookup(), SumIntCoordinator.class, "n", int.class);
 
         SumIntCoordinator(FolyamSubscriber<? super Integer> actual, int n, CheckedFunction<? super T, ? extends Number> valueSelector) {
             super(actual);

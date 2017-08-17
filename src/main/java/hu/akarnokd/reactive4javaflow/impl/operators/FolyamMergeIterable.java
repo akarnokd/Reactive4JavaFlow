@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
-import java.util.*;
+import java.util.Iterator;
 import java.util.concurrent.Flow;
 
 public final class FolyamMergeIterable<T> extends Folyam<T> {

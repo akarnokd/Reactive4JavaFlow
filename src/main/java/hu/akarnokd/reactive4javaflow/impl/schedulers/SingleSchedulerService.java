@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.Objects;
@@ -32,20 +33,14 @@ public final class SingleSchedulerService implements SchedulerService, ThreadFac
     final boolean daemon;
 
     long index;
-    static final VarHandle INDEX;
+    static final VarHandle INDEX = VH.find(MethodHandles.lookup(), SingleSchedulerService.class, "index", Long.TYPE);
 
     ScheduledExecutorService exec;
-    static final VarHandle EXEC;
+    static final VarHandle EXEC = VH.find(MethodHandles.lookup(), SingleSchedulerService.class, "exec", ScheduledExecutorService.class);
 
     static final ScheduledExecutorService SHUTDOWN;
 
     static {
-        try {
-            EXEC = MethodHandles.lookup().findVarHandle(SingleSchedulerService.class, "exec", ScheduledExecutorService.class);
-            INDEX = MethodHandles.lookup().findVarHandle(SingleSchedulerService.class, "index", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
         SHUTDOWN = Executors.newScheduledThreadPool(0);
         SHUTDOWN.shutdown();
     }

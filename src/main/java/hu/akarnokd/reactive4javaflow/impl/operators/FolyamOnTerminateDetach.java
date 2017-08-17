@@ -18,6 +18,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -43,21 +44,12 @@ public final class FolyamOnTerminateDetach<T> extends Folyam<T> {
     static abstract class AbstractOnTerminateDetach<T> implements FusedSubscription<T> {
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractOnTerminateDetach.class, "upstream", Flow.Subscription.class);
 
         FusedSubscription<T> qs;
-        static final VarHandle QS;
+        static final VarHandle QS = VH.find(MethodHandles.lookup(), AbstractOnTerminateDetach.class, "qs", FusedSubscription.class);
 
         int sourceFused;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractOnTerminateDetach.class, "upstream", Flow.Subscription.class);
-                QS = MethodHandles.lookup().findVarHandle(AbstractOnTerminateDetach.class, "qs", FusedSubscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         @Override
         @SuppressWarnings("unchecked")
@@ -139,15 +131,7 @@ public final class FolyamOnTerminateDetach<T> extends Folyam<T> {
     static final class OnTerminateDetachSubscriber<T> extends AbstractOnTerminateDetach<T> implements FolyamSubscriber<T> {
 
         FolyamSubscriber<? super T> actual;
-        static final VarHandle ACTUAL;
-
-        static {
-            try {
-                ACTUAL = MethodHandles.lookup().findVarHandle(OnTerminateDetachSubscriber.class, "actual", FolyamSubscriber.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ACTUAL = VH.find(MethodHandles.lookup(), OnTerminateDetachSubscriber.class, "actual", FolyamSubscriber.class);
 
         OnTerminateDetachSubscriber(FolyamSubscriber<? super T> actual) {
             ACTUAL.setRelease(this, actual);
@@ -204,15 +188,7 @@ public final class FolyamOnTerminateDetach<T> extends Folyam<T> {
     static final class OnTerminateDetachConditionalSubscriber<T> extends AbstractOnTerminateDetach<T> implements ConditionalSubscriber<T> {
 
         ConditionalSubscriber<? super T> actual;
-        static final VarHandle ACTUAL;
-
-        static {
-            try {
-                ACTUAL = MethodHandles.lookup().findVarHandle(OnTerminateDetachConditionalSubscriber.class, "actual", ConditionalSubscriber.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ACTUAL = VH.find(MethodHandles.lookup(), OnTerminateDetachConditionalSubscriber.class, "actual", ConditionalSubscriber.class);
 
         OnTerminateDetachConditionalSubscriber(ConditionalSubscriber<? super T> actual) {
             ACTUAL.setRelease(this, actual);

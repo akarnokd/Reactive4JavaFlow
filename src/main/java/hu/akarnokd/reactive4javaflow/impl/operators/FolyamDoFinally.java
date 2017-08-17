@@ -19,6 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedRunnable;
 import hu.akarnokd.reactive4javaflow.fused.*;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -57,17 +58,9 @@ public final class FolyamDoFinally<T> extends Folyam<T> {
         FusedSubscription<T> qs;
 
         boolean once;
-        static final VarHandle ONCE;
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), AbstractDoFinallySubscriber.class, "once", Boolean.TYPE);
 
         int fusionMode;
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(AbstractDoFinallySubscriber.class, "once", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractDoFinallySubscriber(CheckedRunnable onFinally, SchedulerService executor) {
             this.onFinally = onFinally;

@@ -18,9 +18,9 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
-import hu.akarnokd.reactive4javaflow.functionals.*;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedPredicate;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionArbiter;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -61,17 +61,9 @@ public final class FolyamRetry<T> extends Folyam<T> {
         long times;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractRepeatSubscriber.class, "wip", Integer.TYPE);
 
         long produced;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(AbstractRepeatSubscriber.class, "wip", Integer.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractRepeatSubscriber(long times, CheckedPredicate<? super Throwable> condition, FolyamPublisher<T> source) {
             this.times = times;

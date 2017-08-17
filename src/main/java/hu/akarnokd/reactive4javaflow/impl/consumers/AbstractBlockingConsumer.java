@@ -17,14 +17,10 @@
 package hu.akarnokd.reactive4javaflow.impl.consumers;
 
 import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.lang.invoke.*;
+import java.util.concurrent.*;
 
 public abstract class AbstractBlockingConsumer<T> extends CountDownLatch implements FolyamSubscriber<T> {
 
@@ -32,15 +28,7 @@ public abstract class AbstractBlockingConsumer<T> extends CountDownLatch impleme
     Throwable error;
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractBlockingConsumer.class, "upstream", Flow.Subscription.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractBlockingConsumer.class, "upstream", Flow.Subscription.class);
 
     public AbstractBlockingConsumer() {
         super(1);

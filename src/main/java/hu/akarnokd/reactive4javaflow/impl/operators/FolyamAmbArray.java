@@ -77,21 +77,12 @@ public final class FolyamAmbArray<T> extends Folyam<T> {
         final int index;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractInnerSubscriber.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractInnerSubscriber.class, "requested", Long.TYPE);
 
         boolean won;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractInnerSubscriber.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractInnerSubscriber.class, "requested", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractInnerSubscriber(int index) {
             this.index = index;

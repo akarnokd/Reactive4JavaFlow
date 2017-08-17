@@ -16,11 +16,8 @@
 
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
-import hu.akarnokd.reactive4javaflow.Folyam;
-import hu.akarnokd.reactive4javaflow.FolyamPlugins;
-import hu.akarnokd.reactive4javaflow.FolyamSubscriber;
-import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
-import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
+import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.fused.*;
 import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
 
 import java.util.Objects;

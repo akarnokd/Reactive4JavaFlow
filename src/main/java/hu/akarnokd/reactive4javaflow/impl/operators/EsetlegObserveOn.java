@@ -17,13 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
-import hu.akarnokd.reactive4javaflow.impl.util.*;
-
-import java.lang.invoke.*;
-import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicInteger;
+import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
 public final class EsetlegObserveOn<T> extends Esetleg<T> {
 

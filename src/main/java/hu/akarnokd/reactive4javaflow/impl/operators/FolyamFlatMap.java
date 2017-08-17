@@ -76,37 +76,25 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractFlatMap.class, "done", Boolean.TYPE);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractFlatMap.class, "error", Throwable.class);
 
         PlainQueue<R> scalarQueue;
-        static final VarHandle SCALAR_QUEUE;
+        static final VarHandle SCALAR_QUEUE = VH.find(MethodHandles.lookup(), AbstractFlatMap.class, "scalarQueue", PlainQueue.class);
 
         InnerFolyamSubscriber<R>[] subscribers;
-        static final VarHandle SUBSCRIBERS;
+        static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), AbstractFlatMap.class, "subscribers", InnerFolyamSubscriber[].class);
 
         static final InnerFolyamSubscriber[] EMPTY = new InnerFolyamSubscriber[0];
         static final InnerFolyamSubscriber[] TERMINATED = new InnerFolyamSubscriber[0];
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractFlatMap.class, "requested", Long.TYPE);
 
         int consumed;
         long emitted;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(AbstractFlatMap.class, "done", Boolean.TYPE);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractFlatMap.class, "error", Throwable.class);
-                SCALAR_QUEUE = MethodHandles.lookup().findVarHandle(AbstractFlatMap.class, "scalarQueue", PlainQueue.class);
-                SUBSCRIBERS = MethodHandles.lookup().findVarHandle(AbstractFlatMap.class, "subscribers", InnerFolyamSubscriber[].class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractFlatMap.class, "requested", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractFlatMap(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayErrors) {
             this.mapper = mapper;

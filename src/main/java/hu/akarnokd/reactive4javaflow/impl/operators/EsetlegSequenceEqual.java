@@ -57,22 +57,13 @@ public final class EsetlegSequenceEqual<T> extends Esetleg<Boolean> {
         final QueuedInnerFolyamSubscriber<T> sub2;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), SequenceEqualCoordinator.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), SequenceEqualCoordinator.class, "error", Throwable.class);
 
         T value1;
         T value2;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(SequenceEqualCoordinator.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(SequenceEqualCoordinator.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         SequenceEqualCoordinator(FolyamSubscriber<? super Boolean> actual, CheckedBiPredicate<? super T, ? super T> isEqual, int prefetch1, int prefetch2) {
             super(actual);

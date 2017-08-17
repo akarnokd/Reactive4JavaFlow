@@ -55,15 +55,7 @@ public final class FolyamTimer extends Folyam<Long> {
     static final class TimerSubscription extends DeferredScalarSubscription<Long> implements Runnable {
 
         AutoDisposable task;
-        static final VarHandle TASK;
-
-        static {
-            try {
-                TASK = MethodHandles.lookup().findVarHandle(TimerSubscription.class, "task", AutoDisposable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle TASK = VH.find(MethodHandles.lookup(), TimerSubscription.class, "task", AutoDisposable.class);
 
         public TimerSubscription(FolyamSubscriber<? super Long> actual) {
             super(actual);

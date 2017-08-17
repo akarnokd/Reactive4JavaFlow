@@ -91,25 +91,15 @@ public final class EsetlegFlatMapStream<T, R> extends Folyam<R> {
         final CheckedFunction<? super T, ? extends Stream<? extends R>> mapper;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "upstream", Flow.Subscription.class);
 
         Flow.Subscription innerUpstream;
-        static final VarHandle INNER_UPSTREAM;
+        static final VarHandle INNER_UPSTREAM = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "innerUpstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "requested", long.class);
 
         boolean done;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(FlatMapIterableSubscriber.class, "upstream", Flow.Subscription.class);
-                INNER_UPSTREAM = MethodHandles.lookup().findVarHandle(FlatMapIterableSubscriber.class, "innerUpstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(FlatMapIterableSubscriber.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         FlatMapIterableSubscriber(FolyamSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Stream<? extends R>> mapper) {
             this.actual = actual;

@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.errors.CompositeThrowable;
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.Objects;
@@ -99,15 +99,7 @@ public final class FolyamUsing<T, R> extends Folyam<T> {
         int fusionMode;
 
         boolean once;
-        static final VarHandle ONCE;
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(AbstractUsingSubscriber.class, "once", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), AbstractUsingSubscriber.class, "once", Boolean.TYPE);
 
         protected AbstractUsingSubscriber(R res, CheckedConsumer<? super R> resourceCleanup, boolean eager) {
             this.res = res;

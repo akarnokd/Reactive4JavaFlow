@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 
 import java.lang.invoke.*;
 import java.util.*;
@@ -149,15 +149,7 @@ public final class FolyamBufferSize<T, C extends Collection<? super T>> extends 
         C buffer;
 
         boolean once;
-        static final VarHandle ONCE;
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(BufferSkipSubscriber.class, "once", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), BufferSkipSubscriber.class, "once", boolean.class);
 
         BufferSkipSubscriber(FolyamSubscriber<? super C> actual, Callable<C> collectionSupplier, int size, int skip) {
             this.actual = actual;
@@ -263,23 +255,13 @@ public final class FolyamBufferSize<T, C extends Collection<? super T>> extends 
         Flow.Subscription upstream;
 
         boolean once;
-        static final VarHandle ONCE;
+        static final VarHandle ONCE = VH.find(MethodHandles.lookup(), BufferOverlapSubscriber.class, "once", boolean.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), BufferOverlapSubscriber.class, "requested", long.class);
 
         boolean cancelled;
-        static final VarHandle CANCELLED;
-
-        static {
-            try {
-                ONCE = MethodHandles.lookup().findVarHandle(BufferOverlapSubscriber.class, "once", boolean.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(BufferOverlapSubscriber.class, "requested", long.class);
-                CANCELLED = MethodHandles.lookup().findVarHandle(BufferOverlapSubscriber.class, "cancelled", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), BufferOverlapSubscriber.class, "cancelled", boolean.class);
 
         BufferOverlapSubscriber(FolyamSubscriber<? super C> actual, Callable<C> collectionSupplier, int size, int skip) {
             this.actual = actual;

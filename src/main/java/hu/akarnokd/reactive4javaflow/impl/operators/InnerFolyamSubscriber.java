@@ -34,22 +34,13 @@ implements FolyamSubscriber<T>, AutoDisposable {
     public final int prefetch;
 
     public FusedQueue<T> queue;
-    static final VarHandle QUEUE;
+    static final VarHandle QUEUE = VH.find(MethodHandles.lookup(), InnerFolyamSubscriber.class, "queue", FusedQueue.class);
 
     boolean done;
-    static final VarHandle DONE;
+    static final VarHandle DONE = VH.find(MethodHandles.lookup(), InnerFolyamSubscriber.class, "done", Boolean.TYPE);
 
     boolean allowRequest;
     int consumed;
-
-    static {
-        try {
-            QUEUE = MethodHandles.lookup().findVarHandle(InnerFolyamSubscriber.class, "queue", FusedQueue.class);
-            DONE = MethodHandles.lookup().findVarHandle(InnerFolyamSubscriber.class, "done", Boolean.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public InnerFolyamSubscriber(InnerFolyamSubscriberSupport<T> parent, int prefetch) {
         this.parent = parent;

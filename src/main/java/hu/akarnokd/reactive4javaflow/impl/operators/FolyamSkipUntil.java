@@ -53,29 +53,18 @@ public final class FolyamSkipUntil<T> extends Folyam<T> {
         final SkipUntilOtherSubscriber other;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractSkipUntil.class, "wip", int.class);
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractSkipUntil.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractSkipUntil.class, "requested", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractSkipUntil.class, "error", Throwable.class);
 
         volatile boolean gate;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(AbstractSkipUntil.class, "wip", int.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractSkipUntil.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractSkipUntil.class, "requested", long.class);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractSkipUntil.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractSkipUntil() {
             other = new SkipUntilOtherSubscriber(this);

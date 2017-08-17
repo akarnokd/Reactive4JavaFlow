@@ -20,8 +20,8 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscLinkedArrayQueue;
 
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.VarHandle;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.*;
 
@@ -65,33 +65,20 @@ public final class FolyamValve<T> extends Folyam<T> {
         final OtherSubscriber other;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), ValveMainSubscriber.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), ValveMainSubscriber.class, "requested", long.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), ValveMainSubscriber.class, "error", Throwable.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), ValveMainSubscriber.class, "done", boolean.class);
 
         volatile boolean gate;
 
         volatile boolean cancelled;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                UPSTREAM = lk.findVarHandle(ValveMainSubscriber.class, "upstream", Flow.Subscription.class);
-                REQUESTED = lk.findVarHandle(ValveMainSubscriber.class, "requested", long.class);
-                ERROR = lk.findVarHandle(ValveMainSubscriber.class, "error", Throwable.class);
-                DONE = lk.findVarHandle(ValveMainSubscriber.class, "done", boolean.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
-
 
         ValveMainSubscriber(FolyamSubscriber<? super T> actual, int bufferSize, boolean defaultOpen) {
             this.actual = actual;

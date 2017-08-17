@@ -19,8 +19,6 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 
-import java.util.concurrent.Flow;
-
 public final class EsetlegOnErrorComplete<T> extends Esetleg<T> {
 
     final Esetleg<T> source;

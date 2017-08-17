@@ -18,11 +18,11 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.*;
 
 import java.lang.invoke.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class FolyamObserveOn<T> extends Folyam<T> {
@@ -61,12 +61,12 @@ public final class FolyamObserveOn<T> extends Folyam<T> {
         FusedQueue<T> queue;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractObserveOn.class, "requested", Long.TYPE);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractObserveOn.class, "done", Boolean.TYPE);
         Throwable error;
 
         long emitted;
@@ -76,15 +76,6 @@ public final class FolyamObserveOn<T> extends Folyam<T> {
         int sourceFused;
 
         boolean outputFused;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractObserveOn.class, "requested", Long.TYPE);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractObserveOn.class, "done", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractObserveOn(int prefetch, SchedulerService.Worker worker) {
             this.prefetch = prefetch;

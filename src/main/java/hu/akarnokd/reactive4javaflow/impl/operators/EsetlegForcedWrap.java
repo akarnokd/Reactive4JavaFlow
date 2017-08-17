@@ -18,8 +18,6 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 
-import java.util.concurrent.Flow;
-
 public final class EsetlegForcedWrap<T> extends Esetleg<T> {
 
     final FolyamPublisher<? extends T> source;

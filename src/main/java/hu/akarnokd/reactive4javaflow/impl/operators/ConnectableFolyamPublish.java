@@ -18,8 +18,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.processors.MulticastProcessor;
-import hu.akarnokd.reactive4javaflow.impl.BooleanSubscription;
 
 import java.lang.invoke.*;
 import java.util.concurrent.Flow;
@@ -32,17 +32,9 @@ public final class ConnectableFolyamPublish<T> extends ConnectableFolyam<T> {
     final int prefetch;
 
     MulticastProcessor<T> processor;
-    static final VarHandle PROCESSOR;
+    static final VarHandle PROCESSOR = VH.find(MethodHandles.lookup(), ConnectableFolyamPublish.class, "processor", MulticastProcessor.class);
 
     static final Flow.Subscription CONNECT = new BooleanSubscription();
-
-    static {
-        try {
-            PROCESSOR = MethodHandles.lookup().findVarHandle(ConnectableFolyamPublish.class, "processor", MulticastProcessor.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public ConnectableFolyamPublish(FolyamPublisher<T> source, int prefetch) {
         this.source = source;

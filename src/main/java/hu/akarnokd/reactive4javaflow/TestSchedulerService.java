@@ -17,6 +17,7 @@
 package hu.akarnokd.reactive4javaflow;
 
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
 import java.util.concurrent.*;
@@ -29,19 +30,10 @@ public final class TestSchedulerService implements SchedulerService {
     long timeNanos;
 
     long index;
-    static final VarHandle INDEX;
+    static final VarHandle INDEX = VH.find(MethodHandles.lookup(), TestSchedulerService.class, "index", Long.TYPE);
 
     long workers;
-    static final VarHandle WORKERS;
-
-    static {
-        try {
-            INDEX = MethodHandles.lookup().findVarHandle(TestSchedulerService.class, "index", Long.TYPE);
-            WORKERS = MethodHandles.lookup().findVarHandle(TestSchedulerService.class, "workers", Long.TYPE);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
+    static final VarHandle WORKERS = VH.find(MethodHandles.lookup(), TestSchedulerService.class, "workers", Long.TYPE);
 
     public TestSchedulerService() {
         queue = new PriorityBlockingQueue<>();

@@ -31,38 +31,26 @@ public final class MulticastProcessor<T> extends FolyamProcessor<T> implements A
     final int prefetch;
 
     MulticastSubscription<T>[] subscribers;
-    static final VarHandle SUBSCRIBERS;
+    static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), MulticastProcessor.class, "subscribers", MulticastSubscription[].class);
 
     static final MulticastSubscription[] EMPTY = new MulticastSubscription[0];
     static final MulticastSubscription[] TERMINATED = new MulticastSubscription[0];
 
     int wip;
-    static final VarHandle WIP;
+    static final VarHandle WIP = VH.find(MethodHandles.lookup(), MulticastProcessor.class, "wip", int.class);
 
     Throwable error;
-    static final VarHandle ERROR;
+    static final VarHandle ERROR = VH.find(MethodHandles.lookup(), MulticastProcessor.class, "error", Throwable.class);
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), MulticastProcessor.class, "upstream", Flow.Subscription.class);
 
     FusedQueue<T> queue;
-    static final VarHandle QUEUE;
+    static final VarHandle QUEUE = VH.find(MethodHandles.lookup(), MulticastProcessor.class, "queue", FusedQueue.class);
 
     int consumed;
 
     int sourceFused;
-
-    static {
-        try {
-            WIP = MethodHandles.lookup().findVarHandle(MulticastProcessor.class, "wip", int.class);
-            SUBSCRIBERS = MethodHandles.lookup().findVarHandle(MulticastProcessor.class, "subscribers", MulticastSubscription[].class);
-            ERROR = MethodHandles.lookup().findVarHandle(MulticastProcessor.class, "error", Throwable.class);
-            UPSTREAM = MethodHandles.lookup().findVarHandle(MulticastProcessor.class, "upstream", Flow.Subscription.class);
-            QUEUE = MethodHandles.lookup().findVarHandle(MulticastProcessor.class, "queue", FusedQueue.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public MulticastProcessor() {
         this(FolyamPlugins.defaultBufferSize());

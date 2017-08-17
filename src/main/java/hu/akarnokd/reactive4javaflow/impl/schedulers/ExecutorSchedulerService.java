@@ -18,8 +18,8 @@ package hu.akarnokd.reactive4javaflow.impl.schedulers;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
+import hu.akarnokd.reactive4javaflow.impl.VH;
 import hu.akarnokd.reactive4javaflow.impl.util.OpenHashSet;
-import hu.akarnokd.reactive4javaflow.processors.FolyamProcessor;
 
 import java.lang.invoke.*;
 import java.util.Queue;
@@ -34,18 +34,13 @@ public final class ExecutorSchedulerService implements SchedulerService {
     final boolean trampoline;
 
     static ScheduledExecutorService timedHelper;
-    static final VarHandle TIMED_HELPER;
+    static final VarHandle TIMED_HELPER = VH.findStatic(MethodHandles.lookup(), ExecutorSchedulerService.class, "timedHelper", ScheduledExecutorService.class);
 
     static final ScheduledExecutorService SHUTDOWN;
 
     static final Future<?> CANCELLED;
 
     static {
-        try {
-            TIMED_HELPER = MethodHandles.lookup().findStaticVarHandle(ExecutorSchedulerService.class, "timedHelper", ScheduledExecutorService.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
         SHUTDOWN = Executors.newScheduledThreadPool(0);
         SHUTDOWN.shutdown();
         CANCELLED = new FutureTask<>(() -> null);
@@ -239,19 +234,10 @@ public final class ExecutorSchedulerService implements SchedulerService {
 
     static final class DoubleFuture implements AutoDisposable {
         Future<?> first;
-        static final VarHandle FIRST;
+        static final VarHandle FIRST = VH.find(MethodHandles.lookup(), DoubleFuture.class, "first", Future.class);
 
         Future<?> next;
-        static final VarHandle NEXT;
-
-        static {
-            try {
-                FIRST = MethodHandles.lookup().findVarHandle(DoubleFuture.class, "first", Future.class);
-                NEXT = MethodHandles.lookup().findVarHandle(DoubleFuture.class, "next", Future.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle NEXT = VH.find(MethodHandles.lookup(), DoubleFuture.class, "next", Future.class);
 
         @Override
         public void close() {
@@ -281,18 +267,10 @@ public final class ExecutorSchedulerService implements SchedulerService {
 
     static final class ExecutorDirectTimedTask extends AtomicReference<Runnable> implements Runnable, AutoDisposable {
         Future<?> first;
-        static final VarHandle FIRST;
+        static final VarHandle FIRST = VH.find(MethodHandles.lookup(), ExecutorDirectTimedTask.class, "first", Future.class);
 
         ExecutorDirectTimedTask(Runnable run) {
             setRelease(run);
-        }
-
-        static {
-            try {
-                FIRST = MethodHandles.lookup().findVarHandle(ExecutorDirectTimedTask.class, "first", Future.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
         }
 
         @Override
@@ -453,15 +431,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
         static final class ExecutorWorkerTask extends AtomicReference<Runnable> implements Runnable, AutoDisposable {
 
             Consumer<AutoDisposable> worker;
-            static final VarHandle WORKER;
-
-            static {
-                try {
-                    WORKER = MethodHandles.lookup().findVarHandle(ExecutorWorkerTask.class, "worker", Consumer.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle WORKER = VH.find(MethodHandles.lookup(), ExecutorWorkerTask.class, "worker", Consumer.class);
 
             ExecutorWorkerTask(Runnable run, Consumer<AutoDisposable> worker) {
                 this.worker = worker;
@@ -504,19 +474,10 @@ public final class ExecutorSchedulerService implements SchedulerService {
         static final class ExecutorWorkerTimedTask extends AtomicReference<Runnable> implements Runnable, AutoDisposable {
 
             Consumer<AutoDisposable> worker;
-            static final VarHandle WORKER;
+            static final VarHandle WORKER = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTask.class, "worker", Consumer.class);
 
             Future<?> first;
-            static final VarHandle FIRST;
-
-            static {
-                try {
-                    FIRST = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTask.class, "first", Future.class);
-                    WORKER = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTask.class, "worker", Consumer.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle FIRST = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTask.class, "first", Future.class);
 
             ExecutorWorkerTimedTask(Runnable run, Consumer<AutoDisposable> worker) {
                 this.worker = worker;
@@ -569,23 +530,13 @@ public final class ExecutorSchedulerService implements SchedulerService {
         static final class ExecutorWorkerTimedTaskServiced extends AtomicReference<Runnable> implements Callable<Void>, AutoDisposable {
 
             Consumer<AutoDisposable> worker;
-            static final VarHandle WORKER;
+            static final VarHandle WORKER = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTaskServiced.class, "worker", Consumer.class);
 
             Future<?> first;
-            static final VarHandle FIRST;
+            static final VarHandle FIRST = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTaskServiced.class, "first", Future.class);
 
             Future<?> next;
-            static final VarHandle NEXT;
-
-            static {
-                try {
-                    FIRST = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTaskServiced.class, "first", Future.class);
-                    NEXT = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTaskServiced.class, "next", Future.class);
-                    WORKER = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTaskServiced.class, "worker", Consumer.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle NEXT = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTaskServiced.class, "next", Future.class);
 
             ExecutorWorkerTimedTaskServiced(Runnable run, Consumer<AutoDisposable> worker) {
                 this.worker = worker;
@@ -652,21 +603,13 @@ public final class ExecutorSchedulerService implements SchedulerService {
         final Executor executor;
 
         long wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), ExecutorTrampolinedWorker.class, "wip", Long.TYPE);
 
         final ConcurrentLinkedQueue<Runnable> queue;
 
         OpenHashSet<AutoDisposable> tasks;
 
         volatile boolean closed;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(ExecutorTrampolinedWorker.class, "wip", Long.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         ExecutorTrampolinedWorker(Executor executor) {
             this.executor = executor;
@@ -817,15 +760,7 @@ public final class ExecutorSchedulerService implements SchedulerService {
         static final class ExecutorWorkerTask extends AtomicReference<Runnable> implements Runnable, AutoDisposable {
 
             Consumer<AutoDisposable> worker;
-            static final VarHandle WORKER;
-
-            static {
-                try {
-                    WORKER = MethodHandles.lookup().findVarHandle(ExecutorWorkerTask.class, "worker", Consumer.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle WORKER = VH.find(MethodHandles.lookup(), ExecutorWorkerTask.class, "worker", Consumer.class);
 
             ExecutorWorkerTask(Runnable run, Consumer<AutoDisposable> worker) {
                 this.worker = worker;
@@ -867,19 +802,10 @@ public final class ExecutorSchedulerService implements SchedulerService {
         static final class ExecutorWorkerTimedTask extends AtomicReference<Runnable> implements Runnable, AutoDisposable {
 
             Consumer<AutoDisposable> worker;
-            static final VarHandle WORKER;
+            static final VarHandle WORKER = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTask.class, "worker", Consumer.class);
 
             Future<?> first;
-            static final VarHandle FIRST;
-
-            static {
-                try {
-                    FIRST = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTask.class, "first", Future.class);
-                    WORKER = MethodHandles.lookup().findVarHandle(ExecutorWorkerTimedTask.class, "worker", Consumer.class);
-                } catch (Throwable ex) {
-                    throw new InternalError(ex);
-                }
-            }
+            static final VarHandle FIRST = VH.find(MethodHandles.lookup(), ExecutorWorkerTimedTask.class, "first", Future.class);
 
             ExecutorWorkerTimedTask(Runnable run, Consumer<AutoDisposable> worker) {
                 this.worker = worker;

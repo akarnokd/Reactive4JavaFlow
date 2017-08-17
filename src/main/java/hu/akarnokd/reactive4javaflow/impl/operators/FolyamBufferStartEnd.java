@@ -84,31 +84,21 @@ public final class FolyamBufferStartEnd<T, U, C extends Collection<? super T>> e
         final BufferStartSubscriber<U> openSubscriber;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "upstream", Flow.Subscription.class);
 
         volatile boolean cancelled;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "error", Throwable.class);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), BufferStartEndSubscriber.class, "done", boolean.class);
 
         static final Object ITEM = new Object();
 
         static final Object OPEN = new Object();
 
         static final Object CLOSE = new Object();
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "done", boolean.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "upstream", Flow.Subscription.class);
-                ERROR = MethodHandles.lookup().findVarHandle(BufferStartEndSubscriber.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         BufferStartEndSubscriber(FolyamSubscriber<? super C> actual, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end, Callable<C> collectionSupplier) {
             this.actual = actual;
@@ -317,19 +307,10 @@ public final class FolyamBufferStartEnd<T, U, C extends Collection<? super T>> e
         long index;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BufferStartSubscriber.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(BufferStartSubscriber.class, "requested", long.class);
-                UPSTREAM = MethodHandles.lookup().findVarHandle(BufferStartSubscriber.class, "upstream", Flow.Subscription.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), BufferStartSubscriber.class, "requested", long.class);
 
         BufferStartSubscriber(BufferStartSupport<U> parent) {
             this.parent = parent;

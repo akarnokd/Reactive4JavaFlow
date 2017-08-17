@@ -75,37 +75,25 @@ public final class FolyamConcatMapEager<T, R> extends Folyam<R> {
         Flow.Subscription upstream;
 
         QueuedInnerFolyamSubscriber<R>[] subscribers;
-        static final VarHandle SUBSCRIBERS;
+        static final VarHandle SUBSCRIBERS = VH.find(MethodHandles.lookup(), AbstractConcatMapEager.class, "subscribers", QueuedInnerFolyamSubscriber[].class);
 
         static final QueuedInnerFolyamSubscriber[] EMPTY = new QueuedInnerFolyamSubscriber[0];
         static final QueuedInnerFolyamSubscriber[] TERMINATED = new QueuedInnerFolyamSubscriber[0];
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractConcatMapEager.class, "requested", long.class);
 
         volatile boolean cancelled;
 
         QueuedInnerFolyamSubscriber<R> active;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractConcatMapEager.class, "done", boolean.class);
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractConcatMapEager.class, "error", Throwable.class);
 
         long emitted;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                SUBSCRIBERS = lk.findVarHandle(AbstractConcatMapEager.class, "subscribers", QueuedInnerFolyamSubscriber[].class);
-                REQUESTED = lk.findVarHandle(AbstractConcatMapEager.class, "requested", long.class);
-                DONE = lk.findVarHandle(AbstractConcatMapEager.class, "done", boolean.class);
-                ERROR = lk.findVarHandle(AbstractConcatMapEager.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractConcatMapEager(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper, int maxConcurrency, int prefetch, boolean delayError) {
             this.mapper = mapper;

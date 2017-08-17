@@ -17,7 +17,7 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
-import hu.akarnokd.reactive4javaflow.functionals.*;
+import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.*;
 
@@ -78,35 +78,22 @@ public final class FolyamWithLatestFromMany<T, U, R> extends Folyam<R> {
         final int n;
 
         int active;
-        static final VarHandle ACTIVE;
+        static final VarHandle ACTIVE = VH.find(MethodHandles.lookup(), AbstractWithLatestFromMany.class, "active", int.class);
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM;
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractWithLatestFromMany.class, "upstream", Flow.Subscription.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractWithLatestFromMany.class, "requested", long.class);
 
         Object[] latest;
-        static final VarHandle LATEST;
+        static final VarHandle LATEST = MethodHandles.arrayElementVarHandle(Object[].class);
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractWithLatestFromMany.class, "wip", int.class);
 
         Throwable error;
-        static final VarHandle ERROR;
-
-        static {
-            try {
-                UPSTREAM = MethodHandles.lookup().findVarHandle(AbstractWithLatestFromMany.class, "upstream", Flow.Subscription.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractWithLatestFromMany.class, "requested", long.class);
-                ACTIVE = MethodHandles.lookup().findVarHandle(AbstractWithLatestFromMany.class, "active", int.class);
-                WIP = MethodHandles.lookup().findVarHandle(AbstractWithLatestFromMany.class, "wip", int.class);
-                ERROR = MethodHandles.lookup().findVarHandle(AbstractWithLatestFromMany.class, "error", Throwable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-            LATEST = MethodHandles.arrayElementVarHandle(Object[].class);
-        }
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractWithLatestFromMany.class, "error", Throwable.class);
 
         protected AbstractWithLatestFromMany(CheckedFunction<? super Object[], ? extends R> combiner, int n) {
             this.combiner = combiner;

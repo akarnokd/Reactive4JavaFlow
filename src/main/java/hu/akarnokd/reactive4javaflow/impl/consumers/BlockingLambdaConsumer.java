@@ -19,7 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.consumers;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.*;
-import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscArrayQueue;
 
 import java.lang.invoke.*;
@@ -39,31 +39,20 @@ public final class BlockingLambdaConsumer<T> extends ReentrantLock implements Fo
     final Condition condition;
 
     FusedQueue<T> queue;
-    static final VarHandle QUEUE;
+    static final VarHandle QUEUE = VH.find(MethodHandles.lookup(), BlockingLambdaConsumer.class, "queue", FusedQueue.class);
 
     boolean done;
-    static final VarHandle DONE;
+    static final VarHandle DONE = VH.find(MethodHandles.lookup(), BlockingLambdaConsumer.class, "done", Boolean.TYPE);
 
     Throwable error;
 
     Flow.Subscription upstream;
-    static final VarHandle UPSTREAM;
+    static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BlockingLambdaConsumer.class, "upstream", Flow.Subscription.class);
 
     long wip;
-    static final VarHandle WIP;
+    static final VarHandle WIP = VH.find(MethodHandles.lookup(), BlockingLambdaConsumer.class, "wip", Long.TYPE);
 
     int sourceFused;
-
-    static {
-        try {
-            UPSTREAM = MethodHandles.lookup().findVarHandle(BlockingLambdaConsumer.class, "upstream", Flow.Subscription.class);
-            WIP = MethodHandles.lookup().findVarHandle(BlockingLambdaConsumer.class, "wip", Long.TYPE);
-            DONE = MethodHandles.lookup().findVarHandle(BlockingLambdaConsumer.class, "done", Boolean.TYPE);
-            QUEUE = MethodHandles.lookup().findVarHandle(BlockingLambdaConsumer.class, "queue", FusedQueue.class);
-        } catch (Throwable ex) {
-            throw new InternalError(ex);
-        }
-    }
 
     public BlockingLambdaConsumer(CheckedConsumer<? super T> onNext, CheckedConsumer<? super Throwable> onError, CheckedRunnable onComplete, int prefetch) {
         this.onNext = onNext;

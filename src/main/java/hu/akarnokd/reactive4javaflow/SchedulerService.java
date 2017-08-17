@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.PeriodicTask;
 
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 
 public interface SchedulerService {

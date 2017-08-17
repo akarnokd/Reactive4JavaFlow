@@ -20,7 +20,7 @@ import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.impl.EmptySubscription;
 
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 public final class EsetlegDefer<T> extends Esetleg<T> {
 

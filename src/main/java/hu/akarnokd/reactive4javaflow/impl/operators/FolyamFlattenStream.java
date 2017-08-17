@@ -61,10 +61,10 @@ public final class FolyamFlattenStream<T, R> extends Folyam<R> {
         final int limit;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractFlattenIterable.class, "requested", Long.TYPE);
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractFlattenIterable.class, "done", Boolean.TYPE);
         Throwable error;
 
         volatile boolean cancelled;
@@ -82,15 +82,6 @@ public final class FolyamFlattenStream<T, R> extends Folyam<R> {
         int consumed;
 
         long emitted;
-
-        static {
-            try {
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractFlattenIterable.class, "requested", Long.TYPE);
-                DONE = MethodHandles.lookup().findVarHandle(AbstractFlattenIterable.class, "done", Boolean.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractFlattenIterable(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper, int prefetch) {
             this.mapper = mapper;

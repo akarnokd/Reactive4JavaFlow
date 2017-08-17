@@ -68,22 +68,13 @@ public final class FolyamOnBackpressureBufferDrop<T> extends Folyam<T> {
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractOnBackpressureBufferDrop.class, "done", boolean.class);
         Throwable error;
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractOnBackpressureBufferDrop.class, "requested", long.class);
 
         long emitted;
-
-        static {
-            try {
-                DONE = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureBufferDrop.class, "done", boolean.class);
-                REQUESTED = MethodHandles.lookup().findVarHandle(AbstractOnBackpressureBufferDrop.class, "requested", long.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractOnBackpressureBufferDrop(int capacity, boolean dropNewest, CheckedConsumer<? super T> onDrop) {
             this.capacity = capacity;

@@ -68,17 +68,9 @@ public final class FolyamConcatIterable<T> extends Folyam<T> {
         long produced;
 
         int wip;
-        static final VarHandle WIP;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractConcatIterable.class, "wip", Integer.TYPE);
 
         Throwable error;
-
-        static {
-            try {
-                WIP = MethodHandles.lookup().findVarHandle(AbstractConcatIterable.class, "wip", Integer.TYPE);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         AbstractConcatIterable(boolean delayError, Iterator<? extends Flow.Publisher<? extends T>> sources) {
             this.delayError = delayError;

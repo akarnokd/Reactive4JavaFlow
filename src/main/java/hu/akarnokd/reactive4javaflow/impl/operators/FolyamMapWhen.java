@@ -73,27 +73,27 @@ public final class FolyamMapWhen<T, U, R> extends Folyam<R> {
         Flow.Subscription upstream;
 
         AutoDisposable other;
-        static final VarHandle OTHER;
+        static final VarHandle OTHER = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "other", AutoDisposable.class);
 
         long producerIndex;
-        static final VarHandle PRODUCER_INDEX;
+        static final VarHandle PRODUCER_INDEX = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "producerIndex", long.class);
 
         long consumerIndex;
-        static final VarHandle CONSUMER_INDEX;
+        static final VarHandle CONSUMER_INDEX = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "consumerIndex", long.class);
 
         long requested;
-        static final VarHandle REQUESTED;
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "requested", long.class);
 
         volatile boolean cancelled;
 
         boolean done;
-        static final VarHandle DONE;
+        static final VarHandle DONE = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "done", boolean.class);
 
-        static final VarHandle ARRAY;
+        static final VarHandle ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
 
         U result;
         int state;
-        static final VarHandle STATE;
+        static final VarHandle STATE = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "state", int.class);
 
         static final int STATE_NONE = 0;
         static final int STATE_RUNNING = 1;
@@ -101,28 +101,11 @@ public final class FolyamMapWhen<T, U, R> extends Folyam<R> {
         static final int STATE_VALUE = 3;
 
         Throwable error;
-        static final VarHandle ERROR;
+        static final VarHandle ERROR = VH.find(MethodHandles.lookup(), AbstractMapWhen.class, "error", Throwable.class);
 
         long emitted;
 
         int consumed;
-
-        static {
-            Lookup lk = lookup();
-            try {
-                PRODUCER_INDEX = lk.findVarHandle(AbstractMapWhen.class, "producerIndex", long.class);
-                CONSUMER_INDEX = lk.findVarHandle(AbstractMapWhen.class, "consumerIndex", long.class);
-                DONE = lk.findVarHandle(AbstractMapWhen.class, "done", boolean.class);
-                STATE = lk.findVarHandle(AbstractMapWhen.class, "state", int.class);
-                ERROR = lk.findVarHandle(AbstractMapWhen.class, "error", Throwable.class);
-                REQUESTED = lk.findVarHandle(AbstractMapWhen.class, "requested", long.class);
-                OTHER = lk.findVarHandle(AbstractMapWhen.class, "other", AutoDisposable.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-            ARRAY = MethodHandles.arrayElementVarHandle(Object[].class);
-        }
-
 
         AbstractMapWhen(CheckedFunction<? super T, ? extends Flow.Publisher<? extends U>> mapper, CheckedBiFunction<? super T, ? super U, ? extends R> combiner, int prefetch, boolean delayError) {
             this.mapper = mapper;

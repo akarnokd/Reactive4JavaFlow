@@ -65,19 +65,11 @@ public final class FolyamStream<T> extends Folyam<T> {
         Iterator<? extends T> iterator;
 
         Stream<? extends T> resource;
-        static final VarHandle RESOURCE;
+        static final VarHandle RESOURCE = VH.find(MethodHandles.lookup(), AbstractStreamSubscription.class, "resource", Stream.class);
 
         boolean checkNext;
 
         volatile boolean cancelled;
-
-        static {
-            try {
-                RESOURCE = MethodHandles.lookup().findVarHandle(AbstractStreamSubscription.class, "resource", Stream.class);
-            } catch (Throwable ex) {
-                throw new InternalError(ex);
-            }
-        }
 
         protected AbstractStreamSubscription(Iterator<? extends T> iterator, Stream<? extends T> resource) {
             this.iterator = iterator;
