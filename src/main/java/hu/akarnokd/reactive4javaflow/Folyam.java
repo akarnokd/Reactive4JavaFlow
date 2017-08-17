@@ -986,8 +986,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
 
     public final <R> Folyam<R> flatMapStream(CheckedFunction<? super T, ? extends Stream<? extends R>> mapper, int prefetch) {
         Objects.requireNonNull(mapper, "mapper == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamFlattenStream<>(this, mapper, prefetch));
     }
 
     public final <R> Folyam<R> concatMapEager(CheckedFunction<? super T, ? extends Flow.Publisher<? extends R>> mapper) {
@@ -1474,8 +1473,7 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
         Objects.requireNonNull(start, "start == null");
         Objects.requireNonNull(end, "end == null");
         Objects.requireNonNull(collectionSupplier, "collectionSupplier == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamBufferStartEnd<>(this, start, end, collectionSupplier));
     }
 
     public final Folyam<List<T>> bufferWhile(CheckedPredicate<? super T> predicate) {
@@ -1525,15 +1523,14 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
 
     public final Folyam<Folyam<T>> window(Flow.Publisher<?> boundary, int maxSize) {
         Objects.requireNonNull(boundary, "boundary == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        ParameterHelper.verifyPositive(maxSize, "maxSize");
+        return FolyamPlugins.onAssembly(new FolyamWindowBoundary<>(this, boundary, maxSize));
     }
 
     public final <U> Folyam<Folyam<T>> window(Flow.Publisher<U> start, CheckedFunction<? super U, ? extends Flow.Publisher<?>> end) {
         Objects.requireNonNull(start, "start == null");
         Objects.requireNonNull(end, "end == null");
-        // TODO implement
-        throw new UnsupportedOperationException("Not implemented yet!");
+        return FolyamPlugins.onAssembly(new FolyamWindowStartEnd<>(this, start, end));
     }
 
     public final <K> Folyam<GroupedFolyam<K, T>> groupBy(CheckedFunction<? super T, ? extends K> keySelector) {

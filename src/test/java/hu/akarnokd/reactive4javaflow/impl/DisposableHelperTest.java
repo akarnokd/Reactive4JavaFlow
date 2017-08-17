@@ -21,6 +21,7 @@ import hu.akarnokd.reactive4javaflow.disposables.BooleanAutoDisposable;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.invoke.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -144,5 +145,17 @@ public class DisposableHelperTest {
 
             assertTrue(d1.isClosed() != d2.isClosed());
         }
+    }
+
+    @Test
+    public void closeSilently() {
+        DisposableHelper.closeSilently(null);
+        DisposableHelper.closeSilently(() -> { });
+
+        TestHelper.withErrorTracking(errors -> {
+            DisposableHelper.closeSilently(() -> { throw new IOException(); });
+
+            TestHelper.assertError(errors, 0, IOException.class);
+        });
     }
 }
