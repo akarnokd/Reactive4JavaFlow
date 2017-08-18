@@ -1,0 +1,58 @@
+/*
+ * Copyright 2017 David Karnok
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package hu.akarnokd.reactive4javaflow;
+
+import org.openjdk.jmh.annotations.*;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Example benchmark. Run from command line as
+ * <br>
+ * gradle jmh -Pjmh="ParallelProcessingPerf"
+ */
+@BenchmarkMode(Mode.SingleShotTime)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Fork(value = 1)
+@State(Scope.Thread)
+public class ParallelProcessingPerf {
+
+    @Benchmark
+    public void process() {
+        int[] counters = { 0, 0 };
+        Folyam.range(1, 1_000)
+                .flatMap(v -> Folyam.range(v * 50_000, 50_000))
+                .parallel()
+                .runOn(SchedulerServices.computation())
+                .map(v -> {
+                    List<Runnable> tasks = new ArrayList<>();
+
+                    tasks.add(() -> { counters[0]++; });
+                    if ((v & 3) == 0) {
+                        tasks.add(() -> { counters[1]++; });
+                    }
+
+                    return tasks;
+                })
+                .sequential()
+                .blockingSubscribe(list -> list.forEach(Runnable::run), Throwable::printStackTrace);
+    }
+
+}
