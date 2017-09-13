@@ -19,6 +19,8 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.Folyam;
 import org.junit.Test;
 
+import java.io.IOException;
+
 public class FolyamMinMaxTest {
 
     @Test
@@ -54,5 +56,29 @@ public class FolyamMinMaxTest {
                 .max(Integer::compare)
                 .test()
                 .assertResult((int)'e');
+    }
+
+    @Test
+    public void comparatorCrash() {
+        Folyam.characters("edcba")
+                .max((a, b) -> { throw new IllegalArgumentException(); })
+                .test()
+                .assertFailure(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void errorSource() {
+        Folyam.<Integer>error(new IOException())
+                .max(Integer::compare)
+                .test()
+                .assertFailure(IOException.class);
+    }
+
+    @Test
+    public void empty() {
+        Folyam.<Integer>empty()
+                .max(Integer::compare)
+                .test()
+                .assertResult();
     }
 }

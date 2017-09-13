@@ -49,8 +49,9 @@ public class ShakespearePlaysScrabbleWithFolyamOpt extends ShakespearePlaysScrab
     @Measurement(
         iterations = 5, time = 1
     )
-    @Fork(value = 1, jvmArgs = {
+    @Fork(value = 1, jvmArgsAppend = {
             "-XX:MaxInlineLevel=20"
+            //, "-XX:+UseParallelGC"
 //            , "-XX:+UnlockDiagnosticVMOptions",
 //            , "-XX:+PrintAssembly",
 //            , "-XX:+TraceClassLoading",

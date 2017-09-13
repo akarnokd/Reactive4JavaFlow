@@ -1700,12 +1700,14 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
 
     public final Esetleg<T> min(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        return reduce((a, b) -> comparator.compare(a, b) < 0 ? a : b);
+        //return reduce((a, b) -> comparator.compare(a, b) < 0 ? a : b);
+        return FolyamPlugins.onAssembly(new EsetlegMinMax<>(this, comparator, 1));
     }
 
     public final Esetleg<T> max(Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator, "comparator == null");
-        return reduce((a, b) -> comparator.compare(a, b) > 0 ? a : b);
+        //return reduce((a, b) -> comparator.compare(a, b) > 0 ? a : b);
+        return FolyamPlugins.onAssembly(new EsetlegMinMax<>(this, comparator, -1));
     }
 
     public final Esetleg<Integer> sumInt(CheckedFunction<? super T, ? extends Number> valueSelector) {
