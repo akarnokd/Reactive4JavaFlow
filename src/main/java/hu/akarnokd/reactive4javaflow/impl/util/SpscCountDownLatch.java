@@ -18,9 +18,15 @@ package hu.akarnokd.reactive4javaflow.impl.util;
 import hu.akarnokd.reactive4javaflow.impl.VH;
 
 import java.lang.invoke.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
 public class SpscCountDownLatch {
+
+    static {
+        // avoid lost park/unpark due to class initialization
+        Class<?> ls = LockSupport.class;
+    }
 
     Object waiter;
     static final VarHandle WAITER = VH.find(MethodHandles.lookup(), SpscCountDownLatch.class, "waiter", Object.class);
@@ -36,14 +42,33 @@ public class SpscCountDownLatch {
         if (WAITER.compareAndSet(this, null, Thread.currentThread())) {
             for (;;) {
                 LockSupport.park();
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
                 if (WAITER.getAcquire(this) == this) {
                     return;
                 }
-                if (Thread.currentThread().isInterrupted()) {
+            }
+        }
+    }
+
+    public final boolean await(long time, TimeUnit unit) throws InterruptedException {
+        if (WAITER.compareAndSet(this, null, Thread.currentThread())) {
+            long deadline = System.currentTimeMillis() + unit.toMillis(time);
+            for (;;) {
+                LockSupport.parkUntil(deadline);
+                if (Thread.interrupted()) {
                     throw new InterruptedException();
+                }
+                if (WAITER.getAcquire(this) == this) {
+                    return true;
+                }
+                if (System.currentTimeMillis() >= deadline) {
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     public final long getCount() {

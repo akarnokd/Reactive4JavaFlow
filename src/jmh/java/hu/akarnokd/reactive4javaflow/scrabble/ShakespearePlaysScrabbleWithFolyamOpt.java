@@ -152,21 +152,13 @@ public class ShakespearePlaysScrabbleWithFolyamOpt extends ShakespearePlaysScrab
         // score of the word put on the board
         CheckedFunction<String, Esetleg<Integer>> score3 =
             word ->
-//                MathFolyam.sumInt(Folyam.concat(
-//                        score2.apply(word).map(v -> v * 2),
-//                        bonusForDoubleLetter.apply(word).map(v -> v * 2),
-//                        Folyam.just(word.length() == 7 ? 50 : 0)
-//                  ));
                 Folyam.concatArray(
                     score2.apply(word),
                     bonusForDoubleLetter.apply(word)
-                ).sumInt(v -> v)
-                        .map(v -> v * 2 + (word.length() == 7 ? 50 : 0))
+                )
+                .sumInt(v -> v)
+                .map(v -> v * 2 + (word.length() == 7 ? 50 : 0))
 
-//                new FolyamSumIntArray<Integer>(
-//                        score2.apply(word),
-//                        bonusForDoubleLetter.apply(word)
-//                ).map(v -> 2 * v + (word.length() == 7 ? 50 : 0))
                 ;
 
         CheckedFunction<CheckedFunction<String, Esetleg<Integer>>, Esetleg<TreeMap<Integer, List<String>>>> buildHistoOnScore =
@@ -209,6 +201,19 @@ public class ShakespearePlaysScrabbleWithFolyamOpt extends ShakespearePlaysScrab
     public static void main(String[] args) throws Throwable {
         ShakespearePlaysScrabbleWithFolyamOpt s = new ShakespearePlaysScrabbleWithFolyamOpt();
         s.init();
+        FolyamSynchronousProfiler p = new FolyamSynchronousProfiler();
+        p.start();
+        for (int i = 0; i < 100; i++) {
+            System.out.println(s.measureThroughput());
+        }
+        p.clear();
+
         System.out.println(s.measureThroughput());
+
+        p.stop();
+
+        System.out.println();
+
+        p.print();
     }
 }

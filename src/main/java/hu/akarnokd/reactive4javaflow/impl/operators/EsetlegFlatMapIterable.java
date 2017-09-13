@@ -39,7 +39,11 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
     @Override
     protected void subscribeActual(FolyamSubscriber<? super R> s) {
         if (!tryScalarXMap(source, s, mapper)) {
-            source.subscribe(new FlatMapIterableSubscriber<>(s, mapper));
+            if (s instanceof ConditionalSubscriber) {
+                source.subscribe(new FlatMapIterableConditionalSubscriber<>((ConditionalSubscriber<? super R>)s, mapper));
+            } else {
+                source.subscribe(new FlatMapIterableSubscriber<>(s, mapper));
+            }
         }
     }
 
@@ -91,38 +95,115 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
         return false;
     }
 
-    static final class FlatMapIterableSubscriber<T, R> implements FolyamSubscriber<T>, Flow.Subscription {
-
-        final FolyamSubscriber<? super R> actual;
+    static abstract class AbstractFlatMapIterableSubscriber<T, R> implements FolyamSubscriber<T>, FusedSubscription<R> {
 
         final CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper;
 
         Flow.Subscription upstream;
-        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "upstream", Flow.Subscription.class);
+        static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractFlatMapIterableSubscriber.class, "upstream", Flow.Subscription.class);
 
-        Flow.Subscription innerUpstream;
-        static final VarHandle INNER_UPSTREAM = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "innerUpstream", Flow.Subscription.class);
+        boolean outputFused;
+
+        Iterator<? extends R> iterator;
+        static final VarHandle ITERATOR = VH.find(MethodHandles.lookup(), AbstractFlatMapIterableSubscriber.class, "iterator", Iterator.class);
+
+        boolean checkNext;
 
         long requested;
-        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), FlatMapIterableSubscriber.class, "requested", long.class);
+        static final VarHandle REQUESTED = VH.find(MethodHandles.lookup(), AbstractFlatMapIterableSubscriber.class, "requested", long.class);
+
+        int wip;
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractFlatMapIterableSubscriber.class, "wip", int.class);
+
+        volatile boolean cancelled;
 
         boolean done;
 
-        FlatMapIterableSubscriber(FolyamSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
-            this.actual = actual;
+        long emitted;
+
+        protected AbstractFlatMapIterableSubscriber(CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
             this.mapper = mapper;
         }
 
         @Override
-        public void onSubscribe(Flow.Subscription subscription) {
+        public final void request(long n) {
+            SubscriptionHelper.addRequested(this, REQUESTED, n);
+            if (ITERATOR.getAcquire(this) != null) {
+                drain();
+            }
+        }
+
+        @Override
+        public final void cancel() {
+            cancelled = true;
+            upstream.cancel();
+        }
+
+        @Override
+        public final void onSubscribe(Flow.Subscription subscription) {
             upstream = subscription;
-            actual.onSubscribe(this);
+            onSubscribe();
             subscription.request(Long.MAX_VALUE);
+        }
+
+        abstract void onSubscribe();
+
+        abstract void drain();
+
+
+        @Override
+        public final int requestFusion(int mode) {
+            if ((mode & ASYNC) != 0) {
+                outputFused = true;
+                return ASYNC;
+            }
+            return NONE;
+        }
+
+        @Override
+        public final R poll() throws Throwable {
+            Iterator<? extends R> it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
+            if (it != null) {
+                if (checkNext) {
+                    if (!it.hasNext()) {
+                        iterator = null;
+                        return null;
+                    }
+                } else {
+                    checkNext = true;
+                }
+                return Objects.requireNonNull(it.next(), "The iterator returned a null item");
+            }
+            return null;
+        }
+
+        @Override
+        public final boolean isEmpty() {
+            return ITERATOR.getAcquire(this) == null;
+        }
+
+        @Override
+        public final void clear() {
+            ITERATOR.setRelease(this, null);
+        }
+    }
+
+    static final class FlatMapIterableSubscriber<T, R> extends AbstractFlatMapIterableSubscriber<T, R> {
+
+        final FolyamSubscriber<? super R> actual;
+
+        FlatMapIterableSubscriber(FolyamSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
+            super(mapper);
+            this.actual = actual;
+        }
+
+        @Override
+        void onSubscribe() {
+            actual.onSubscribe(this);
         }
 
         @Override
         public void onNext(T item) {
-            done = true;
             Iterator<? extends R> p;
             boolean hasValue;
             try {
@@ -131,47 +212,349 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                 hasValue = p.hasNext();
             } catch (Throwable ex) {
                 FolyamPlugins.handleFatal(ex);
+                done = true;
                 actual.onError(ex);
                 return;
             }
             if (hasValue) {
-                if (actual instanceof ConditionalSubscriber) {
-                    innerOnSubscribe(new FolyamIterable.IteratorConditionalSubscription<>((ConditionalSubscriber<? super R>)actual, p));
-                } else {
-                    innerOnSubscribe(new FolyamIterable.IteratorSubscription<>(actual, p));
-                }
-            } else {
-                actual.onComplete();
+                done = true;
+                ITERATOR.setVolatile(this, p);
+                drain();
             }
         }
 
         @Override
         public void onError(Throwable throwable) {
-            actual.onError(throwable);
+            if (done) {
+                FolyamPlugins.onError(throwable);
+            } else {
+                actual.onError(throwable);
+            }
         }
 
         @Override
         public void onComplete() {
             if (!done) {
-                done = true;
                 actual.onComplete();
             }
         }
 
         @Override
-        public void request(long n) {
-            SubscriptionHelper.deferredRequest(this, INNER_UPSTREAM, REQUESTED, n);
+        void drain() {
+            if ((int)WIP.getAndAdd(this, 1) != 0) {
+                return;
+            }
+
+            FolyamSubscriber<? super R> a = actual;
+            Iterator<? extends R> it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
+
+            if (outputFused && it != null) {
+                a.onNext(null);
+                a.onComplete();
+                return;
+            }
+
+            int missed = 1;
+            long e = emitted;
+
+            for (;;) {
+
+                if (it != null) {
+
+                    long r = (long) REQUESTED.getAcquire(this);
+
+                    if (r == Long.MAX_VALUE) {
+                        fastPath(a, it);
+                        return;
+                    }
+
+                    while (e != r) {
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        R v;
+                        try {
+                            v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
+                        } catch (Throwable ex) {
+                            FolyamPlugins.handleFatal(ex);
+                            iterator = null;
+                            a.onError(ex);
+                            return;
+                        }
+
+                        a.onNext(v);
+
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        boolean b;
+                        try {
+                            b = it.hasNext();
+                        } catch (Throwable ex) {
+                            FolyamPlugins.handleFatal(ex);
+                            iterator = null;
+                            a.onError(ex);
+                            return;
+                        }
+
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        if (!b) {
+                            iterator = null;
+                            a.onComplete();
+                            return;
+                        }
+
+                        e++;
+                    }
+
+                    emitted = e;
+                }
+
+                missed = (int)WIP.getAndAdd(this, -missed) - missed;
+                if (missed == 0) {
+                    break;
+                }
+                if (it == null) {
+                    it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
+                }
+            }
+        }
+
+        void fastPath(FolyamSubscriber<? super R> a, Iterator<? extends R> it) {
+            for (;;) {
+                if (cancelled) {
+                    iterator = null;
+                    return;
+                }
+
+                R v;
+                try {
+                    v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    iterator = null;
+                    a.onError(ex);
+                    return;
+                }
+
+                a.onNext(v);
+
+                if (cancelled) {
+                    iterator = null;
+                    return;
+                }
+
+                boolean b;
+                try {
+                    b = it.hasNext();
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    iterator = null;
+                    a.onError(ex);
+                    return;
+                }
+
+                if (!b) {
+                    iterator = null;
+                    if (!cancelled) {
+                        a.onComplete();
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+
+    static final class FlatMapIterableConditionalSubscriber<T, R>  extends AbstractFlatMapIterableSubscriber<T, R> {
+
+        final ConditionalSubscriber<? super R> actual;
+
+        FlatMapIterableConditionalSubscriber(ConditionalSubscriber<? super R> actual, CheckedFunction<? super T, ? extends Iterable<? extends R>> mapper) {
+            super(mapper);
+            this.actual = actual;
         }
 
         @Override
-        public void cancel() {
-            upstream.cancel();
-            SubscriptionHelper.cancel(this, INNER_UPSTREAM);
+        void onSubscribe() {
+            actual.onSubscribe(this);
         }
 
-        void innerOnSubscribe(Flow.Subscription s) {
-            SubscriptionHelper.deferredReplace(this, INNER_UPSTREAM, REQUESTED, s);
+        @Override
+        public void onNext(T item) {
+            Iterator<? extends R> p;
+            boolean hasValue;
+            try {
+                p = Objects.requireNonNull(mapper.apply(item), "The mapper returned a null Iterable")
+                        .iterator();
+                hasValue = p.hasNext();
+            } catch (Throwable ex) {
+                FolyamPlugins.handleFatal(ex);
+                done = true;
+                actual.onError(ex);
+                return;
+            }
+            if (hasValue) {
+                done = true;
+                ITERATOR.setRelease(this, p);
+                drain();
+            }
         }
 
+        @Override
+        public void onError(Throwable throwable) {
+            if (done) {
+                FolyamPlugins.onError(throwable);
+            } else {
+                actual.onError(throwable);
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            if (!done) {
+                actual.onComplete();
+            }
+        }
+
+        void drain() {
+            if ((int)WIP.getAndAdd(this, 1) != 0) {
+                return;
+            }
+
+            Iterator<? extends R> it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
+
+            int missed = 1;
+            ConditionalSubscriber<? super R> a = actual;
+            long e = emitted;
+
+            for (;;) {
+
+                if (it != null) {
+
+                    if (outputFused) {
+                        a.onNext(null);
+                        a.onComplete();
+                        return;
+                    }
+
+                    long r = (long) REQUESTED.getAcquire(this);
+
+                    if (r == Long.MAX_VALUE) {
+                        fastPath(a, it);
+                        return;
+                    }
+
+                    while (e != r) {
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        R v;
+                        try {
+                            v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
+                        } catch (Throwable ex) {
+                            FolyamPlugins.handleFatal(ex);
+                            iterator = null;
+                            a.onError(ex);
+                            return;
+                        }
+
+                        if (a.tryOnNext(v)) {
+                            e++;
+                        }
+
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        boolean b;
+                        try {
+                            b = it.hasNext();
+                        } catch (Throwable ex) {
+                            FolyamPlugins.handleFatal(ex);
+                            iterator = null;
+                            a.onError(ex);
+                            return;
+                        }
+
+                        if (cancelled) {
+                            iterator = null;
+                            return;
+                        }
+
+                        if (!b) {
+                            iterator = null;
+                            a.onComplete();
+                            return;
+                        }
+                    }
+
+                    emitted = e;
+                }
+
+                missed = (int)WIP.getAndAdd(this, -missed) - missed;
+                if (missed == 0) {
+                    break;
+                }
+                if (it == null) {
+                    it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
+                }
+            }
+        }
+
+        void fastPath(ConditionalSubscriber<? super R> a, Iterator<? extends R> it) {
+            for (;;) {
+                if (cancelled) {
+                    iterator = null;
+                    return;
+                }
+
+                R v;
+                try {
+                    v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    iterator = null;
+                    a.onError(ex);
+                    return;
+                }
+
+                a.tryOnNext(v);
+
+                if (cancelled) {
+                    iterator = null;
+                    return;
+                }
+
+                boolean b;
+                try {
+                    b = it.hasNext();
+                } catch (Throwable ex) {
+                    FolyamPlugins.handleFatal(ex);
+                    iterator = null;
+                    a.onError(ex);
+                    return;
+                }
+
+                if (!b) {
+                    iterator = null;
+                    if (!cancelled) {
+                        a.onComplete();
+                    }
+                    return;
+                }
+            }
+        }
     }
 }

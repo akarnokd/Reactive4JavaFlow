@@ -227,7 +227,8 @@ public final class TestHelper {
 
         source.subscribe(ts);
 
-        ts.awaitDone(5, TimeUnit.SECONDS)
+        ts.withTag("Fused ANY")
+                .awaitDone(5, TimeUnit.SECONDS)
                 .assertResult(values);
 
         if (values.length != 0) {

@@ -19,17 +19,18 @@ package hu.akarnokd.reactive4javaflow.impl.consumers;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.AutoDisposable;
 import hu.akarnokd.reactive4javaflow.impl.*;
+import hu.akarnokd.reactive4javaflow.impl.util.SpscCountDownLatch;
 
 import java.lang.invoke.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Flow;
 
-public final class BlockingConsumerIgnore extends CountDownLatch implements FolyamSubscriber<Object>, AutoDisposable {
+public final class BlockingConsumerIgnore extends SpscCountDownLatch implements FolyamSubscriber<Object>, AutoDisposable {
 
     Flow.Subscription upstream;
     static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), BlockingConsumerIgnore.class, "upstream", Flow.Subscription.class);
 
     public BlockingConsumerIgnore() {
-        super(1);
+        super();
     }
 
     @Override

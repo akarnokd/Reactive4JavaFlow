@@ -39,9 +39,9 @@ public final class FolyamCharacters extends Folyam<Integer> {
     @Override
     protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
         if (s instanceof ConditionalSubscriber) {
-            s.onSubscribe(new ArrayConditionalSubscription((ConditionalSubscriber<? super Integer>)s, chars, start, end));
+            s.onSubscribe(new CharactersConditionalSubscription((ConditionalSubscriber<? super Integer>)s, chars, start, end));
         } else {
-            s.onSubscribe(new ArraySubscription(s, chars, start, end));
+            s.onSubscribe(new CharactersSubscription(s, chars, start, end));
         }
     }
 
@@ -107,11 +107,11 @@ public final class FolyamCharacters extends Folyam<Integer> {
         abstract void slowPath(long n);
     }
 
-    static final class ArraySubscription extends AbstractArraySubscription {
+    static final class CharactersSubscription extends AbstractArraySubscription {
 
         final FolyamSubscriber<? super Integer> actual;
 
-        ArraySubscription(FolyamSubscriber<? super Integer> actual, CharSequence chars, int start, int end) {
+        CharactersSubscription(FolyamSubscriber<? super Integer> actual, CharSequence chars, int start, int end) {
             super(chars, start, end);
             this.actual = actual;
         }
@@ -172,11 +172,11 @@ public final class FolyamCharacters extends Folyam<Integer> {
         }
     }
 
-    static final class ArrayConditionalSubscription extends AbstractArraySubscription {
+    static final class CharactersConditionalSubscription extends AbstractArraySubscription {
 
         final ConditionalSubscriber<? super Integer> actual;
 
-        ArrayConditionalSubscription(ConditionalSubscriber<? super Integer> actual, CharSequence chars, int start, int end) {
+        CharactersConditionalSubscription(ConditionalSubscriber<? super Integer> actual, CharSequence chars, int start, int end) {
             super(chars, start, end);
             this.actual = actual;
         }

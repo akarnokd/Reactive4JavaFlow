@@ -107,7 +107,8 @@ public final class FolyamConcatArray<T> extends Folyam<T> {
             if ((int)WIP.getAndAdd(this, 1) == 0) {
                 Flow.Publisher<? extends T>[] srcs = sources;
                 int n = srcs.length;
-                do {
+                int missed = 1;
+                for (;;) {
                     if (arbiterIsCancelled()) {
                         return;
                     }
@@ -138,7 +139,17 @@ public final class FolyamConcatArray<T> extends Folyam<T> {
                     }
 
                     p.subscribe(this);
-                } while ((int)WIP.getAndAdd(this, - 1) - 1 != 0);
+
+                    int w = (int)WIP.getAcquire(this);
+                    if (w == missed) {
+                        missed = (int)WIP.getAndAdd(this, -missed) -missed;
+                        if (missed == 0) {
+                            break;
+                        }
+                    } else {
+                        missed = w;
+                    }
+                };
             }
         }
 
@@ -149,15 +160,7 @@ public final class FolyamConcatArray<T> extends Folyam<T> {
         @Override
         public final void onError(Throwable throwable) {
             if (delayError) {
-                Throwable ex = error;
-                if (ex == null) {
-                    error = throwable;
-                } else
-                if (ex instanceof CompositeThrowable) {
-                    error = ((CompositeThrowable)ex).copyAndAdd(throwable);
-                } else {
-                    error = new CompositeThrowable(ex, throwable);
-                }
+                error = CompositeThrowable.combine(error, throwable);
                 drain();
             } else {
                 error(throwable);

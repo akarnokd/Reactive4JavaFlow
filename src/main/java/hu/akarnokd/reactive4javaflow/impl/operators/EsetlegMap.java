@@ -33,10 +33,6 @@ public final class EsetlegMap<T, R> extends Esetleg<R> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super R> s) {
-        if (s instanceof ConditionalSubscriber) {
-            source.subscribe(new FolyamMap.MapConditionalSubscriber<>((ConditionalSubscriber<? super R>) s, mapper));
-        } else {
-            source.subscribe(new FolyamMap.MapSubscriber<>(s, mapper));
-        }
+        source.subscribe(new FolyamMap.MapSubscriber<>(s, mapper));
     }
 }
