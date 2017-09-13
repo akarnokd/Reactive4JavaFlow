@@ -24,6 +24,8 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
 
     Flow.Subscription currentSubscription;
 
+    boolean unbounded;
+
     long requested;
 
     Flow.Subscription missedSubscription;
@@ -35,6 +37,10 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
 
     boolean cancelled;
     static final VarHandle CANCELLED = VH.find(MethodHandles.lookup(), SubscriptionArbiter.class, "cancelled", Boolean.TYPE);
+
+    public final boolean arbiterIsUnbounded() {
+        return unbounded;
+    }
 
     public final void arbiterReplace(Flow.Subscription s) {
         if (getAcquire() == 0 && compareAndSet(0, 1)) {
@@ -61,6 +67,9 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
     }
 
     public final void arbiterProduced(long n) {
+        if (unbounded) {
+            return;
+        }
         if (getAcquire() == 0 && compareAndSet(0, 1)) {
             long r = requested;
             if (r != Long.MAX_VALUE) {
@@ -84,11 +93,15 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
 
     @Override
     public final void request(long n) {
+        if (unbounded) {
+            return;
+        }
         if (getAcquire() == 0 && compareAndSet(0, 1)) {
             long r = requested;
             long u = r + n;
-            if (u < 0L) {
+            if (u < 0L || u == Long.MAX_VALUE) {
                 u = Long.MAX_VALUE;
+                unbounded = true;
             }
             requested = u;
             Flow.Subscription s = currentSubscription;
@@ -162,9 +175,10 @@ public class SubscriptionArbiter extends AtomicInteger implements Flow.Subscript
                 long r = requested;
                 if (r != Long.MAX_VALUE) {
                     long u = r + mr;
-                    if (u < 0L) {
+                    if (u < 0L || u == Long.MAX_VALUE) {
                         r = Long.MAX_VALUE;
                         requested = Long.MAX_VALUE;
+                        unbounded = true;
                     } else {
                         long v = u - mp;
                         if (v <= 0L) {

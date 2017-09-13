@@ -35,7 +35,6 @@ import org.openjdk.jmh.annotations.*;
  */
 public class ShakespearePlaysScrabbleWithFolyamOpt extends ShakespearePlaysScrabble {
     static Folyam<Integer> chars(String word) {
-//        return Flowable.range(0, word.length()).map(i -> (int)word.charAt(i));
         return Folyam.characters(word);
     }
 
@@ -202,7 +201,7 @@ public class ShakespearePlaysScrabbleWithFolyamOpt extends ShakespearePlaysScrab
     public static void main(String[] args) throws Throwable {
         ShakespearePlaysScrabbleWithFolyamOpt s = new ShakespearePlaysScrabbleWithFolyamOpt();
         s.init();
-        FolyamSynchronousProfiler p = new FolyamSynchronousProfiler();
+        FolyamSynchronousCoarseProfiler p = new FolyamSynchronousCoarseProfiler();
         p.start();
         for (int i = 0; i < 100; i++) {
             System.out.println(s.measureThroughput());

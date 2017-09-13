@@ -51,6 +51,8 @@ dependencies {
 //    compile "org.reactivestreams:reactive-streams:1.0.1"
 //    compile "io.reactivex.rxjava2:rxjava:2.1.3"
 //    compile "com.github.akarnokd:rxjava2-extensions:0.17.6"
+//    compile "io.projectreactor:reactor-core:+"
+//    compile group: 'io.projectreactor.addons', name: 'reactor-extra', version: '3+'
 }
 
 [compileJava, compileTestJava]*.options*.compilerArgs << "-parameters"

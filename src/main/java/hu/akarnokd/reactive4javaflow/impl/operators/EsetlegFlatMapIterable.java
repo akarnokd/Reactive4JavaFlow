@@ -218,7 +218,7 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
             }
             if (hasValue) {
                 done = true;
-                ITERATOR.setVolatile(this, p);
+                ITERATOR.setRelease(this, p);
                 drain();
             }
         }
@@ -270,7 +270,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
 
                     while (e != r) {
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
@@ -279,7 +278,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                             v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
                         } catch (Throwable ex) {
                             FolyamPlugins.handleFatal(ex);
-                            iterator = null;
                             a.onError(ex);
                             return;
                         }
@@ -287,7 +285,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                         a.onNext(v);
 
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
@@ -296,18 +293,15 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                             b = it.hasNext();
                         } catch (Throwable ex) {
                             FolyamPlugins.handleFatal(ex);
-                            iterator = null;
                             a.onError(ex);
                             return;
                         }
 
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
                         if (!b) {
-                            iterator = null;
                             a.onComplete();
                             return;
                         }
@@ -331,7 +325,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
         void fastPath(FolyamSubscriber<? super R> a, Iterator<? extends R> it) {
             for (;;) {
                 if (cancelled) {
-                    iterator = null;
                     return;
                 }
 
@@ -340,7 +333,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                     v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
                 } catch (Throwable ex) {
                     FolyamPlugins.handleFatal(ex);
-                    iterator = null;
                     a.onError(ex);
                     return;
                 }
@@ -348,7 +340,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                 a.onNext(v);
 
                 if (cancelled) {
-                    iterator = null;
                     return;
                 }
 
@@ -357,13 +348,11 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                     b = it.hasNext();
                 } catch (Throwable ex) {
                     FolyamPlugins.handleFatal(ex);
-                    iterator = null;
                     a.onError(ex);
                     return;
                 }
 
                 if (!b) {
-                    iterator = null;
                     if (!cancelled) {
                         a.onComplete();
                     }
@@ -430,21 +419,21 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                 return;
             }
 
+            ConditionalSubscriber<? super R> a = actual;
             Iterator<? extends R> it = (Iterator<? extends R>)ITERATOR.getAcquire(this);
 
+            if (outputFused && it != null) {
+                a.onNext(null);
+                a.onComplete();
+                return;
+            }
+
             int missed = 1;
-            ConditionalSubscriber<? super R> a = actual;
             long e = emitted;
 
             for (;;) {
 
                 if (it != null) {
-
-                    if (outputFused) {
-                        a.onNext(null);
-                        a.onComplete();
-                        return;
-                    }
 
                     long r = (long) REQUESTED.getAcquire(this);
 
@@ -455,7 +444,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
 
                     while (e != r) {
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
@@ -464,7 +452,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                             v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
                         } catch (Throwable ex) {
                             FolyamPlugins.handleFatal(ex);
-                            iterator = null;
                             a.onError(ex);
                             return;
                         }
@@ -474,7 +461,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                         }
 
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
@@ -483,18 +469,15 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                             b = it.hasNext();
                         } catch (Throwable ex) {
                             FolyamPlugins.handleFatal(ex);
-                            iterator = null;
                             a.onError(ex);
                             return;
                         }
 
                         if (cancelled) {
-                            iterator = null;
                             return;
                         }
 
                         if (!b) {
-                            iterator = null;
                             a.onComplete();
                             return;
                         }
@@ -516,7 +499,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
         void fastPath(ConditionalSubscriber<? super R> a, Iterator<? extends R> it) {
             for (;;) {
                 if (cancelled) {
-                    iterator = null;
                     return;
                 }
 
@@ -525,7 +507,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                     v = Objects.requireNonNull(it.next(), "The iterator returned a null item");
                 } catch (Throwable ex) {
                     FolyamPlugins.handleFatal(ex);
-                    iterator = null;
                     a.onError(ex);
                     return;
                 }
@@ -533,7 +514,6 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                 a.tryOnNext(v);
 
                 if (cancelled) {
-                    iterator = null;
                     return;
                 }
 
@@ -542,13 +522,11 @@ public final class EsetlegFlatMapIterable<T, R> extends Folyam<R> {
                     b = it.hasNext();
                 } catch (Throwable ex) {
                     FolyamPlugins.handleFatal(ex);
-                    iterator = null;
                     a.onError(ex);
                     return;
                 }
 
                 if (!b) {
-                    iterator = null;
                     if (!cancelled) {
                         a.onComplete();
                     }
