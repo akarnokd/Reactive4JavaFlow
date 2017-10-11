@@ -92,7 +92,7 @@ public final class TestSchedulerService implements SchedulerService {
             if (tt == null || tt.dueNanos > upToNanos) {
                 break;
             }
-            q.poll();
+            q.remove(tt);
             timeNanos = tt.dueNanos;
             tt.run();
         }
