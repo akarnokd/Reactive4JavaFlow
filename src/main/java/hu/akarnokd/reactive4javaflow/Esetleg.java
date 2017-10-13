@@ -578,6 +578,32 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         return zipArray(a -> zipper.apply((T)a[0], (U)a[1]), this, other);
     }
 
+    /**
+     * Consumes the current Esetleg, ignoring its potential value, then
+     * subscribes to the next Esetleg and relays its event(s).
+     * @param <U> the next Esetleg's value type
+     * @param next the next Esetleg to consume after this completes
+     * @return the new Esetleg instance
+     * @since 0.1.2
+     */
+    public final <U> Esetleg<U> andThen(Esetleg<U> next) {
+        Objects.requireNonNull(next, "next == null");
+        return FolyamPlugins.onAssembly(new EsetlegAndThen<>(this, next));
+    }
+
+    /**
+     * Consumes the current Esetleg, ignoring its potential value, then
+     * subscribes to the next Flow.Publisher and relays its event(s).
+     * @param <U> the next Esetleg's value type
+     * @param next the next Flow.Publisher to consume after this completes
+     * @return the new Folyam instance
+     * @since 0.1.2
+     */
+    public final <U> Folyam<U> andThen(Flow.Publisher<U> next) {
+        Objects.requireNonNull(next, "next == null");
+        return FolyamPlugins.onAssembly(new FolyamAndThen<>(this, next));
+    }
+
     // cold-processors conversion operators
 
     public final ConnectableFolyam<T> publish() {
