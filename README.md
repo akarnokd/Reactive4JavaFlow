@@ -10,7 +10,7 @@ Reactive Programming library based on the Java 9 Flow API and a 4th generation R
 ### Gradle
 
 ```groovy
-compile "com.github.akarnokd:reactive4javaflow:0.1.2"
+compile "com.github.akarnokd:reactive4javaflow:0.1.3"
 ```
 
 # Getting Started
@@ -201,7 +201,7 @@ as the mean to move time forward.
 ```java
 TestSchedulerService sch = new TestSchedulerService();
 
-TestConsumer<Integer> tc = Folyam.just(1).delay(5, TimeUnit.MILLISECONDS, sch);
+TestConsumer<Integer> tc = Folyam.just(1).delay(5, TimeUnit.MILLISECONDS, sch).test();
 
 tc.assertEmpty();
 
