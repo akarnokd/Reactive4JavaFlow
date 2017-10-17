@@ -103,10 +103,10 @@ publishing {
 jmh {
     jmhVersion = '1.19'
     humanOutputFile = null
+    includeTests = false
 
     if (project.hasProperty('jmh')) {
         include = ".*" + project.jmh + ".*"
-        println("JMH: " + include);
     }
 
 }

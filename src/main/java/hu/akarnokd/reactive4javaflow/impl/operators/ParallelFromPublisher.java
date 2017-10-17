@@ -109,7 +109,7 @@ public final class ParallelFromPublisher<T> extends ParallelFolyam<T> {
                 @SuppressWarnings("unchecked")
                 FusedSubscription<T> qs = (FusedSubscription<T>) s;
 
-                int m = qs.requestFusion(FusedSubscription.ANY);
+                int m = qs.requestFusion(FusedSubscription.ANY | FusedSubscription.BOUNDARY);
 
                 if (m == FusedSubscription.SYNC) {
                     sourceMode = m;

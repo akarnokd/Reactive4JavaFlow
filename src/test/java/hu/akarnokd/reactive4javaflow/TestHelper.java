@@ -979,7 +979,7 @@ public final class TestHelper {
      * @param <R> the result value type of the transformation
      */
     @SafeVarargs
-    public static <R> void assertFailureComposed(int items, Function<? super Folyam<Integer>, ? extends Folyam<R>> compose, Class<? extends Throwable> errorClass, R... expected) {
+    public static <R> void assertFailureComposed(int items, FolyamTransformer<Integer, R> compose, Class<? extends Throwable> errorClass, R... expected) {
         Folyam<Integer> source;
 
         if (items == -1) {

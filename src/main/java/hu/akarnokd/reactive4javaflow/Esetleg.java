@@ -55,8 +55,8 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         return converter.apply(this);
     }
 
-    public final <R> Esetleg<R> compose(Function<? super Esetleg<T>, ? extends Esetleg<R>> composer) {
-        return to(composer);
+    public final <R> Esetleg<R> compose(EsetlegTransformer<T, R> composer) {
+        return composer.apply(this);
     }
 
     public final AutoDisposable subscribe() {

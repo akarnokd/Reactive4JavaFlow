@@ -56,8 +56,8 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
         return converter.apply(this);
     }
 
-    public final <R> Folyam<R> compose(Function<? super Folyam<T>, ? extends Folyam<R>> composer) {
-        return to(composer);
+    public final <R> Folyam<R> compose(FolyamTransformer<T, R> composer) {
+        return composer.apply(this);
     }
 
     public final AutoDisposable subscribe() {
