@@ -10,7 +10,7 @@ Reactive Programming library based on the Java 9 Flow API and a 4th generation R
 ### Gradle
 
 ```groovy
-compile "com.github.akarnokd:reactive4javaflow:0.1.3"
+compile "com.github.akarnokd:reactive4javaflow:0.1.4"
 ```
 
 # Getting Started
