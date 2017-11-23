@@ -629,6 +629,32 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
         return FolyamPlugins.onAssembly(new FolyamConcatIterableEager<>(sources, prefetch, true));
     }
 
+    public static <T> Folyam<T> concatEager(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
+        return concatEager(sources, FolyamPlugins.defaultBufferSize(), FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> concatEager(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency) {
+        return concatEager(sources, maxConcurrency, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> concatEager(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency, int prefetch) {
+        Objects.requireNonNull(sources, "sources == null");
+        return FolyamPlugins.onAssembly(new FolyamConcatMapEagerPublisher<>(sources, v -> v, maxConcurrency, prefetch, false));
+    }
+
+    public static <T> Folyam<T> concatEagerDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources) {
+        return concatEagerDelayError(sources, FolyamPlugins.defaultBufferSize(), FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> concatEagerDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency) {
+        return concatEagerDelayError(sources, maxConcurrency, FolyamPlugins.defaultBufferSize());
+    }
+
+    public static <T> Folyam<T> concatEagerDelayError(Flow.Publisher<? extends Flow.Publisher<? extends T>> sources, int maxConcurrency, int prefetch) {
+        Objects.requireNonNull(sources, "sources == null");
+        return FolyamPlugins.onAssembly(new FolyamConcatMapEagerPublisher<>(sources, v -> v, maxConcurrency, prefetch, true));
+    }
+
     @SafeVarargs
     public static <T> Folyam<T> ambArray(Flow.Publisher<? extends T>... sources) {
         Objects.requireNonNull(sources, "sources == null");
@@ -762,6 +788,50 @@ public abstract class Folyam<T> implements FolyamPublisher<T> {
     public final Folyam<T> filterWhenDelayError(CheckedFunction<? super T, ? extends Flow.Publisher<Boolean>> filter, int prefetch) {
         Objects.requireNonNull(filter, "filter == null");
         return FolyamPlugins.onAssembly(new FolyamFilterWhen<>(this, filter, prefetch, true));
+    }
+
+
+    /**
+     * Limits both the number of upstream items (after which the sequence completes)
+     * and the total downstream request amount requested from the upstream to
+     * possibly prevent the creation of excess items by the upstream.
+     * <p>
+     * The operator requests at most the given {@code count} of items from upstream even
+     * if the downstream requests more than that. For example, given a {@code limit(5)},
+     * if the downstream requests 1, a request of 1 is submitted to the upstream
+     * and the operator remembers that only 4 items can be requested now on. A request
+     * of 5 at this point will request 4 from the upstream and any subsequent requests will
+     * be ignored.
+     * <p>
+     * Note that requests are negotiated on an operator boundary and {@code limit}'s amount
+     * may not be preserved further upstream. For example,
+     * {@code source.observeOn(SchedulerServices.computation()).limit(5)} will still request the
+     * default (128) elements from the given {@code source}.
+     * <p>
+     * The main use of this operator is with sources that are async boundaries that
+     * don't interfere with request amounts, such as certain {@code Flowable}-based
+     * network endpoints that relay downstream request amounts unchanged and are, therefore,
+     * prone to trigger excessive item creation/transmission over the network.
+     * <dl>
+     *  <dt><b>Backpressure:</b></dt>
+     *  <dd>The operator requests a total of the given {@code count} items from the upstream.</dd>
+     *  <dt><b>Scheduler:</b></dt>
+     *  <dd>{@code limit} does not operate by default on a particular {@link SchedulerService}.</dd>
+     * </dl>
+
+     * @param count the maximum number of items and the total request amount, non-negative.
+     *              Zero will immediately cancel the upstream on subscription and complete
+     *              the downstream.
+     * @return the new Folyam instance
+     * @see #take(long)
+     * @see #rebatchRequests(int)
+     * @since 0.1.4
+     */
+    public final Folyam<T> limit(long count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("count >= 0 required but it was " + count);
+        }
+        return FolyamPlugins.onAssembly(new FolyamLimit<>(this, count));
     }
 
     public final Folyam<T> take(long n) {

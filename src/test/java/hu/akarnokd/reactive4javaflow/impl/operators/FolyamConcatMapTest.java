@@ -41,7 +41,7 @@ public class FolyamConcatMapTest {
     public void standardDelayError() {
         TestHelper.assertResult(
                 Folyam.range(1, 5)
-                        .concatMapDelayError(v -> Folyam.just(v)), 1, 2, 3, 4, 5);
+                        .concatMapDelayError(Folyam::just), 1, 2, 3, 4, 5);
     }
 
     @Test

@@ -124,12 +124,7 @@ public class ParallelMapOptionalTryTest implements CheckedConsumer<Object> {
     public void mapFailWithRetryLimited() {
         Folyam.range(0, 2)
         .parallel(1)
-        .mapOptional(v -> Optional.of(1 / v), new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .mapOptional(v -> Optional.of(1 / v), (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -150,11 +145,8 @@ public class ParallelMapOptionalTryTest implements CheckedConsumer<Object> {
     public void mapFailHandlerThrows() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .mapOptional(v -> Optional.of(1 / v), new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .mapOptional(v -> Optional.of(1 / v), (n, e) -> {
+            throw new IOException();
         })
         .sequential()
         .test()
@@ -231,12 +223,7 @@ public class ParallelMapOptionalTryTest implements CheckedConsumer<Object> {
     public void mapFailWithRetryLimitedConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .mapOptional(v -> Optional.of(1 / v), new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .mapOptional(v -> Optional.of(1 / v), (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -259,11 +246,8 @@ public class ParallelMapOptionalTryTest implements CheckedConsumer<Object> {
     public void mapFailHandlerThrowsConditional() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .mapOptional(v -> Optional.of(1 / v), new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .mapOptional(v -> Optional.of(1 / v), (n, e) -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()

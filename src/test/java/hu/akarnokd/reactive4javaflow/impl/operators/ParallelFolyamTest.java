@@ -35,16 +35,11 @@ public class ParallelFolyamTest {
         Folyam<Integer> source = Folyam.range(1, 1000000).hide();
         for (int i = 1; i < 33; i++) {
             Folyam<Integer> result = ParallelFolyam.fromPublisher(source, i)
-            .map(new CheckedFunction<Integer, Integer>() {
-                @Override
-                public Integer apply(Integer v) throws Exception {
-                    return v + 1;
-                }
-            })
+            .map(v -> v + 1)
             .sequential()
             ;
 
-            TestConsumer<Integer> ts = new TestConsumer<Integer>();
+            TestConsumer<Integer> ts = new TestConsumer<>();
 
             result.subscribe(ts);
 
@@ -62,16 +57,11 @@ public class ParallelFolyamTest {
         Folyam<Integer> source = Folyam.range(1, 1000000);
         for (int i = 1; i < 33; i++) {
             Folyam<Integer> result = ParallelFolyam.fromPublisher(source, i)
-            .map(new CheckedFunction<Integer, Integer>() {
-                @Override
-                public Integer apply(Integer v) throws Exception {
-                    return v + 1;
-                }
-            })
+            .map(v -> v + 1)
             .sequential()
             ;
 
-            TestConsumer<Integer> ts = new TestConsumer<Integer>();
+            TestConsumer<Integer> ts = new TestConsumer<>();
 
             result.subscribe(ts);
 
@@ -97,16 +87,11 @@ public class ParallelFolyamTest {
             try {
                 Folyam<Integer> result = ParallelFolyam.fromPublisher(source, i)
                 .runOn(scheduler)
-                .map(new CheckedFunction<Integer, Integer>() {
-                    @Override
-                    public Integer apply(Integer v) throws Exception {
-                        return v + 1;
-                    }
-                })
+                .map(v -> v + 1)
                 .sequential()
                 ;
 
-                TestConsumer<Integer> ts = new TestConsumer<Integer>();
+                TestConsumer<Integer> ts = new TestConsumer<>();
 
                 result.subscribe(ts);
 
@@ -137,16 +122,11 @@ public class ParallelFolyamTest {
             try {
                 Folyam<Integer> result = ParallelFolyam.fromPublisher(source, i)
                 .runOn(scheduler)
-                .map(new CheckedFunction<Integer, Integer>() {
-                    @Override
-                    public Integer apply(Integer v) throws Exception {
-                        return v + 1;
-                    }
-                })
+                .map(v -> v + 1)
                 .sequential()
                 ;
 
-                TestConsumer<Integer> ts = new TestConsumer<Integer>();
+                TestConsumer<Integer> ts = new TestConsumer<>();
 
                 result.subscribe(ts);
 
@@ -167,16 +147,11 @@ public class ParallelFolyamTest {
     @Test
     public void reduceFull() {
         for (int i = 1; i <= Runtime.getRuntime().availableProcessors() * 2; i++) {
-            TestConsumer<Integer> ts = new TestConsumer<Integer>();
+            TestConsumer<Integer> ts = new TestConsumer<>();
 
             Folyam.range(1, 10)
             .parallel(i)
-            .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-                @Override
-                public Integer apply(Integer a, Integer b) throws Exception {
-                    return a + b;
-                }
-            })
+            .reduce((a, b) -> a + b)
             .subscribe(ts);
 
             ts.assertResult(55);
@@ -196,23 +171,13 @@ public class ParallelFolyamTest {
                 SchedulerService scheduler = SchedulerServices.newExecutor(exec);
 
                 try {
-                    TestConsumer<Long> ts = new TestConsumer<Long>();
+                    TestConsumer<Long> ts = new TestConsumer<>();
 
                     Folyam.range(1, n)
-                    .map(new CheckedFunction<Integer, Long>() {
-                        @Override
-                        public Long apply(Integer v) throws Exception {
-                            return (long)v;
-                        }
-                    })
+                    .map(v -> (long)v)
                     .parallel(i)
                     .runOn(scheduler)
-                    .reduce(new CheckedBiFunction<Long, Long, Long>() {
-                        @Override
-                        public Long apply(Long a, Long b) throws Exception {
-                            return a + b;
-                        }
-                    })
+                    .reduce((a, b) -> a + b)
                     .subscribe(ts);
 
                     ts.awaitDone(500, TimeUnit.SECONDS);
@@ -244,7 +209,7 @@ public class ParallelFolyamTest {
 
     @Test
     public void sorted() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(0);
+        TestConsumer<Integer> ts = new TestConsumer<>(0);
 
         Folyam.fromArray(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
         .parallel()
@@ -268,32 +233,17 @@ public class ParallelFolyamTest {
 
     @Test
     public void collect() {
-        Callable<List<Integer>> as = new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        };
+        Callable<List<Integer>> as = ArrayList::new;
 
-        TestConsumer<Integer> ts = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts = new TestConsumer<>();
         Folyam.range(1, 10)
         .parallel()
-        .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-            }
-        })
+        .collect(as, List::add)
         .sequential()
-        .flatMapIterable(new CheckedFunction<List<Integer>, Iterable<Integer>>() {
-            @Override
-            public Iterable<Integer> apply(List<Integer> v) throws Exception {
-                return v;
-            }
-        })
+        .flatMapIterable((CheckedFunction<List<Integer>, Iterable<Integer>>) v -> v)
         .subscribe(ts);
 
-        ts.assertValueSet(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))
+        ts.assertValueSet(new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))
         .assertNoErrors()
         .assertComplete();
     }
@@ -301,33 +251,28 @@ public class ParallelFolyamTest {
     @SuppressWarnings("unchecked")
     @Test
     public void from() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts = new TestConsumer<>();
 
         ParallelFolyam.fromArray(Folyam.range(1, 5), Folyam.range(6, 5))
         .sequential()
         .subscribe(ts);
 
-        ts.assertValueSet(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))
+        ts.assertValueSet(new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))
         .assertNoErrors()
         .assertComplete();
     }
 
     @Test
     public void concatMapUnordered() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts = new TestConsumer<>();
 
         Folyam.range(1, 5)
         .parallel()
-        .concatMap(new CheckedFunction<Integer, Flow.Publisher<Integer>>() {
-            @Override
-            public Flow.Publisher<Integer> apply(Integer v) throws Exception {
-                return Folyam.range(v * 10 + 1, 3);
-            }
-        })
+        .concatMap((CheckedFunction<Integer, Flow.Publisher<Integer>>) v -> Folyam.range(v * 10 + 1, 3))
         .sequential()
         .subscribe(ts);
 
-        ts.assertValueSet(new HashSet<Integer>(Arrays.asList(11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53)))
+        ts.assertValueSet(new HashSet<>(Arrays.asList(11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53)))
         .assertNoErrors()
         .assertComplete();
 
@@ -335,20 +280,15 @@ public class ParallelFolyamTest {
 
     @Test
     public void flatMapUnordered() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts = new TestConsumer<>();
 
         Folyam.range(1, 5)
         .parallel()
-        .flatMap(new CheckedFunction<Integer, Flow.Publisher<Integer>>() {
-            @Override
-            public Flow.Publisher<Integer> apply(Integer v) throws Exception {
-                return Folyam.range(v * 10 + 1, 3);
-            }
-        })
+        .flatMap((CheckedFunction<Integer, Flow.Publisher<Integer>>) v -> Folyam.range(v * 10 + 1, 3))
         .sequential()
         .subscribe(ts);
 
-        ts.assertValueSet(new HashSet<Integer>(Arrays.asList(11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53)))
+        ts.assertValueSet(new HashSet<>(Arrays.asList(11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53)))
         .assertNoErrors()
         .assertComplete();
 
@@ -361,29 +301,14 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -408,29 +333,14 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000).hide()
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -456,30 +366,15 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000).hide()
             .observeOn(s)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -504,30 +399,15 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000).hide()
             .observeOn(s)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -553,30 +433,15 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000)
             .observeOn(s)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -601,31 +466,16 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             Folyam.range(1, 100000)
             .take(1000)
             .observeOn(s)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -650,13 +500,8 @@ public class ParallelFolyamTest {
         SchedulerService s = SchedulerServices.newExecutor(exec);
 
         try {
-            Callable<List<Integer>> as = new Callable<List<Integer>>() {
-                @Override
-                public List<Integer> call() throws Exception {
-                    return new ArrayList<Integer>();
-                }
-            };
-            TestConsumer<List<Integer>> ts = new TestConsumer<List<Integer>>();
+            Callable<List<Integer>> as = ArrayList::new;
+            TestConsumer<List<Integer>> ts = new TestConsumer<>();
 
             SolocastProcessor<Integer> up = new SolocastProcessor<>();
 
@@ -669,18 +514,8 @@ public class ParallelFolyamTest {
             .observeOn(s)
             .parallel(3)
             .runOn(s)
-            .collect(as, new CheckedBiConsumer<List<Integer>, Integer>() {
-                @Override
-                public void accept(List<Integer> a, Integer b) throws Exception {
-                    a.add(b);
-                }
-            })
-            .doOnNext(new CheckedConsumer<List<Integer>>() {
-                @Override
-                public void accept(List<Integer> v) throws Exception {
-                    System.out.println(v.size());
-                }
-            })
+            .collect(as, List::add)
+            .doOnNext(v -> System.out.println(v.size()))
             .sequential()
             .subscribe(ts);
 
@@ -700,7 +535,7 @@ public class ParallelFolyamTest {
 
     @Test
     public void emptySourceZeroRequest() {
-        TestConsumer<Object> ts = new TestConsumer<Object>(0);
+        TestConsumer<Object> ts = new TestConsumer<>(0);
 
         Folyam.range(1, 3).parallel(3).sequential().subscribe(ts);
 
@@ -853,7 +688,7 @@ public class ParallelFolyamTest {
     @SuppressWarnings("unchecked")
     @Test
     public void badParallelismStage() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts = new TestConsumer<>();
 
         Folyam.range(1, 10)
         .parallel(2)
@@ -865,9 +700,9 @@ public class ParallelFolyamTest {
     @SuppressWarnings("unchecked")
     @Test
     public void badParallelismStage2() {
-        TestConsumer<Integer> ts1 = new TestConsumer<Integer>();
-        TestConsumer<Integer> ts2 = new TestConsumer<Integer>();
-        TestConsumer<Integer> ts3 = new TestConsumer<Integer>();
+        TestConsumer<Integer> ts1 = new TestConsumer<>();
+        TestConsumer<Integer> ts2 = new TestConsumer<>();
+        TestConsumer<Integer> ts3 = new TestConsumer<>();
 
         Folyam.range(1, 10)
         .parallel(2)
@@ -883,12 +718,7 @@ public class ParallelFolyamTest {
         Folyam.range(1, 20)
         .parallel()
         .runOn(SchedulerServices.computation())
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 2 == 0;
-            }
-        })
+        .filter(v -> v % 2 == 0)
         .sequential()
         .test()
         .awaitDone(5, TimeUnit.SECONDS)
@@ -901,22 +731,14 @@ public class ParallelFolyamTest {
     public void filterThrows() throws Exception {
         final boolean[] cancelled = { false };
         Folyam.range(1, 20).concatWith(Folyam.<Integer>never())
-        .doOnCancel(new CheckedRunnable() {
-            @Override
-            public void run() throws Exception {
-                cancelled[0] = true;
-            }
-        })
+        .doOnCancel(() -> cancelled[0] = true)
         .parallel()
         .runOn(SchedulerServices.computation())
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                if (v == 10) {
-                    throw new IOException();
-                }
-                return v % 2 == 0;
+        .filter(v -> {
+            if (v == 10) {
+                throw new IOException();
             }
+            return v % 2 == 0;
         })
         .sequential()
         .test()
@@ -935,12 +757,7 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel()
-        .doAfterNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                count[0]++;
-            }
-        })
+        .doAfterNext(v -> count[0]++)
         .sequential()
         .test()
         .assertResult(1, 2, 3, 4, 5);
@@ -952,14 +769,11 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel()
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (v == 3) {
-                    throw new IOException();
-                } else {
-                    count[0]++;
-                }
+        .doOnNext(v -> {
+            if (v == 3) {
+                throw new IOException();
+            } else {
+                count[0]++;
             }
         })
         .sequential()
@@ -976,14 +790,11 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel()
-        .doAfterNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (v == 3) {
-                    throw new IOException();
-                } else {
-                    count[0]++;
-                }
+        .doAfterNext(v -> {
+            if (v == 3) {
+                throw new IOException();
+            } else {
+                count[0]++;
             }
         })
         .sequential()
@@ -1021,21 +832,15 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                if (v == 3) {
-                    throw new IOException();
-                }
-                return v;
+        .map(v -> {
+            if (v == 3) {
+                throw new IOException();
             }
+            return v;
         })
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    count[0]++;
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                count[0]++;
             }
         })
         .sequential()
@@ -1050,21 +855,15 @@ public class ParallelFolyamTest {
     public void doOnErrorThrows() {
         TestConsumer<Integer> ts = Folyam.range(1, 5)
         .parallel(2)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                if (v == 3) {
-                    throw new IOException();
-                }
-                return v;
+        .map(v -> {
+            if (v == 3) {
+                throw new IOException();
             }
+            return v;
         })
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    throw new IOException();
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                throw new IOException();
             }
         })
         .sequential()
@@ -1083,12 +882,7 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .doOnComplete(new CheckedRunnable() {
-            @Override
-            public void run() throws Exception {
-                count[0]++;
-            }
-        })
+        .doOnComplete(() -> count[0]++)
         .sequential()
         .test()
         .assertResult(1, 2, 3, 4, 5);
@@ -1102,12 +896,7 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .doOnSubscribe(new CheckedConsumer<Flow.Subscription>() {
-            @Override
-            public void accept(Flow.Subscription s) throws Exception {
-                count[0]++;
-            }
-        })
+        .doOnSubscribe(s -> count[0]++)
         .sequential()
         .test()
         .assertResult(1, 2, 3, 4, 5);
@@ -1121,12 +910,7 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .doOnRequest(new CheckedConsumer<Long>() {
-            @Override
-            public void accept(Long s) throws Exception {
-                count[0]++;
-            }
-        })
+        .doOnRequest(s -> count[0]++)
         .sequential()
         .test()
         .assertResult(1, 2, 3, 4, 5);
@@ -1140,12 +924,7 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .doOnCancel(new CheckedRunnable() {
-            @Override
-            public void run() throws Exception {
-                count[0]++;
-            }
-        })
+        .doOnCancel(() -> count[0]++)
         .sequential()
         .take(2)
         .test()
@@ -1164,12 +943,7 @@ public class ParallelFolyamTest {
     public void to() {
         Folyam.range(1, 5)
         .parallel()
-        .to(new Function<ParallelFolyam<Integer>, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(ParallelFolyam<Integer> pf) {
-                return pf.sequential();
-            }
-        })
+        .to(ParallelFolyam::sequential)
         .test()
         .assertResult(1, 2, 3, 4, 5);
     }
@@ -1178,11 +952,8 @@ public class ParallelFolyamTest {
     public void toThrows() {
         Folyam.range(1, 5)
         .parallel()
-        .to(new Function<ParallelFolyam<Integer>, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(ParallelFolyam<Integer> pf) {
-                throw new IllegalArgumentException();
-            }
+        .to((Function<ParallelFolyam<Integer>, Folyam<Integer>>) pf -> {
+            throw new IllegalArgumentException();
         });
     }
 
@@ -1190,17 +961,7 @@ public class ParallelFolyamTest {
     public void compose() {
         Folyam.range(1, 5)
         .parallel()
-        .compose(new Function<ParallelFolyam<Integer>, ParallelFolyam<Integer>>() {
-            @Override
-            public ParallelFolyam<Integer> apply(ParallelFolyam<Integer> pf) {
-                return pf.map(new CheckedFunction<Integer, Integer>() {
-                    @Override
-                    public Integer apply(Integer v) throws Exception {
-                        return v + 1;
-                    }
-                });
-            }
-        })
+        .compose(pf -> pf.map(v -> v + 1))
         .sequential()
         .test()
         .assertResult(2, 3, 4, 5, 6);
@@ -1212,21 +973,15 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .flatMapDelayError(new CheckedFunction<Integer, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(Integer v) throws Exception {
-                if (v == 3) {
-                   return Folyam.error(new IOException());
-                }
-                return Folyam.just(v);
+        .flatMapDelayError((CheckedFunction<Integer, Folyam<Integer>>) v -> {
+            if (v == 3) {
+               return Folyam.error(new IOException());
             }
+            return Folyam.just(v);
         })
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    count[0]++;
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                count[0]++;
             }
         })
         .sequential()
@@ -1244,21 +999,15 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .flatMapDelayError(new CheckedFunction<Integer, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(Integer v) throws Exception {
-                if (v == 3) {
-                   return Folyam.error(new IOException());
-                }
-                return Folyam.just(v);
+        .flatMapDelayError((CheckedFunction<Integer, Folyam<Integer>>) v -> {
+            if (v == 3) {
+               return Folyam.error(new IOException());
             }
+            return Folyam.just(v);
         }, 1)
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    count[0]++;
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                count[0]++;
             }
         })
         .sequential()
@@ -1276,21 +1025,15 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .concatMapDelayError(new CheckedFunction<Integer, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(Integer v) throws Exception {
-                if (v == 3) {
-                   return Folyam.error(new IOException());
-                }
-                return Folyam.just(v);
+        .concatMapDelayError((CheckedFunction<Integer, Folyam<Integer>>) v -> {
+            if (v == 3) {
+               return Folyam.error(new IOException());
             }
+            return Folyam.just(v);
         })
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    count[0]++;
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                count[0]++;
             }
         })
         .sequential()
@@ -1308,21 +1051,15 @@ public class ParallelFolyamTest {
 
         Folyam.range(1, 5)
         .parallel(2)
-        .concatMapDelayError(new CheckedFunction<Integer, Folyam<Integer>>() {
-            @Override
-            public Folyam<Integer> apply(Integer v) throws Exception {
-                if (v == 3) {
-                   return Folyam.error(new IOException());
-                }
-                return Folyam.just(v);
+        .concatMapDelayError((CheckedFunction<Integer, Folyam<Integer>>) v -> {
+            if (v == 3) {
+               return Folyam.error(new IOException());
             }
+            return Folyam.just(v);
         }, 1)
-        .doOnError(new CheckedConsumer<Throwable>() {
-            @Override
-            public void accept(Throwable e) throws Exception {
-                if (e instanceof IOException) {
-                    count[0]++;
-                }
+        .doOnError(e -> {
+            if (e instanceof IOException) {
+                count[0]++;
             }
         })
         .sequential()
@@ -1341,7 +1078,7 @@ public class ParallelFolyamTest {
         TestConsumer<Object>[] consumers = new TestConsumer[n + 1];
 
         for (int i = 0; i <= n; i++) {
-            consumers[i] = new TestConsumer<Object>();
+            consumers[i] = new TestConsumer<>();
         }
 
         source.subscribe(consumers);

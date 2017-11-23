@@ -156,6 +156,7 @@ public final class MulticastProcessor<T> extends FolyamProcessor<T> implements A
         if (item != null) {
             if (!queue.offer(item)) {
                 onError(new IllegalStateException("Not all consumers are ready to receive items"));
+                return;
             }
         }
         drain();

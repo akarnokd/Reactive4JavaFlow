@@ -81,7 +81,7 @@ public final class FolyamSwitchMap<T, R> extends Folyam<R> {
         static final QueuedInnerFolyamSubscriber TERMINATED;
 
         static {
-            TERMINATED = new QueuedInnerFolyamSubscriber<Object>(null, Integer.MAX_VALUE, 0);
+            TERMINATED = new QueuedInnerFolyamSubscriber<>(null, Integer.MAX_VALUE, 0);
             TERMINATED.cancel();
         }
 

@@ -84,12 +84,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithError() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.ERROR)
+        .map(v -> 1 / v, ParallelFailureHandling.ERROR)
         .sequential()
         .test()
         .assertFailure(ArithmeticException.class);
@@ -99,12 +94,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithStop() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.STOP)
+        .map(v -> 1 / v, ParallelFailureHandling.STOP)
         .sequential()
         .test()
         .assertResult();
@@ -133,17 +123,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithRetryLimited() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .map(v -> 1 / v, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -153,12 +133,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithSkip() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.SKIP)
+        .map(v -> 1 / v, ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -169,16 +144,8 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailHandlerThrows() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .map(v -> 1 / v, (n, e) -> {
+            throw new IOException();
         })
         .sequential()
         .test()
@@ -213,12 +180,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithErrorConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.ERROR)
+        .map(v -> 1 / v, ParallelFailureHandling.ERROR)
         .filter(v -> true)
         .sequential()
         .test()
@@ -229,12 +191,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithStopConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.STOP)
+        .map(v -> 1 / v, ParallelFailureHandling.STOP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -265,17 +222,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithRetryLimitedConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .map(v -> 1 / v, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -286,12 +233,7 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailWithSkipConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, ParallelFailureHandling.SKIP)
+        .map(v -> 1 / v, ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -303,16 +245,8 @@ public class ParallelMapTryTest implements CheckedConsumer<Object> {
     public void mapFailHandlerThrowsConditional() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                return 1 / v;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .map(v -> 1 / v, (n, e) -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()

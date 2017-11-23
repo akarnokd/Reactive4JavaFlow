@@ -111,7 +111,7 @@ public abstract class ParallelFolyam<T> {
      * does its own built-in trampolining logic.
      *
      * @param scheduler the scheduler to use
-     * @return the new ParallelFlowable instance
+     * @return the new ParallelFolyam instance
      */
     public final ParallelFolyam<T> runOn(SchedulerService scheduler) {
         return runOn(scheduler, FolyamPlugins.defaultBufferSize());
@@ -134,7 +134,7 @@ public abstract class ParallelFolyam<T> {
      * @param scheduler the scheduler to use
      * that rail's worker has run out of work.
      * @param prefetch the number of values to request on each 'rail' from the source
-     * @return the new ParallelFlowable instance
+     * @return the new ParallelFolyam instance
      */
     public final ParallelFolyam<T> runOn(SchedulerService scheduler, int prefetch) {
         Objects.requireNonNull(scheduler, "scheduler");

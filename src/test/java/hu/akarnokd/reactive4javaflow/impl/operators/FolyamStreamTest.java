@@ -136,7 +136,7 @@ public class FolyamStreamTest {
     }
 
     static <T> Stream<T> toStream(Iterable<T> iter) {
-        return new Stream<T>() {
+        return new Stream<>() {
             @Override
             public Stream<T> filter(Predicate<? super T> predicate) {
                 return null;

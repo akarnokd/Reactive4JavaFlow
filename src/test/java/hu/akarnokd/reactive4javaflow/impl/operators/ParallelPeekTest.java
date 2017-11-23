@@ -38,11 +38,8 @@ public class ParallelPeekTest {
         TestHelper.withErrorTracking(errors -> {
             Folyam.range(1, 5)
                     .parallel()
-                    .doOnSubscribe(new CheckedConsumer<Flow.Subscription>() {
-                        @Override
-                        public void accept(Flow.Subscription s) throws Exception {
-                            throw new IOException();
-                        }
+                    .doOnSubscribe(s -> {
+                        throw new IOException();
                     })
                     .sequential()
                     .test()
@@ -74,11 +71,8 @@ public class ParallelPeekTest {
         TestHelper.withErrorTracking(errors -> {
             Folyam.range(1, 5)
                     .parallel()
-                    .doOnRequest(new CheckedConsumer<Long>() {
-                        @Override
-                        public void accept(Long n) throws Exception {
-                            throw new IOException();
-                        }
+                    .doOnRequest(n -> {
+                        throw new IOException();
                     })
                     .sequential()
                     .test()
@@ -97,11 +91,8 @@ public class ParallelPeekTest {
         TestHelper.withErrorTracking(errors -> {
             Folyam.<Integer>never()
             .parallel()
-            .doOnCancel(new CheckedRunnable() {
-                @Override
-                public void run() throws Exception {
-                    throw new IOException();
-                }
+            .doOnCancel(() -> {
+                throw new IOException();
             })
             .sequential()
             .test()
@@ -120,11 +111,8 @@ public class ParallelPeekTest {
         TestHelper.withErrorTracking(errors -> {
             Folyam.just(1)
             .parallel()
-            .doOnComplete(new CheckedRunnable() {
-                @Override
-                public void run() throws Exception {
-                    throw new IOException();
-                }
+            .doOnComplete(() -> {
+                throw new IOException();
             })
             .sequential()
             .test()

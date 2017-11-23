@@ -37,18 +37,8 @@ public class ParallelFilterTest {
     public void doubleFilter() {
         Folyam.range(1, 10)
         .parallel()
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 2 == 0;
-            }
-        })
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 3 == 0;
-            }
-        })
+        .filter(v -> v % 2 == 0)
+        .filter(v -> v % 3 == 0)
         .sequential()
         .test()
         .assertResult(6);
@@ -101,11 +91,8 @@ public class ParallelFilterTest {
     public void predicateThrows() {
         Folyam.just(1)
         .parallel()
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                throw new IOException();
-            }
+        .filter(v -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()

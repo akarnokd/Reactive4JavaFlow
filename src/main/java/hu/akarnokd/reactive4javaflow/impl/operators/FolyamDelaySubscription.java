@@ -50,6 +50,9 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
         FolyamPublisher<T> source;
 
+        Flow.Subscription delayer;
+        static final VarHandle DELAYER = VH.find(MethodHandles.lookup(), AbstractDelaySubscription.class, "delayer", Flow.Subscription.class);
+
         Flow.Subscription upstream;
         static final VarHandle UPSTREAM = VH.find(MethodHandles.lookup(), AbstractDelaySubscription.class, "upstream", Flow.Subscription.class);
 
@@ -64,7 +67,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
         @Override
         public final void onSubscribe(Flow.Subscription subscription) {
-            if (SubscriptionHelper.replace(this, UPSTREAM, subscription)) {
+            if (SubscriptionHelper.replace(this, DELAYER, subscription)) {
                 subscription.request(Long.MAX_VALUE);
             }
         }
@@ -72,7 +75,7 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
         public void onNext(Object item) {
             if (!done) {
                 done = true;
-                upstream.cancel();
+                delayer.cancel();
                 subscribeNext();
             }
         }
@@ -102,10 +105,12 @@ public final class FolyamDelaySubscription<T> extends Folyam<T> {
 
         @Override
         public void cancel() {
+            SubscriptionHelper.cancel(this, DELAYER);
             SubscriptionHelper.cancel(this, UPSTREAM);
         }
 
         void subscribeNext() {
+            delayer = SubscriptionHelper.CANCELLED;
             FolyamPublisher<T> source = this.source;
             this.source = null;
             source.subscribe(createInner());

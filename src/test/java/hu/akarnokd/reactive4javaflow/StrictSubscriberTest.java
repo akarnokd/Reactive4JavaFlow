@@ -30,7 +30,7 @@ public class StrictSubscriberTest {
         TestConsumer<Integer> ts = new TestConsumer<>();
 
         Folyam.<Integer>error(new IOException())
-            .subscribe(new Flow.Subscriber<Integer>() {
+            .subscribe(new Flow.Subscriber<>() {
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -63,7 +63,7 @@ public class StrictSubscriberTest {
             TestConsumer<Integer> ts = new TestConsumer<>();
 
             Folyam.just(1)
-                    .subscribe(new Flow.Subscriber<Integer>() {
+                    .subscribe(new Flow.Subscriber<>() {
 
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {

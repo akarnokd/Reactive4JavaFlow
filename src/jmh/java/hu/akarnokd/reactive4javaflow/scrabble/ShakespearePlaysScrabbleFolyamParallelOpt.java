@@ -22,7 +22,7 @@ package hu.akarnokd.reactive4javaflow.scrabble;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.functionals.CheckedFunction;
@@ -70,13 +70,13 @@ public class ShakespearePlaysScrabbleFolyamParallelOpt extends ShakespearePlaysS
 
 
         CheckedFunction<String, Folyam<Integer>> toIntegerFolyam =
-                string -> chars(string);
+                ShakespearePlaysScrabbleFolyamParallelOpt::chars;
 
         // Histogram of the letters in a given word
         CheckedFunction<String, Esetleg<HashMap<Integer, MutableLong>>> histoOfLetters =
                 word -> toIntegerFolyam.apply(word)
                             .collect(
-                                () -> new HashMap<>(),
+                                    HashMap::new,
                                 (HashMap<Integer, MutableLong> map, Integer value) ->
                                     {
                                         MutableLong newValue = map.get(value) ;
@@ -103,7 +103,7 @@ public class ShakespearePlaysScrabbleFolyamParallelOpt extends ShakespearePlaysS
         CheckedFunction<String, Esetleg<Long>> nBlanks =
                 word -> histoOfLetters.apply(word)
                             .toFolyam()
-                            .flatMapIterable(map -> map.entrySet())
+                            .flatMapIterable(HashMap::entrySet)
                             .map(blank)
                             .sumLong(v -> v)
                             ;
@@ -118,7 +118,7 @@ public class ShakespearePlaysScrabbleFolyamParallelOpt extends ShakespearePlaysS
         CheckedFunction<String, Esetleg<Integer>> score2 =
                 word -> histoOfLetters.apply(word)
                             .toFolyam()
-                            .flatMapIterable(map -> map.entrySet())
+                            .flatMapIterable(HashMap::entrySet)
                             .map(letterScore)
                             .sumInt(v -> v);
 
@@ -158,7 +158,7 @@ public class ShakespearePlaysScrabbleFolyamParallelOpt extends ShakespearePlaysS
                 .filter(scrabbleWords::contains)
                 .filter(word -> checkBlanks.apply(word).blockingGet(false))
                 .collect(
-                    () -> new TreeMap<Integer, List<String>>(Comparator.reverseOrder()),
+                    () -> new TreeMap<>(Comparator.reverseOrder()),
                     (TreeMap<Integer, List<String>> map, String word) -> {
                         Integer key = score.apply(word).blockingGet(0);
                         List<String> list = map.get(key) ;
@@ -184,13 +184,11 @@ public class ShakespearePlaysScrabbleFolyamParallelOpt extends ShakespearePlaysS
         // best key / value pairs
         List<Entry<Integer, List<String>>> finalList2 =
                 buildHistoOnScore.apply(score3)
-                    .flatMapIterable(map -> map.entrySet())
+                    .flatMapIterable(TreeMap::entrySet)
                     .take(3)
                     .collect(
-                        () -> new ArrayList<Entry<Integer, List<String>>>(),
-                        (list, entry) -> {
-                            list.add(entry) ;
-                        }
+                            (Callable<ArrayList<Entry<Integer, List<String>>>>) ArrayList::new,
+                            ArrayList::add
                     )
                     .blockingGet(null) ;
 

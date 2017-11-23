@@ -38,18 +38,8 @@ public class ParallelMapTest {
         Folyam.range(1, 10)
         .parallel()
         .map(v -> v)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 2 == 0;
-            }
-        })
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 3 == 0;
-            }
-        })
+        .filter(v -> v % 2 == 0)
+        .filter(v -> v % 3 == 0)
         .sequential()
         .test()
         .assertResult(6);
@@ -61,18 +51,8 @@ public class ParallelMapTest {
         .parallel()
         .runOn(SchedulerServices.computation())
         .map(v -> v)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 2 == 0;
-            }
-        })
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 3 == 0;
-            }
-        })
+        .filter(v -> v % 2 == 0)
+        .filter(v -> v % 3 == 0)
         .sequential()
         .test()
         .awaitDone(5, TimeUnit.SECONDS)
@@ -126,11 +106,8 @@ public class ParallelMapTest {
     public void mapCrash() {
         Folyam.just(1)
         .parallel()
-        .map(new CheckedFunction<Integer, Object>() {
-            @Override
-            public Object apply(Integer v) throws Exception {
-                throw new IOException();
-            }
+        .map(v -> {
+            throw new IOException();
         })
         .sequential()
         .test()
@@ -141,11 +118,8 @@ public class ParallelMapTest {
     public void mapCrashConditional() {
         Folyam.just(1)
         .parallel()
-        .map(new CheckedFunction<Integer, Object>() {
-            @Override
-            public Object apply(Integer v) throws Exception {
-                throw new IOException();
-            }
+        .map(v -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()
@@ -158,11 +132,8 @@ public class ParallelMapTest {
         Folyam.just(1)
         .parallel()
         .runOn(SchedulerServices.computation())
-        .map(new CheckedFunction<Integer, Object>() {
-            @Override
-            public Object apply(Integer v) throws Exception {
-                throw new IOException();
-            }
+        .map(v -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()

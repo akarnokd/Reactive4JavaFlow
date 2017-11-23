@@ -63,7 +63,7 @@ public final class FolyamBufferPredicate<T, C extends Collection<? super T>> ext
             return;
         }
 
-        source.subscribe(new BufferPredicateSubscriber<T, C>(s, buffer, predicate, mode, bufferSupplier));
+        source.subscribe(new BufferPredicateSubscriber<>(s, buffer, predicate, mode, bufferSupplier));
     }
 
     static final class BufferPredicateSubscriber<T, C extends Collection<? super T>>

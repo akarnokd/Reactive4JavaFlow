@@ -27,7 +27,7 @@ public class AbstractDisposableSubscriberTest {
         TestConsumer<Integer> ts = new TestConsumer<>();
         ts.onSubscribe(new BooleanSubscription());
         Folyam.range(1, 5)
-                .subscribe(new AbstractDisposableSubscriber<Integer>() {
+                .subscribe(new AbstractDisposableSubscriber<>() {
                     @Override
                     public void onNext(Integer item) {
                         ts.onNext(item);
@@ -52,7 +52,7 @@ public class AbstractDisposableSubscriberTest {
         TestConsumer<Integer> ts = new TestConsumer<>();
         ts.onSubscribe(new BooleanSubscription());
         Folyam.range(1, 5)
-                .subscribe(new AbstractDisposableSubscriber<Integer>() {
+                .subscribe(new AbstractDisposableSubscriber<>() {
                     @Override
                     protected void onStart() {
                         request(1);
@@ -83,7 +83,7 @@ public class AbstractDisposableSubscriberTest {
         TestConsumer<Integer> ts = new TestConsumer<>();
         ts.onSubscribe(new BooleanSubscription());
         Folyam.range(1, 5)
-                .subscribe(new AbstractDisposableSubscriber<Integer>() {
+                .subscribe(new AbstractDisposableSubscriber<>() {
                     @Override
                     public void onNext(Integer item) {
                         ts.onNext(item);
@@ -112,7 +112,7 @@ public class AbstractDisposableSubscriberTest {
         TestConsumer<Integer> ts = new TestConsumer<>();
         ts.onSubscribe(new BooleanSubscription());
         Folyam.<Integer>error(new IOException())
-                .subscribe(new AbstractDisposableSubscriber<Integer>() {
+                .subscribe(new AbstractDisposableSubscriber<>() {
                     @Override
                     public void onNext(Integer item) {
                         ts.onNext(item);
@@ -138,7 +138,7 @@ public class AbstractDisposableSubscriberTest {
             TestConsumer<Integer> ts = new TestConsumer<>();
             ts.onSubscribe(new BooleanSubscription());
             Folyam.range(1, 5)
-                    .subscribe(new AbstractDisposableSubscriber<Integer>() {
+                    .subscribe(new AbstractDisposableSubscriber<>() {
                         @Override
                         protected void onStart() {
                             request(-1);

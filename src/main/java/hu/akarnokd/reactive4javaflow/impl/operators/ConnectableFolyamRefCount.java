@@ -76,7 +76,7 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
             }
         }
 
-        source.subscribe(new RefCountSubscriber<T>(s, this, conn));
+        source.subscribe(new RefCountSubscriber<>(s, this, conn));
 
         if (connect) {
             source.connect(conn);

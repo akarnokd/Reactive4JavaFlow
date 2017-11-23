@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 public class BlockingSchedulerServiceTest {
 
-    TestConsumer<Integer> ts = new TestConsumer<Integer>();
+    TestConsumer<Integer> ts = new TestConsumer<>();
 
     @Test(timeout = 10000)
     public void workerUntimed() {
@@ -52,17 +52,14 @@ public class BlockingSchedulerServiceTest {
     public void workerTimed() {
         TestHelper.withErrorTracking(errors -> {
             final BlockingSchedulerService scheduler = SchedulerServices.newBlocking();
-            scheduler.execute(new Runnable() {
-                @Override
-                public void run() {
-                    Folyam.range(1, 5)
-                            .subscribeOn(scheduler)
-                            .delay(100, TimeUnit.MILLISECONDS, scheduler)
-                            .doFinally(scheduler::shutdown)
-                            .subscribe(ts);
+            scheduler.execute(() -> {
+                Folyam.range(1, 5)
+                        .subscribeOn(scheduler)
+                        .delay(100, TimeUnit.MILLISECONDS, scheduler)
+                        .doFinally(scheduler::shutdown)
+                        .subscribe(ts);
 
-                    ts.assertEmpty();
-                }
+                ts.assertEmpty();
             });
 
             ts.assertResult(1, 2, 3, 4, 5);

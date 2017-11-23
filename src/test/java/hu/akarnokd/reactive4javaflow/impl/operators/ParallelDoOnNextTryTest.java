@@ -97,12 +97,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithError() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.ERROR)
         .sequential()
@@ -114,12 +111,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithStop() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.STOP)
         .sequential()
@@ -131,8 +125,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithRetry() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
+        .doOnNext(new CheckedConsumer<>() {
             int count;
+
             @Override
             public void accept(Integer v) throws Exception {
                 if (count++ == 1) {
@@ -152,19 +147,11 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithRetryLimited() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        }, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -174,12 +161,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithSkip() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.SKIP)
         .sequential()
@@ -192,18 +176,12 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailHandlerThrows() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        }, (n, e) -> {
+            throw new IOException();
         })
         .sequential()
         .test()
@@ -238,12 +216,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithErrorConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.ERROR)
         .filter(v -> true)
@@ -256,12 +231,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithStopConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.STOP)
         .filter(v -> true)
@@ -274,8 +246,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithRetryConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
+        .doOnNext(new CheckedConsumer<>() {
             int count;
+
             @Override
             public void accept(Integer v) throws Exception {
                 if (count++ == 1) {
@@ -296,19 +269,11 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithRetryLimitedConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        }, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -319,12 +284,9 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailWithSkipConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
         }, ParallelFailureHandling.SKIP)
         .filter(v -> true)
@@ -338,18 +300,12 @@ public class ParallelDoOnNextTryTest implements CheckedConsumer<Object> {
     public void doOnNextFailHandlerThrowsConditional() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .doOnNext(new CheckedConsumer<Integer>() {
-            @Override
-            public void accept(Integer v) throws Exception {
-                if (1 / v < 0) {
-                    System.out.println("Should not happen!");
-                }
+        .doOnNext(v -> {
+            if (1 / v < 0) {
+                System.out.println("Should not happen!");
             }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        }, (n, e) -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()

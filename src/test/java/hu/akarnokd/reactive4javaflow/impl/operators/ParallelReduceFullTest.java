@@ -33,12 +33,7 @@ public class ParallelReduceFullTest {
 
         TestConsumer<Integer> ts = pp
         .parallel()
-        .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-            @Override
-            public Integer apply(Integer a, Integer b) throws Exception {
-                return a + b;
-            }
-        })
+        .reduce((a, b) -> a + b)
         .test();
 
         assertTrue(pp.hasSubscribers());
@@ -53,12 +48,7 @@ public class ParallelReduceFullTest {
         TestHelper.withErrorTracking(errors -> {
             Folyam.<Integer>error(new IOException())
                     .parallel()
-                    .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-                        @Override
-                        public Integer apply(Integer a, Integer b) throws Exception {
-                            return a + b;
-                        }
-                    })
+                    .reduce((a, b) -> a + b)
                     .test()
                     .assertFailure(IOException.class);
 
@@ -71,12 +61,7 @@ public class ParallelReduceFullTest {
     public void error2() {
         TestHelper.withErrorTracking(errors -> {
             ParallelFolyam.fromArray(Folyam.<Integer>error(new IOException()), Folyam.<Integer>error(new IOException()))
-            .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-                @Override
-                public Integer apply(Integer a, Integer b) throws Exception {
-                    return a + b;
-                }
-            })
+            .reduce((a, b) -> a + b)
             .test()
             .assertFailure(IOException.class);
 
@@ -88,12 +73,7 @@ public class ParallelReduceFullTest {
     public void empty() {
         Folyam.<Integer>empty()
         .parallel()
-        .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-            @Override
-            public Integer apply(Integer a, Integer b) throws Exception {
-                return a + b;
-            }
-        })
+        .reduce((a, b) -> a + b)
         .test()
         .assertResult();
     }
@@ -102,12 +82,7 @@ public class ParallelReduceFullTest {
     public void doubleError() {
         TestHelper.withErrorTracking(errors -> {
             new ParallelInvalid()
-            .reduce(new CheckedBiFunction<Object, Object, Object>() {
-                @Override
-                public Object apply(Object a, Object b) throws Exception {
-                    return "" + a + b;
-                }
-            })
+            .reduce((a, b) -> "" + a + b)
             .test()
             .assertFailure(IOException.class);
 
@@ -122,14 +97,11 @@ public class ParallelReduceFullTest {
     public void reducerCrash() {
         Folyam.range(1, 4)
         .parallel(2)
-        .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-            @Override
-            public Integer apply(Integer a, Integer b) throws Exception {
-                if (b == 3) {
-                    throw new IOException();
-                }
-                return a + b;
+        .reduce((a, b) -> {
+            if (b == 3) {
+                throw new IOException();
             }
+            return a + b;
         })
         .test()
         .assertFailure(IOException.class);
@@ -139,14 +111,11 @@ public class ParallelReduceFullTest {
     public void reducerCrash2() {
         Folyam.range(1, 4)
         .parallel(2)
-        .reduce(new CheckedBiFunction<Integer, Integer, Integer>() {
-            @Override
-            public Integer apply(Integer a, Integer b) throws Exception {
-                if (a == 1 + 3) {
-                    throw new IOException();
-                }
-                return a + b;
+        .reduce((a, b) -> {
+            if (a == 1 + 3) {
+                throw new IOException();
             }
+            return a + b;
         })
         .test()
         .assertFailure(IOException.class);

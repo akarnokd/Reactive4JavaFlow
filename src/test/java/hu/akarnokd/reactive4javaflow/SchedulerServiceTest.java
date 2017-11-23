@@ -26,43 +26,33 @@ import static org.junit.Assert.assertSame;
 
 public class SchedulerServiceTest {
 
-    SchedulerService sch = new SchedulerService() {
+    SchedulerService sch = () -> new SchedulerService.Worker() {
+        volatile boolean closed;
         @Override
-        public Worker worker() {
-            return new Worker() {
-                volatile boolean closed;
-                @Override
-                public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
-                    if (closed) {
-                        return REJECTED;
-                    }
-                    task.run();
-                    return new BooleanAutoDisposable();
-                }
+        public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
+            if (closed) {
+                return SchedulerService.REJECTED;
+            }
+            task.run();
+            return new BooleanAutoDisposable();
+        }
 
-                @Override
-                public void close() {
-                    closed = true;
-                }
-            };
+        @Override
+        public void close() {
+            closed = true;
         }
     };
 
-    SchedulerService schRejecting = new SchedulerService() {
+    SchedulerService schRejecting = () -> new SchedulerService.Worker() {
+        volatile boolean closed;
         @Override
-        public Worker worker() {
-            return new Worker() {
-                volatile boolean closed;
-                @Override
-                public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
-                    return REJECTED;
-                }
+        public AutoDisposable schedule(Runnable task, long delay, TimeUnit unit) {
+            return SchedulerService.REJECTED;
+        }
 
-                @Override
-                public void close() {
-                    closed = true;
-                }
-            };
+        @Override
+        public void close() {
+            closed = true;
         }
     };
 

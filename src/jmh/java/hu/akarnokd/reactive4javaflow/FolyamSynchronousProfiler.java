@@ -160,9 +160,9 @@ public class FolyamSynchronousProfiler {
             long now = System.nanoTime();
 
             if (s instanceof ConditionalSubscriber) {
-                source.subscribe(new ProfilerConditionalSubscriber<T>((ConditionalSubscriber<? super T>)s, stats));
+                source.subscribe(new ProfilerConditionalSubscriber<>((ConditionalSubscriber<? super T>) s, stats));
             } else {
-                source.subscribe(new ProfilerSubscriber<T>(s, stats));
+                source.subscribe(new ProfilerSubscriber<>(s, stats));
             }
 
             long after = System.nanoTime();
@@ -421,9 +421,9 @@ public class FolyamSynchronousProfiler {
             long now = System.nanoTime();
 
             if (s instanceof ConditionalSubscriber) {
-                source.subscribe(new FolyamProfiler.ProfilerConditionalSubscriber<T>((ConditionalSubscriber<? super T>) s, stats));
+                source.subscribe(new FolyamProfiler.ProfilerConditionalSubscriber<>((ConditionalSubscriber<? super T>) s, stats));
             } else {
-                source.subscribe(new FolyamProfiler.ProfilerSubscriber<T>(s, stats));
+                source.subscribe(new FolyamProfiler.ProfilerSubscriber<>(s, stats));
             }
 
             long after = System.nanoTime();

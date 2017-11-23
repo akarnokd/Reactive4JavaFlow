@@ -58,7 +58,7 @@ public class ParallelJoinTest {
         @SuppressWarnings("unchecked")
         final FolyamSubscriber<? super Integer>[] subs = new FolyamSubscriber[1];
 
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);
@@ -121,7 +121,7 @@ public class ParallelJoinTest {
         @SuppressWarnings("unchecked")
         final FolyamSubscriber<? super Integer>[] subs = new FolyamSubscriber[1];
 
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);
@@ -166,11 +166,8 @@ public class ParallelJoinTest {
     public void delayError() {
         TestConsumer<Integer> flow = Folyam.range(1, 2)
         .parallel(2)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                throw new IOException();
-            }
+        .map((CheckedFunction<Integer, Integer>) v -> {
+            throw new IOException();
         })
         .sequentialDelayError()
         .test()
@@ -246,7 +243,7 @@ public class ParallelJoinTest {
 
     @Test
     public void consumerCancelsAfterOne() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);
@@ -265,7 +262,7 @@ public class ParallelJoinTest {
 
     @Test
     public void delayErrorConsumerCancelsAfterOne() {
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);
@@ -300,14 +297,11 @@ public class ParallelJoinTest {
     public void failedRailIsIgnored() {
         Folyam.range(1, 4)
         .parallel(2)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                if (v == 1) {
-                    throw new IOException();
-                }
-                return v;
+        .map(v -> {
+            if (v == 1) {
+                throw new IOException();
             }
+            return v;
         })
         .sequentialDelayError()
         .test()
@@ -318,14 +312,11 @@ public class ParallelJoinTest {
     public void failedRailIsIgnoredHidden() {
         Folyam.range(1, 4).hide()
         .parallel(2)
-        .map(new CheckedFunction<Integer, Integer>() {
-            @Override
-            public Integer apply(Integer v) throws Exception {
-                if (v == 1) {
-                    throw new IOException();
-                }
-                return v;
+        .map(v -> {
+            if (v == 1) {
+                throw new IOException();
             }
+            return v;
         })
         .sequentialDelayError()
         .test()

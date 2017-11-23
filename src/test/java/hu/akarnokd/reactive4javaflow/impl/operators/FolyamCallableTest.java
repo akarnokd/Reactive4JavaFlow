@@ -73,10 +73,10 @@ public class FolyamCallableTest {
     public void fusedClear() {
         FusedSubscription[] fs = { null };
         Folyam.fromCallable(() -> 1)
-                .subscribe(new FolyamSubscriber<Integer>() {
+                .subscribe(new FolyamSubscriber<>() {
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
-                        fs[0] = (FusedSubscription)subscription;
+                        fs[0] = (FusedSubscription) subscription;
                         fs[0].requestFusion(FusedSubscription.ANY);
                     }
 

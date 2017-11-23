@@ -32,17 +32,9 @@ public class ParallelReduceTest {
     @Test
     public void subscriberCount() {
         ParallelFolyamTest.checkSubscriberCount(Folyam.range(1, 5).parallel()
-        .reduce(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiFunction<List<Integer>, Integer, List<Integer>>() {
-            @Override
-            public List<Integer> apply(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-                return a;
-            }
+        .reduce((Callable<List<Integer>>) ArrayList::new, (a, b) -> {
+            a.add(b);
+            return a;
         }));
     }
 
@@ -51,17 +43,11 @@ public class ParallelReduceTest {
     public void initialCrash() {
         Folyam.range(1, 5)
         .parallel()
-        .reduce(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                throw new IOException();
-            }
-        }, new CheckedBiFunction<List<Integer>, Integer, List<Integer>>() {
-            @Override
-            public List<Integer> apply(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-                return a;
-            }
+        .reduce((Callable<List<Integer>>) () -> {
+            throw new IOException();
+        }, (a, b) -> {
+            a.add(b);
+            return a;
         })
         .sequential()
         .test()
@@ -73,20 +59,12 @@ public class ParallelReduceTest {
     public void reducerCrash() {
         Folyam.range(1, 5)
         .parallel()
-        .reduce(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
+        .reduce((Callable<List<Integer>>) ArrayList::new, (a, b) -> {
+            if (b == 3) {
+                throw new IOException();
             }
-        }, new CheckedBiFunction<List<Integer>, Integer, List<Integer>>() {
-            @Override
-            public List<Integer> apply(List<Integer> a, Integer b) throws Exception {
-                if (b == 3) {
-                    throw new IOException();
-                }
-                a.add(b);
-                return a;
-            }
+            a.add(b);
+            return a;
         })
         .sequential()
         .test()
@@ -99,17 +77,9 @@ public class ParallelReduceTest {
 
         TestConsumer<List<Integer>> ts = pp
         .parallel()
-        .reduce(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiFunction<List<Integer>, Integer, List<Integer>>() {
-            @Override
-            public List<Integer> apply(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-                return a;
-            }
+        .reduce((Callable<List<Integer>>) ArrayList::new, (a, b) -> {
+            a.add(b);
+            return a;
         })
         .sequential()
         .test();
@@ -126,17 +96,9 @@ public class ParallelReduceTest {
     public void error() {
         Folyam.<Integer>error(new IOException())
         .parallel()
-        .reduce(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiFunction<List<Integer>, Integer, List<Integer>>() {
-            @Override
-            public List<Integer> apply(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-                return a;
-            }
+        .reduce((Callable<List<Integer>>) ArrayList::new, (a, b) -> {
+            a.add(b);
+            return a;
         })
         .sequential()
         .test()
@@ -148,17 +110,9 @@ public class ParallelReduceTest {
     public void doubleError() {
         TestHelper.withErrorTracking(errors -> {
             new ParallelInvalid()
-                    .reduce(new Callable<List<Object>>() {
-                        @Override
-                        public List<Object> call() throws Exception {
-                            return new ArrayList<Object>();
-                        }
-                    }, new CheckedBiFunction<List<Object>, Object, List<Object>>() {
-                        @Override
-                        public List<Object> apply(List<Object> a, Object b) throws Exception {
-                            a.add(b);
-                            return a;
-                        }
+                    .reduce((Callable<List<Object>>) ArrayList::new, (a, b) -> {
+                        a.add(b);
+                        return a;
                     })
                     .sequential()
                     .test()

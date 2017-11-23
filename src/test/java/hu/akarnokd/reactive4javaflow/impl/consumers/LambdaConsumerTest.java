@@ -50,7 +50,7 @@ public class LambdaConsumerTest {
     public void onNextCrash() {
         TestConsumer<Integer> tc = new TestConsumer<>();
 
-        LambdaConsumer<Integer> lc = new LambdaConsumer<Integer>(
+        LambdaConsumer<Integer> lc = new LambdaConsumer<>(
                 e -> {
                     throw new IOException();
                 },
@@ -71,7 +71,7 @@ public class LambdaConsumerTest {
         TestHelper.withErrorTracking(errors -> {
             TestConsumer<Integer> tc = new TestConsumer<>();
 
-            LambdaConsumer<Integer> lc = new LambdaConsumer<Integer>(
+            LambdaConsumer<Integer> lc = new LambdaConsumer<>(
                     tc::onNext,
                     e -> {
                         throw new IOException();
@@ -98,7 +98,7 @@ public class LambdaConsumerTest {
         TestHelper.withErrorTracking(errors -> {
             TestConsumer<Integer> tc = new TestConsumer<>();
 
-            LambdaConsumer<Integer> lc = new LambdaConsumer<Integer>(
+            LambdaConsumer<Integer> lc = new LambdaConsumer<>(
                     tc::onNext,
                     tc::onError,
                     () -> {

@@ -109,6 +109,7 @@ public final class FolyamRepeat<T> extends Folyam<T> {
                     }
                     long p = produced;
                     if (p != 0L) {
+                        produced = 0L;
                         arbiterProduced(p);
                     }
                     source.subscribe(this);

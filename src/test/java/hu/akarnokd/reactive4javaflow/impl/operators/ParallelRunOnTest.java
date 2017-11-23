@@ -57,12 +57,7 @@ public class ParallelRunOnTest {
         Folyam.range(1, 1000)
         .parallel(2)
         .runOn(SchedulerServices.computation())
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return v % 2 == 0;
-            }
-        })
+        .filter(v -> v % 2 == 0)
         .sequential()
         .test()
         .awaitDone(5, TimeUnit.SECONDS)
@@ -127,7 +122,7 @@ public class ParallelRunOnTest {
     @SuppressWarnings("unchecked")
     @Test
     public void errorConditionalBackpressured() {
-        TestConsumer<Object> ts = new TestConsumer<Object>(0L);
+        TestConsumer<Object> ts = new TestConsumer<>(0L);
 
         Folyam.error(new IOException())
         .parallel(1)
@@ -142,7 +137,7 @@ public class ParallelRunOnTest {
     @SuppressWarnings("unchecked")
     @Test
     public void emptyConditionalBackpressured() {
-        TestConsumer<Object> ts = new TestConsumer<Object>(0L);
+        TestConsumer<Object> ts = new TestConsumer<>(0L);
 
         Folyam.empty()
         .parallel(1)
@@ -164,19 +159,9 @@ public class ParallelRunOnTest {
             .sequential()
             .test();
 
-            Runnable r1 = new Runnable() {
-                @Override
-                public void run() {
-                    pp.onNext(1);
-                }
-            };
+            Runnable r1 = () -> pp.onNext(1);
 
-            Runnable r2 = new Runnable() {
-                @Override
-                public void run() {
-                    ts.cancel();
-                }
-            };
+            Runnable r2 = ts::cancel;
 
             TestHelper.race(r1, r2);
         }
@@ -194,19 +179,9 @@ public class ParallelRunOnTest {
             .runOn(SchedulerServices.computation())
             .subscribe(new FolyamSubscriber[] { ts });
 
-            Runnable r1 = new Runnable() {
-                @Override
-                public void run() {
-                    pp.onNext(1);
-                }
-            };
+            Runnable r1 = () -> pp.onNext(1);
 
-            Runnable r2 = new Runnable() {
-                @Override
-                public void run() {
-                    ts.cancel();
-                }
-            };
+            Runnable r2 = ts::cancel;
 
             TestHelper.race(r1, r2);
         }
@@ -223,19 +198,9 @@ public class ParallelRunOnTest {
             .sequential()
             .test();
 
-            Runnable r1 = new Runnable() {
-                @Override
-                public void run() {
-                    pp.onNext(1);
-                }
-            };
+            Runnable r1 = () -> pp.onNext(1);
 
-            Runnable r2 = new Runnable() {
-                @Override
-                public void run() {
-                    ts.cancel();
-                }
-            };
+            Runnable r2 = ts::cancel;
 
             TestHelper.race(r1, r2);
         }
@@ -254,19 +219,9 @@ public class ParallelRunOnTest {
             .filter(v -> true)
             .subscribe(new FolyamSubscriber[] { ts });
 
-            Runnable r1 = new Runnable() {
-                @Override
-                public void run() {
-                    pp.onNext(1);
-                }
-            };
+            Runnable r1 = () -> pp.onNext(1);
 
-            Runnable r2 = new Runnable() {
-                @Override
-                public void run() {
-                    ts.cancel();
-                }
-            };
+            Runnable r2 = ts::cancel;
 
             TestHelper.race(r1, r2);
         }
@@ -276,7 +231,7 @@ public class ParallelRunOnTest {
     @Test
     public void normalCancelAfterRequest1() {
 
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);
@@ -297,7 +252,7 @@ public class ParallelRunOnTest {
     @Test
     public void conditionalCancelAfterRequest1() {
 
-        TestConsumer<Integer> ts = new TestConsumer<Integer>(1) {
+        TestConsumer<Integer> ts = new TestConsumer<>(1) {
             @Override
             public void onNext(Integer t) {
                 super.onNext(t);

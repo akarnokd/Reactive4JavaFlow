@@ -177,12 +177,9 @@ public final class BlockingSchedulerService implements SchedulerService {
         SequentialAutoDisposable inner = new SequentialAutoDisposable();
         final SequentialAutoDisposable outer = new SequentialAutoDisposable(inner);
 
-        AutoDisposable d = timedHelper.schedule(new Runnable() {
-            @Override
-            public void run() {
-                outer.replace(task);
-                enqueue(task);
-            }
+        AutoDisposable d = timedHelper.schedule(() -> {
+            outer.replace(task);
+            enqueue(task);
         }, delay, unit);
 
         if (d == REJECTED) {
@@ -352,12 +349,9 @@ public final class BlockingSchedulerService implements SchedulerService {
                 SequentialAutoDisposable inner = new SequentialAutoDisposable();
                 final SequentialAutoDisposable outer = new SequentialAutoDisposable(inner);
 
-                AutoDisposable d = timedHelper.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        outer.replace(task);
-                        enqueue(task);
-                    }
+                AutoDisposable d = timedHelper.schedule(() -> {
+                    outer.replace(task);
+                    enqueue(task);
                 }, delay, unit);
 
                 if (d == REJECTED) {

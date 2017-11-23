@@ -204,18 +204,8 @@ public class FolyamSwitchFlatMapTest {
 
             pp1.onNext(1);
 
-            Runnable r1 = new Runnable() {
-                @Override
-                public void run() {
-                    pp1.onComplete();
-                }
-            };
-            Runnable r2 = new Runnable() {
-                @Override
-                public void run() {
-                    pp2.onError(ex);
-                }
-            };
+            Runnable r1 = pp1::onComplete;
+            Runnable r2 = () -> pp2.onError(ex);
 
             TestHelper.race(r1, r2);
 
@@ -285,11 +275,8 @@ public class FolyamSwitchFlatMapTest {
         DirectProcessor<Integer> bp = new DirectProcessor<>();
 
         TestConsumer<Object> tc = bp
-                .switchFlatMap(new CheckedFunction<Object, Flow.Publisher<Object>>() {
-                    @Override
-                    public Flow.Publisher<Object> apply(Object v) throws Exception {
-                        throw new IOException();
-                    }
+                .switchFlatMap((CheckedFunction<Object, Flow.Publisher<Object>>) v -> {
+                    throw new IOException();
                 }, 2)
                 .test();
 

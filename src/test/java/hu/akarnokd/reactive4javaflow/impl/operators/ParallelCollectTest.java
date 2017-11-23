@@ -31,17 +31,7 @@ public class ParallelCollectTest {
     @Test
     public void subscriberCount() {
         ParallelFolyamTest.checkSubscriberCount(Folyam.range(1, 5).parallel()
-        .collect(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-            }
-        }));
+        .collect((Callable<List<Integer>>) ArrayList::new, List::add));
     }
 
     @SuppressWarnings("unchecked")
@@ -49,17 +39,9 @@ public class ParallelCollectTest {
     public void initialCrash() {
         Folyam.range(1, 5)
         .parallel()
-        .collect(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                throw new IOException();
-            }
-        }, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-            }
-        })
+        .collect((Callable<List<Integer>>) () -> {
+            throw new IOException();
+        }, List::add)
         .sequential()
         .test()
         .assertFailure(IOException.class);
@@ -70,19 +52,11 @@ public class ParallelCollectTest {
     public void reducerCrash() {
         Folyam.range(1, 5)
         .parallel()
-        .collect(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
+        .collect((Callable<List<Integer>>) ArrayList::new, (a, b) -> {
+            if (b == 3) {
+                throw new IOException();
             }
-        }, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                if (b == 3) {
-                    throw new IOException();
-                }
-                a.add(b);
-            }
+            a.add(b);
         })
         .sequential()
         .test()
@@ -95,17 +69,7 @@ public class ParallelCollectTest {
 
         TestConsumer<List<Integer>> ts = pp
         .parallel()
-        .collect(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-            }
-        })
+        .collect((Callable<List<Integer>>) ArrayList::new, List::add)
         .sequential()
         .test();
 
@@ -121,17 +85,7 @@ public class ParallelCollectTest {
     public void error() {
         Folyam.<Integer>error(new IOException())
         .parallel()
-        .collect(new Callable<List<Integer>>() {
-            @Override
-            public List<Integer> call() throws Exception {
-                return new ArrayList<Integer>();
-            }
-        }, new CheckedBiConsumer<List<Integer>, Integer>() {
-            @Override
-            public void accept(List<Integer> a, Integer b) throws Exception {
-                a.add(b);
-            }
-        })
+        .collect((Callable<List<Integer>>) ArrayList::new, List::add)
         .sequential()
         .test()
         .assertFailure(IOException.class);
@@ -142,17 +96,7 @@ public class ParallelCollectTest {
     public void doubleError() {
         TestHelper.withErrorTracking(errors -> {
             new ParallelInvalid()
-                    .collect(new Callable<List<Object>>() {
-                        @Override
-                        public List<Object> call() throws Exception {
-                            return new ArrayList<Object>();
-                        }
-                    }, new CheckedBiConsumer<List<Object>, Object>() {
-                        @Override
-                        public void accept(List<Object> a, Object b) throws Exception {
-                            a.add(b);
-                        }
-                    })
+                    .collect((Callable<List<Object>>) ArrayList::new, List::add)
                     .sequential()
                     .test()
                     .assertFailure(IOException.class);

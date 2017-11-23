@@ -393,7 +393,7 @@ public class FolyamExpandTest {
 
             final CountDownLatch cdl = new CountDownLatch(1);
 
-            TestConsumer<Integer> ts = new TestConsumer<Integer>() {
+            TestConsumer<Integer> ts = new TestConsumer<>() {
                 final AtomicInteger sync = new AtomicInteger(2);
 
                 @Override
@@ -401,13 +401,15 @@ public class FolyamExpandTest {
                     super.onNext(t);
                     SchedulerServices.single().schedule(() -> {
                         if (sync.decrementAndGet() != 0) {
-                            while (sync.get() != 0) { }
+                            while (sync.get() != 0) {
+                            }
                         }
                         cancel();
                         cdl.countDown();
                     });
                     if (sync.decrementAndGet() != 0) {
-                        while (sync.get() != 0) { }
+                        while (sync.get() != 0) {
+                        }
                     }
                 }
             };

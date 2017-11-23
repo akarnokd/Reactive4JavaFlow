@@ -235,10 +235,11 @@ public final class TestHelper {
             // regular fused
             TestConsumer<T> ts1 = new TestConsumer<>();
 
-            source.subscribe(new FolyamSubscriber<T>() {
+            source.subscribe(new FolyamSubscriber<>() {
                 FusedQueue<T> qs;
                 Flow.Subscription upstream;
                 boolean done;
+
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     upstream = subscription;
@@ -339,10 +340,11 @@ public final class TestHelper {
             // regular fused
             TestConsumer<T> ts2 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
                 FusedQueue<T> qs;
                 Flow.Subscription upstream;
                 boolean done;
+
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     upstream = subscription;
@@ -455,7 +457,7 @@ public final class TestHelper {
             // unbounded request
             TestConsumer<T> ts1 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -496,7 +498,7 @@ public final class TestHelper {
             // one by one
             TestConsumer<T> ts2 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -537,7 +539,7 @@ public final class TestHelper {
             // every other one
             TestConsumer<T> ts3 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -580,7 +582,7 @@ public final class TestHelper {
             // cancel after first, unbounded
             TestConsumer<T> ts4 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -633,7 +635,7 @@ public final class TestHelper {
 
             TestConsumer<T> ts5 = new TestConsumer<>();
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -686,7 +688,7 @@ public final class TestHelper {
 
             TestConsumer<T> ts6 = new TestConsumer<>(0);
 
-            source.subscribe(new ConditionalSubscriber<T>() {
+            source.subscribe(new ConditionalSubscriber<>() {
 
                 Flow.Subscription upstream;
 
@@ -855,7 +857,7 @@ public final class TestHelper {
     @SafeVarargs
     public static <R> void folyamDonePath(Function<? super Folyam<Integer>, Flow.Publisher<R>> compose, R... result) {
         withErrorTracking(errors -> {
-            Folyam<Integer> f = new Folyam<Integer>() {
+            Folyam<Integer> f = new Folyam<>() {
 
                 @Override
                 protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
@@ -881,7 +883,7 @@ public final class TestHelper {
     @SafeVarargs
     public static <R> void esetlegDonePath(Function<? super Esetleg<Integer>, Flow.Publisher<R>> compose, R... result) {
         withErrorTracking(errors -> {
-            Esetleg<Integer> f = new Esetleg<Integer>() {
+            Esetleg<Integer> f = new Esetleg<>() {
 
                 @Override
                 protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
@@ -957,7 +959,7 @@ public final class TestHelper {
         @SuppressWarnings("unchecked")
         TestConsumer<Object>[] tss = new TestConsumer[n + 1];
         for (int i = 0; i <= n; i++) {
-            tss[i] = new TestConsumer<Object>().withTag("" + i);
+            tss[i] = new TestConsumer<>().withTag("" + i);
         }
 
         source.subscribe(tss);
@@ -986,7 +988,7 @@ public final class TestHelper {
             source = Folyam.error(new IOException("Forced source failure"));
         } else
         if (items == -2) {
-            source = new Folyam<Integer>() {
+            source = new Folyam<>() {
 
                 @Override
                 protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
@@ -995,7 +997,7 @@ public final class TestHelper {
             };
         } else
         if (items == -3) {
-            source = new Folyam<Integer>() {
+            source = new Folyam<>() {
 
                 @Override
                 protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
@@ -1102,7 +1104,7 @@ public final class TestHelper {
 
     public static <T> void checkBadSource(Function<? super Folyam<Integer>, ? extends Folyam<T>> mapper) {
         withErrorTracking(errors -> {
-            Folyam<Integer> badSource = new Folyam<Integer>() {
+            Folyam<Integer> badSource = new Folyam<>() {
                 @Override
                 protected void subscribeActual(FolyamSubscriber<? super Integer> s) {
                     s.onSubscribe(new BooleanSubscription());
@@ -1154,7 +1156,7 @@ public final class TestHelper {
 
             // conditional
             {
-                Flow.Publisher<T> p = new FolyamFilter<T>(mapper.apply(badSource), v -> true);
+                Flow.Publisher<T> p = new FolyamFilter<>(mapper.apply(badSource), v -> true);
 
                 TestConsumer<Object> tc = new TestConsumer<>();
                 tc.withTag("Conditional");
@@ -1173,7 +1175,7 @@ public final class TestHelper {
 
             // conditional, fused
             {
-                Flow.Publisher<T> p = new FolyamFilter<T>(mapper.apply(badSource), v -> true);
+                Flow.Publisher<T> p = new FolyamFilter<>(mapper.apply(badSource), v -> true);
 
                 TestConsumer<Object> tc = new TestConsumer<>();
                 tc.withTag("Conditional, fused");

@@ -44,11 +44,11 @@ public class FolyamIgnoreElementsTest {
 
         Folyam.just(1)
                 .ignoreElements()
-                .subscribe(new FolyamSubscriber<Integer>() {
+                .subscribe(new FolyamSubscriber<>() {
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
                         ts.onSubscribe(new BooleanSubscription());
-                        FusedSubscription<Integer> fs = (FusedSubscription<Integer>)subscription;
+                        FusedSubscription<Integer> fs = (FusedSubscription<Integer>) subscription;
 
                         int m = fs.requestFusion(FusedSubscription.ANY);
                         if (m != FusedSubscription.ASYNC) {

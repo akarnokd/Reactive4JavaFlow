@@ -35,7 +35,7 @@ public class SafeFolyamSubscriberTest {
     public void onSubscribeCrash() {
         TestHelper.withErrorTracking(errors -> {
             Folyam.just(1)
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             throw new IllegalArgumentException("Forced failure");
@@ -67,7 +67,7 @@ public class SafeFolyamSubscriberTest {
         TestHelper.withErrorTracking(errors -> {
             List<Throwable> items = new ArrayList<>();
             Folyam.just(1)
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscription.request(Long.MAX_VALUE);
@@ -101,7 +101,7 @@ public class SafeFolyamSubscriberTest {
         TestHelper.withErrorTracking(errors -> {
             List<Throwable> items = new ArrayList<>();
             Folyam.<Integer>error(new IOException("Outer failure"))
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscription.request(Long.MAX_VALUE);
@@ -139,7 +139,7 @@ public class SafeFolyamSubscriberTest {
     public void onCompleteCrash() {
         TestHelper.withErrorTracking(errors -> {
             Folyam.<Integer>empty()
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscription.request(Long.MAX_VALUE);
@@ -157,7 +157,7 @@ public class SafeFolyamSubscriberTest {
 
                         @Override
                         public void onComplete() {
-                           throw new IllegalArgumentException("onComplete");
+                            throw new IllegalArgumentException("onComplete");
                         }
                     });
 
@@ -186,7 +186,7 @@ public class SafeFolyamSubscriberTest {
                     });
                 }
             }
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscription.request(1);
@@ -232,7 +232,7 @@ public class SafeFolyamSubscriberTest {
                     });
                 }
             }
-                    .safeSubscribe(new FolyamSubscriber<Integer>() {
+                    .safeSubscribe(new FolyamSubscriber<>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscription.cancel();

@@ -155,7 +155,7 @@ public class ConnectableFolyamRefCountTest {
 
             final TestConsumer<Integer> ts1 = source.test(0);
 
-            final TestConsumer<Integer> ts2 = new TestConsumer<Integer>(0);
+            final TestConsumer<Integer> ts2 = new TestConsumer<>(0);
 
             Runnable r1 = ts1::cancel;
 

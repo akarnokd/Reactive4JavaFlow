@@ -37,7 +37,7 @@ public class FolyamFutureTest {
     }
 
     static <T> Future<T> wrap(CompletableFuture<T> cf) {
-        return new Future<T>() {
+        return new Future<>() {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {

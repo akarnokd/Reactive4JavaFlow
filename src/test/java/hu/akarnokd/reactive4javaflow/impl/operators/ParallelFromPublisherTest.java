@@ -69,12 +69,12 @@ public class ParallelFromPublisherTest {
 
         @Override
         public Folyam<T> apply(Folyam<T> upstream) {
-            return new StripBoundary<T>(upstream);
+            return new StripBoundary<>(upstream);
         }
 
         @Override
         protected void subscribeActual(FolyamSubscriber<? super T> s) {
-            source.subscribe(new StripBoundarySubscriber<T>(s));
+            source.subscribe(new StripBoundarySubscriber<>(s));
         }
 
         static final class StripBoundarySubscriber<T> implements FolyamSubscriber<T>, FusedSubscription<T> {
@@ -152,13 +152,10 @@ public class ParallelFromPublisherTest {
     @Test
     public void syncFusedMapCrash() {
         Folyam.just(1)
-                .map(new CheckedFunction<Integer, Object>() {
-                    @Override
-                    public Object apply(Integer v) throws Exception {
-                        throw new IOException();
-                    }
+                .map(v -> {
+                    throw new IOException();
                 })
-                .compose(new StripBoundary<Object>(null))
+                .compose(new StripBoundary<>(null))
                 .parallel()
                 .sequential()
                 .test()
@@ -172,13 +169,10 @@ public class ParallelFromPublisherTest {
         up.onNext(1);
 
         up
-                .map(new CheckedFunction<Integer, Object>() {
-                    @Override
-                    public Object apply(Integer v) throws Exception {
-                        throw new IOException();
-                    }
+                .map(v -> {
+                    throw new IOException();
                 })
-                .compose(new StripBoundary<Object>(null))
+                .compose(new StripBoundary<>(null))
                 .parallel()
                 .sequential()
                 .test()
@@ -189,25 +183,17 @@ public class ParallelFromPublisherTest {
 
     @Test
     public void boundaryConfinement() {
-        final Set<String> between = new HashSet<String>();
-        final ConcurrentHashMap<String, String> processing = new ConcurrentHashMap<String, String>();
+        final Set<String> between = new HashSet<>();
+        final ConcurrentHashMap<String, String> processing = new ConcurrentHashMap<>();
 
         Folyam.range(1, 10)
                 .observeOn(SchedulerServices.single(), 1)
-                .doOnNext(new CheckedConsumer<Integer>() {
-                    @Override
-                    public void accept(Integer v) throws Exception {
-                        between.add(Thread.currentThread().getName());
-                    }
-                })
+                .doOnNext(v -> between.add(Thread.currentThread().getName()))
                 .parallel(2, 1)
                 .runOn(SchedulerServices.computation(), 1)
-                .map(new CheckedFunction<Integer, Object>() {
-                    @Override
-                    public Object apply(Integer v) throws Exception {
-                        processing.putIfAbsent(Thread.currentThread().getName(), "");
-                        return v;
-                    }
+                .map((CheckedFunction<Integer, Object>) v -> {
+                    processing.putIfAbsent(Thread.currentThread().getName(), "");
+                    return v;
                 })
                 .sequential()
                 .test()

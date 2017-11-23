@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 
 public class FolyamOnBackpressureTimeoutTest implements CheckedConsumer<Object> {
 
-    final List<Object> evicted = Collections.synchronizedList(new ArrayList<Object>());
+    final List<Object> evicted = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public void accept(Object t) throws Exception {
@@ -231,15 +231,12 @@ public class FolyamOnBackpressureTimeoutTest implements CheckedConsumer<Object> 
 
         DirectProcessor<Integer> pp = new DirectProcessor<>();
 
-        final TestConsumer<Integer> ts = new TestConsumer<Integer>(0L);
+        final TestConsumer<Integer> ts = new TestConsumer<>(0L);
 
         pp
-                .onBackpressureTimeout(10, 1, TimeUnit.SECONDS, scheduler, new CheckedConsumer<Integer>() {
-                    @Override
-                    public void accept(Integer e) throws Exception {
-                        evicted.add(e);
-                        ts.cancel();
-                    }
+                .onBackpressureTimeout(10, 1, TimeUnit.SECONDS, scheduler, e -> {
+                    evicted.add(e);
+                    ts.cancel();
                 })
                 .subscribe(ts);
 
@@ -257,14 +254,11 @@ public class FolyamOnBackpressureTimeoutTest implements CheckedConsumer<Object> 
 
             DirectProcessor<Integer> pp = new DirectProcessor<>();
 
-            final TestConsumer<Integer> ts = new TestConsumer<Integer>(0L);
+            final TestConsumer<Integer> ts = new TestConsumer<>(0L);
 
             pp
-                    .onBackpressureTimeout(10, 1, TimeUnit.SECONDS, scheduler, new CheckedConsumer<Integer>() {
-                        @Override
-                        public void accept(Integer e) throws Exception {
-                            throw new IOException(e.toString());
-                        }
+                    .onBackpressureTimeout(10, 1, TimeUnit.SECONDS, scheduler, e -> {
+                        throw new IOException(e.toString());
                     })
                     .subscribe(ts);
 
@@ -286,7 +280,7 @@ public class FolyamOnBackpressureTimeoutTest implements CheckedConsumer<Object> 
     public void cancelAndRequest() {
         Folyam.range(1, 5)
                 .onBackpressureTimeout(1, TimeUnit.MINUTES, SchedulerServices.single(), this)
-                .subscribe(new TestConsumer<Integer>(1) {
+                .subscribe(new TestConsumer<>(1) {
                     @Override
                     public void onNext(Integer t) {
                         super.onNext(t);

@@ -110,12 +110,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithError() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.ERROR)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.ERROR)
         .sequential()
         .test()
         .assertFailure(ArithmeticException.class);
@@ -125,12 +120,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithStop() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.STOP)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.STOP)
         .sequential()
         .test()
         .assertResult();
@@ -140,8 +130,9 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithRetry() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
+        .filter(new CheckedPredicate<>() {
             int count;
+
             @Override
             public boolean test(Integer v) throws Exception {
                 if (count++ == 1) {
@@ -159,17 +150,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithRetryLimited() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .filter(v -> 1 / v > 0, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -179,12 +160,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithSkip() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.SKIP)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.SKIP)
         .sequential()
         .test()
         .assertResult(1);
@@ -195,16 +171,8 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailHandlerThrows() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .filter(v -> 1 / v > 0, (n, e) -> {
+            throw new IOException();
         })
         .sequential()
         .test()
@@ -240,12 +208,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithErrorConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.ERROR)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.ERROR)
         .filter(v -> true)
         .sequential()
         .test()
@@ -256,12 +219,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithStopConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.STOP)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.STOP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -272,8 +230,9 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithRetryConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
+        .filter(new CheckedPredicate<>() {
             int count;
+
             @Override
             public boolean test(Integer v) throws Exception {
                 if (count++ == 1) {
@@ -292,17 +251,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithRetryLimitedConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                return n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP;
-            }
-        })
+        .filter(v -> 1 / v > 0, (n, e) -> n < 5 ? ParallelFailureHandling.RETRY : ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -313,12 +262,7 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailWithSkipConditional() {
         Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, ParallelFailureHandling.SKIP)
+        .filter(v -> 1 / v > 0, ParallelFailureHandling.SKIP)
         .filter(v -> true)
         .sequential()
         .test()
@@ -330,16 +274,8 @@ public class ParallelFilterTryTest implements CheckedConsumer<Object> {
     public void filterFailHandlerThrowsConditional() {
         TestConsumer<Integer> ts = Folyam.range(0, 2)
         .parallel(1)
-        .filter(new CheckedPredicate<Integer>() {
-            @Override
-            public boolean test(Integer v) throws Exception {
-                return 1 / v > 0;
-            }
-        }, new CheckedBiFunction<Long, Throwable, ParallelFailureHandling>() {
-            @Override
-            public ParallelFailureHandling apply(Long n, Throwable e) throws Exception {
-                throw new IOException();
-            }
+        .filter(v -> 1 / v > 0, (n, e) -> {
+            throw new IOException();
         })
         .filter(v -> true)
         .sequential()
