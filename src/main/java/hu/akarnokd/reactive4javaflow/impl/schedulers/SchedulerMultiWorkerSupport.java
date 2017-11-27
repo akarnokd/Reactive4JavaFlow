@@ -30,7 +30,7 @@ import hu.akarnokd.reactive4javaflow.SchedulerService;
 public interface SchedulerMultiWorkerSupport {
 
     /**
-     * Creates the given number of {@link hu.akarnokd.reactive4javaflow.Scheduler.Worker} instances
+     * Creates the given number of {@link hu.akarnokd.reactive4javaflow.SchedulerService.Worker} instances
      * that are possibly backed by distinct threads
      * and calls the specified {@code WorkerCallback} with them.
      * @param number the number of workers to create, positive
