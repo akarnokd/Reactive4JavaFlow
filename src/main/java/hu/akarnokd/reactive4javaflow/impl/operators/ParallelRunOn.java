@@ -19,6 +19,7 @@ package hu.akarnokd.reactive4javaflow.impl.operators;
 import hu.akarnokd.reactive4javaflow.*;
 import hu.akarnokd.reactive4javaflow.fused.ConditionalSubscriber;
 import hu.akarnokd.reactive4javaflow.impl.SubscriptionHelper;
+import hu.akarnokd.reactive4javaflow.impl.schedulers.SchedulerMultiWorkerSupport;
 import hu.akarnokd.reactive4javaflow.impl.util.SpscArrayQueue;
 
 import java.util.concurrent.Flow;
@@ -49,24 +50,49 @@ public final class ParallelRunOn<T> extends ParallelFolyam<T> {
         int n = subscribers.length;
 
         @SuppressWarnings("unchecked")
-        FolyamSubscriber<T>[] parents = new FolyamSubscriber[n];
+        final FolyamSubscriber<T>[] parents = new FolyamSubscriber[n];
 
-        int prefetch = this.prefetch;
-
-        for (int i = 0; i < n; i++) {
-            FolyamSubscriber<? super T> a = subscribers[i];
-
-            SchedulerService.Worker w = scheduler.worker();
-            SpscArrayQueue<T> q = new SpscArrayQueue<>(prefetch);
-
-            if (a instanceof ConditionalSubscriber) {
-                parents[i] = new RunOnConditionalSubscriber<>((ConditionalSubscriber<? super T>) a, prefetch, q, w);
-            } else {
-                parents[i] = new RunOnSubscriber<>(a, prefetch, q, w);
+        if (scheduler instanceof SchedulerMultiWorkerSupport) {
+            SchedulerMultiWorkerSupport multiworker = (SchedulerMultiWorkerSupport) scheduler;
+            multiworker.createWorkers(n, new MultiWorkerCallback(subscribers, parents));
+        } else {
+            for (int i = 0; i < n; i++) {
+                createSubscriber(i, subscribers, parents, scheduler.worker());
             }
         }
-
         source.subscribe(parents);
+    }
+
+    void createSubscriber(int i, FolyamSubscriber<? super T>[] subscribers,
+                          FolyamSubscriber<T>[] parents, SchedulerService.Worker worker) {
+
+        FolyamSubscriber<? super T> a = subscribers[i];
+
+        SpscArrayQueue<T> q = new SpscArrayQueue<>(prefetch);
+
+        if (a instanceof ConditionalSubscriber) {
+            parents[i] = new RunOnConditionalSubscriber<>((ConditionalSubscriber<? super T>)a, prefetch, q, worker);
+        } else {
+            parents[i] = new RunOnSubscriber<>(a, prefetch, q, worker);
+        }
+    }
+
+    final class MultiWorkerCallback implements SchedulerMultiWorkerSupport.WorkerCallback {
+
+        final FolyamSubscriber<? super T>[] subscribers;
+
+        final FolyamSubscriber<T>[] parents;
+
+        MultiWorkerCallback(FolyamSubscriber<? super T>[] subscribers,
+                            FolyamSubscriber<T>[] parents) {
+            this.subscribers = subscribers;
+            this.parents = parents;
+        }
+
+        @Override
+        public void onWorker(int i, SchedulerService.Worker w) {
+            createSubscriber(i, subscribers, parents, w);
+        }
     }
 
 

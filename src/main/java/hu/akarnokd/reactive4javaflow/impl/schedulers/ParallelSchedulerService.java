@@ -24,7 +24,7 @@ import java.lang.invoke.*;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-public final class ParallelSchedulerService implements SchedulerService, ThreadFactory {
+public final class ParallelSchedulerService implements SchedulerService, ThreadFactory, SchedulerMultiWorkerSupport {
     final int parallelism;
 
     final String namePrefix;
@@ -122,6 +122,29 @@ public final class ParallelSchedulerService implements SchedulerService, ThreadF
     @Override
     public Worker worker() {
         return new ScheduledExecutorServiceWorker(pick());
+    }
+
+    @Override
+    public void createWorkers(int number, WorkerCallback callback) {
+        ScheduledExecutorService[] a = (ScheduledExecutorService[])EXECUTORS.getAcquire(this);
+        if (a == SHUTDOWN) {
+            ScheduledExecutorServiceWorker worker = new ScheduledExecutorServiceWorker(STOPPED);
+            for (int i = 0; i < number; i++) {
+                callback.onWorker(i, worker);
+            }
+        } else {
+            int count = a.length;
+            int j = (int)n % count;
+
+            for (int i = 0; i < number; i++) {
+                callback.onWorker(i, new ScheduledExecutorServiceWorker(a[j]));
+                if (++j == count) {
+                    j = 0;
+                }
+            }
+
+            n = j;
+        }
     }
 
     @Override
