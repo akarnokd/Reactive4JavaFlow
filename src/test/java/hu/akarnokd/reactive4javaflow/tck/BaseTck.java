@@ -20,6 +20,7 @@ import java.util.concurrent.Flow;
 import hu.akarnokd.reactive4javaflow.Folyam;
 import org.reactivestreams.*;
 import org.reactivestreams.tck.*;
+import org.reactivestreams.tck.flow.FlowPublisherVerification;
 import org.testng.annotations.Test;
 
 /**
@@ -29,7 +30,7 @@ import org.testng.annotations.Test;
  * @param <T> the element type
  */
 @Test
-public abstract class BaseTck<T> extends PublisherVerification<T> {
+public abstract class BaseTck<T> extends FlowPublisherVerification<T> {
 
     public BaseTck() {
         this(25L);
@@ -39,6 +40,7 @@ public abstract class BaseTck<T> extends PublisherVerification<T> {
         super(new TestEnvironment(timeout));
     }
 
+    /*
     @Override
     public Publisher<T> createFailedPublisher() {
         return bridge(Folyam.error(new IOException()));
@@ -50,6 +52,12 @@ public abstract class BaseTck<T> extends PublisherVerification<T> {
     }
 
     public abstract Flow.Publisher<T> createFlowPublisher(long elements);
+    */
+
+    @Override
+    public Flow.Publisher<T> createFailedFlowPublisher() {
+        return Folyam.error(new IOException());
+    }
 
     @Override
     public long maxElementsFromPublisher() {
