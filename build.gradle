@@ -47,7 +47,7 @@ apply plugin: 'osgi'
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.testng', name: 'testng', version: '6.11'
-    testCompile 'org.reactivestreams:reactive-streams-tck-flow:1.0.2-RC1'
+    testCompile 'org.reactivestreams:reactive-streams-tck-flow:1.0.2-RC2'
 
 //    testCompile 'org.reactivestreams:reactive-streams-flow-tck:1.0.1'
 //    compile "org.reactivestreams:reactive-streams:1.0.1"
