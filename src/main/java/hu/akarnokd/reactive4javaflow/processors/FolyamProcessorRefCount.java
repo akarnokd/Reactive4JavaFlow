@@ -91,11 +91,13 @@ final class FolyamProcessorRefCount<T> extends FolyamProcessor<T> implements Ref
 
     @Override
     public void onError(Throwable throwable) {
+        UPSTREAM.setRelease(this, SubscriptionHelper.CANCELLED);
         actual.onError(throwable);
     }
 
     @Override
     public void onComplete() {
+        UPSTREAM.setRelease(this, SubscriptionHelper.CANCELLED);
         actual.onComplete();
     }
 
