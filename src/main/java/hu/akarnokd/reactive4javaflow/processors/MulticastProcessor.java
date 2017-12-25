@@ -23,6 +23,7 @@ import hu.akarnokd.reactive4javaflow.impl.*;
 import hu.akarnokd.reactive4javaflow.impl.util.*;
 
 import java.lang.invoke.*;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -158,6 +159,10 @@ public final class MulticastProcessor<T> extends FolyamProcessor<T> implements A
                 onError(new IllegalStateException("Not all consumers are ready to receive items"));
                 return;
             }
+        } else {
+            if (sourceFused == FusedSubscription.NONE) {
+                throw new NullPointerException("item == null");
+            }
         }
         drain();
     }
@@ -178,6 +183,7 @@ public final class MulticastProcessor<T> extends FolyamProcessor<T> implements A
 
     @Override
     public void onError(Throwable throwable) {
+        Objects.requireNonNull(throwable, "throwable == null");
         if (error == null && ERROR.compareAndSet(this, null, throwable)) {
             drain();
         } else {
