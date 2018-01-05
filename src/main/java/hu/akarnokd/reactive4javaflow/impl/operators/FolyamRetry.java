@@ -41,7 +41,7 @@ public final class FolyamRetry<T> extends Folyam<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        AbstractRepeatSubscriber parent;
+        AbstractRetrySubscriber parent;
         if (s instanceof ConditionalSubscriber) {
             parent = new RetryConditionalSubscriber<>((ConditionalSubscriber<? super T>)s, times, condition, source);
         } else {
@@ -52,7 +52,7 @@ public final class FolyamRetry<T> extends Folyam<T> {
         parent.subscribeNext();
     }
 
-    static abstract class AbstractRepeatSubscriber<T> extends SubscriptionArbiter implements FolyamSubscriber<T> {
+    static abstract class AbstractRetrySubscriber<T> extends SubscriptionArbiter implements FolyamSubscriber<T> {
 
         final CheckedPredicate<? super Throwable> condition;
 
@@ -61,11 +61,11 @@ public final class FolyamRetry<T> extends Folyam<T> {
         long times;
 
         int wip;
-        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractRepeatSubscriber.class, "wip", Integer.TYPE);
+        static final VarHandle WIP = VH.find(MethodHandles.lookup(), AbstractRetrySubscriber.class, "wip", Integer.TYPE);
 
         long produced;
 
-        AbstractRepeatSubscriber(long times, CheckedPredicate<? super Throwable> condition, FolyamPublisher<T> source) {
+        AbstractRetrySubscriber(long times, CheckedPredicate<? super Throwable> condition, FolyamPublisher<T> source) {
             this.times = times;
             this.condition = condition;
             this.source = source;
@@ -110,6 +110,7 @@ public final class FolyamRetry<T> extends Folyam<T> {
                     }
                     long p = produced;
                     if (p != 0L) {
+                        produced = 0L;
                         arbiterProduced(p);
                     }
                     source.subscribe(this);
@@ -118,7 +119,7 @@ public final class FolyamRetry<T> extends Folyam<T> {
         }
     }
 
-    static final class RetrySubscriber<T> extends AbstractRepeatSubscriber<T> {
+    static final class RetrySubscriber<T> extends AbstractRetrySubscriber<T> {
 
         final FolyamSubscriber<? super T> actual;
 
@@ -144,7 +145,7 @@ public final class FolyamRetry<T> extends Folyam<T> {
         }
     }
 
-    static final class RetryConditionalSubscriber<T> extends AbstractRepeatSubscriber<T> implements ConditionalSubscriber<T> {
+    static final class RetryConditionalSubscriber<T> extends AbstractRetrySubscriber<T> implements ConditionalSubscriber<T> {
 
         final ConditionalSubscriber<? super T> actual;
 

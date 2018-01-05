@@ -36,7 +36,7 @@ public final class EsetlegRetry<T> extends Esetleg<T> {
 
     @Override
     protected void subscribeActual(FolyamSubscriber<? super T> s) {
-        FolyamRetry.AbstractRepeatSubscriber parent;
+        FolyamRetry.AbstractRetrySubscriber parent;
         if (s instanceof ConditionalSubscriber) {
             parent = new FolyamRetry.RetryConditionalSubscriber<>((ConditionalSubscriber<? super T>)s, times, condition, source);
         } else {
