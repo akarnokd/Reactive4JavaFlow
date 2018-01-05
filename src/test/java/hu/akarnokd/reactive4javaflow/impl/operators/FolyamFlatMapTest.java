@@ -17,12 +17,17 @@
 package hu.akarnokd.reactive4javaflow.impl.operators;
 
 import hu.akarnokd.reactive4javaflow.*;
+import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.fused.FusedSubscription;
 import hu.akarnokd.reactive4javaflow.impl.FailingFusedSubscription;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 public class FolyamFlatMapTest {
 
@@ -569,5 +574,35 @@ public class FolyamFlatMapTest {
         Folyam.mergeDelayError(Folyam.fromArray(Folyam.range(1, 3), Folyam.error(new IOException()), Folyam.range(4, 3)), 1)
                 .test()
                 .assertFailure(IOException.class, 1, 2, 3, 4, 5, 6);
+    }
+
+
+
+    @Test
+    public void failingFusedInnerCancelsSource() {
+        final AtomicInteger counter = new AtomicInteger();
+        Folyam.range(1, 5)
+                .doOnNext(v -> counter.getAndIncrement())
+                .flatMap((CheckedFunction<Integer, Folyam<Integer>>) v ->
+                        Folyam.fromIterable(() -> new Iterator<Integer>() {
+                            @Override
+                            public boolean hasNext() {
+                                return true;
+                            }
+
+                            @Override
+                            public Integer next() {
+                                throw new IllegalArgumentException();
+                            }
+
+                            @Override
+                            public void remove() {
+                                throw new UnsupportedOperationException();
+                            }
+                        }))
+                .test()
+                .assertFailure(IllegalArgumentException.class);
+
+        assertEquals(1, counter.get());
     }
 }

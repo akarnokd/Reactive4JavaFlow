@@ -500,6 +500,7 @@ public final class FolyamFlatMap<T, R> extends Folyam<R> {
                                 if (!delayErrors) {
                                     ex = ExceptionHelper.terminate(this, ERROR);
                                     scalarQueue = null;
+                                    upstream.cancel();
                                     cancelInners();
                                     a.onError(ex);
                                     return;
