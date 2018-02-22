@@ -236,6 +236,7 @@ public final class FolyamWindowBoundary<T> extends Folyam<Folyam<T>> {
                         if (s == maxSize) {
                             size = 0;
                             current.onComplete();
+                            current = null;
                         } else {
                             size = s;
                             continue;
