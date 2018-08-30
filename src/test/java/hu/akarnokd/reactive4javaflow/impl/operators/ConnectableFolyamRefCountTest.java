@@ -168,4 +168,30 @@ public class ConnectableFolyamRefCountTest {
                     .assertResult(1, 2, 3, 4, 5);
         }
     }
+
+    @Test
+    public void replayRefCountShallBeThreadSafe() {
+        for (int i = 0; i < 1000; i++) {
+            Folyam<Integer> flowable = Folyam.just(1).replay().refCount();
+
+            TestConsumer<Integer> ts1 = flowable
+                    .subscribeOn(SchedulerServices.io())
+                    .test();
+
+            TestConsumer<Integer> ts2 = flowable
+                    .subscribeOn(SchedulerServices.io())
+                    .test();
+
+            ts1
+                    .withTag("" + i)
+                    .awaitDone(5, TimeUnit.SECONDS)
+                    .assertResult(1);
+
+            ts2
+                    .withTag("" + i)
+                    .awaitDone(5, TimeUnit.SECONDS)
+                    .assertResult(1);
+        }
+    }
+
 }

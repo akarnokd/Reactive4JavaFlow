@@ -60,7 +60,7 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
         boolean connect = false;
         synchronized (this) {
             conn = connection;
-            if (conn == null || conn.terminated) {
+            if (conn == null) {
                 conn = new RefConnection(this);
                 connection = conn;
             }
@@ -86,7 +86,7 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
     void cancel(RefConnection rc) {
         SequentialAutoDisposable sd;
         synchronized (this) {
-            if (rc.terminated) {
+            if (connection == null || connection != rc) {
                 return;
             }
             long c = rc.subscriberCount - 1;
@@ -107,10 +107,11 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
 
     void terminated(RefConnection rc) {
         synchronized (this) {
-            if (!rc.terminated) {
-                rc.terminated = true;
-                source.reset();
+            if (connection != null && connection == rc) {
                 connection = null;
+            }
+            if (--rc.subscriberCount == 0) {
+                source.reset();
             }
         }
     }
@@ -118,9 +119,9 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
     void timeout(RefConnection rc) {
         synchronized (this) {
             if (rc.subscriberCount == 0 && rc == connection) {
+                connection = null;
                 DisposableHelper.close(rc);
                 source.reset();
-                connection = null;
             }
         }
     }
@@ -137,8 +138,6 @@ public final class ConnectableFolyamRefCount<T> extends Folyam<T> {
         long subscriberCount;
 
         boolean connected;
-
-        boolean terminated;
 
         RefConnection(ConnectableFolyamRefCount<?> parent) {
             this.parent = parent;
