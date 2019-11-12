@@ -145,7 +145,7 @@ license {
 }
 
 jacoco {
-    toolVersion = '$jacocoVersion' // See http://www.eclemma.org/jacoco/.
+    toolVersion = "$jacocoVersion" // See http://www.eclemma.org/jacoco/.
 }
 
 jacocoTestReport {
