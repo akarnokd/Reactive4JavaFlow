@@ -52,7 +52,7 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.testng', name: 'testng', version: '6.11'
+    testCompile group: 'org.testng', name: 'testng', version: '7.0.0'
     testCompile "org.reactivestreams:reactive-streams-tck-flow:$rsTckVersion"
 }
 
