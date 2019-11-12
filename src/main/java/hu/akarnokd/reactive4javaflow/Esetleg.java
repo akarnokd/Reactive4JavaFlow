@@ -15,16 +15,16 @@
  */
 package hu.akarnokd.reactive4javaflow;
 
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import hu.akarnokd.reactive4javaflow.functionals.*;
 import hu.akarnokd.reactive4javaflow.impl.FunctionalHelper;
 import hu.akarnokd.reactive4javaflow.impl.consumers.*;
 import hu.akarnokd.reactive4javaflow.impl.operators.*;
 import hu.akarnokd.reactive4javaflow.impl.schedulers.ImmediateSchedulerService;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 public abstract class Esetleg<T> implements FolyamPublisher<T> {
 
@@ -256,7 +256,7 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         Objects.requireNonNull(source1, "sources1 == null");
         Objects.requireNonNull(source2, "sources2 == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), false));
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<T, R>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), false));
     }
 
     @SuppressWarnings("unchecked")
@@ -264,7 +264,7 @@ public abstract class Esetleg<T> implements FolyamPublisher<T> {
         Objects.requireNonNull(source1, "sources1 == null");
         Objects.requireNonNull(source2, "sources2 == null");
         Objects.requireNonNull(zipper, "zipper == null");
-        return FolyamPlugins.onAssembly(new EsetlegZipArray<>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), true));
+        return FolyamPlugins.onAssembly(new EsetlegZipArray<T, R>(new Esetleg[] { source1, source2 }, a -> zipper.apply((T)a[0], (U)a[1]), true));
     }
 
     public static <T> Esetleg<Boolean> sequenceEqual(Flow.Publisher<? extends T> first, Flow.Publisher<? extends T> second) {

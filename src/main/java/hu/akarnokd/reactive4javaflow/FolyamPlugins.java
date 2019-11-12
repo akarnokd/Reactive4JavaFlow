@@ -17,6 +17,7 @@ package hu.akarnokd.reactive4javaflow;
 
 import java.util.function.*;
 
+@SuppressWarnings("rawtypes")
 public final class FolyamPlugins {
 
     static volatile Consumer<? super Throwable> onError;
