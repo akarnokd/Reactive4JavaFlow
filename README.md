@@ -1,6 +1,6 @@
 # Reactive4JavaFlow
 
-<a href='https://travis-ci.org/akarnokd/Reactive4JavaFlow/builds'><img src='https://travis-ci.org/akarnokd/Reactive4JavaFlow.svg?branch=master'></a>
+<a href='https://travis-ci.com/akarnokd/Reactive4JavaFlow/builds'><img src='https://travis-ci.com/akarnokd/Reactive4JavaFlow.svg?branch=master'></a>
 [![codecov.io](http://codecov.io/github/akarnokd/Reactive4JavaFlow/coverage.svg?branch=master)](http://codecov.io/github/akarnokd/Reactive4JavaFlow?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.akarnokd/reactive4javaflow/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.akarnokd/reactive4javaflow)
 
