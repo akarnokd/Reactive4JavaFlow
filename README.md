@@ -1,6 +1,6 @@
 # Reactive4JavaFlow
 
-<a href='https://travis-ci.com/akarnokd/Reactive4JavaFlow/builds'><img src='https://travis-ci.com/akarnokd/Reactive4JavaFlow.svg?branch=master'></a>
+<a href='https://github.com/akarnokd/Reactive4JavaFlow/actions?query=workflow%3A%22Java+CI+with+Gradle%22'><img src='https://github.com/akarnokd/Reactive4JavaFlow/workflows/Java%20CI%20with%20Gradle/badge.svg'></a>
 [![codecov.io](http://codecov.io/github/akarnokd/Reactive4JavaFlow/coverage.svg?branch=master)](http://codecov.io/github/akarnokd/Reactive4JavaFlow?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.akarnokd/reactive4javaflow/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.akarnokd/reactive4javaflow)
 
