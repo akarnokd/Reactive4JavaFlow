@@ -158,7 +158,7 @@ build.dependsOn jacocoTestReport
 check.dependsOn jacocoTestReport
 
 pmd {
-    toolVersion = '5.4.2'
+    toolVersion = '6.46.0'
     ignoreFailures = true
     sourceSets = [sourceSets.main]
     ruleSets = []
