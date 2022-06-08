@@ -22,7 +22,7 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'eclipse'
 apply plugin: "me.champeau.gradle.jmh"
 apply plugin: 'pmd'
@@ -51,9 +51,9 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.13.2'
-    testCompile group: 'org.testng', name: 'testng', version: '7.5'
-    testCompile "org.reactivestreams:reactive-streams-tck-flow:$rsTckVersion"
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testImplementation group: 'org.testng', name: 'testng', version: '7.5'
+    testImplementation "org.reactivestreams:reactive-streams-tck-flow:$rsTckVersion"
 }
 
 [compileJava, compileTestJava]*.options*.compilerArgs << "-parameters"
@@ -61,8 +61,6 @@ dependencies {
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-parameters";
 }
-
-apply plugin: 'maven'
 
 apply plugin: 'biz.aQute.bnd.builder'
 
